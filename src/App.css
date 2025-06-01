@@ -1,42 +1,117 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+/* src/App.css */
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  /* Tło jest ustawione na body w index.css */
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.app-header {
+  /* Nowy, bardziej elegancki gradient dla nagłówka */
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); /* Ciemny grafitowo-niebieski */
+  padding: 15px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Wyraźniejszy, ale nadal subtelny cień */
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  color: var(--text-color-light);
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+.app-logo {
+  height: 48px; /* Lekko dostosowana wysokość */
+  width: auto;
+  /* Można dodać filtr dla lepszego dopasowania do ciemnego tła, np. jeśli logo jest ciemne:
+     filter: brightness(0) invert(1); (zrobi białe logo z czarnego)
+     Lub jeśli logo ma już jasne elementy, to może być OK.
+  */
+}
+
+.form-switcher {
+  display: flex;
+  gap: 0;
+  background-color: rgba(255, 255, 255, 0.08); /* Bardzo subtelne tło dla grupy */
+  border-radius: 8px;
+  padding: 5px; /* Zwiększony padding wokół grupy */
+  border: 1px solid rgba(255, 255, 255, 0.15); /* Delikatna ramka dla grupy */
+}
+
+.switcher-button {
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  background-color: transparent;
+  color: rgba(255, 255, 255, 0.75); /* Lekko przygaszony biały dla nieaktywnych */
+  cursor: pointer;
+  transition: all 0.25s ease;
+  outline: none;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.switcher-button:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  color: var(--text-color-light); /* Pełna biel przy najechaniu */
+}
+
+.switcher-button.active {
+  background-color: var(--kaman-red);
+  color: var(--text-color-light);
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2), 
+              inset 0 1px 1px rgba(255,255,255,0.1);
+  border-bottom: 3px solid var(--gold-accent); /* Złoty akcent */
+}
+
+.form-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* Zaczynamy od góry */
+  align-items: center;
+  padding: 40px 20px 50px 20px; /* Dodatkowy padding na dole */
+  width: 100%;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .app-header {
+    flex-direction: column;
+    gap: 15px;
+    padding: 15px;
   }
-  to {
-    transform: rotate(360deg);
+  .form-switcher {
+    width: 100%;
+    max-width: 400px; /* Ograniczenie szerokości na mobilnych */
+    margin: 0 auto;
+    justify-content: center;
+  }
+  .form-content {
+    padding: 25px 15px;
+  }
+  .app-logo {
+    height: 40px;
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+@media (max-width: 480px) {
+  .switcher-button {
+    font-size: 0.8rem;
+    padding: 9px 10px; /* Mniejszy padding dla małych ekranów */
+    flex-basis: 0; /* Pozwól przyciskom się zmniejszać */
+    flex-grow: 1;
+    text-align: center;
   }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
+  .form-switcher {
+    gap: 5px;
+  }
+  .form-container h2 {
+    font-size: 1.5rem;
+  }
 }
