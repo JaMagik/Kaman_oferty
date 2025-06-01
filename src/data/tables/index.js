@@ -1,16 +1,17 @@
 // ścieżka: src/data/tables/index.js
 
 import { mitsubishiBaseTables } from './mitsubishiTables';
-import toshiba3FTable from './toshiba-3f';
-import { atlanticBaseTables } from './atlanticTables'; // Upewnij się, że ten plik istnieje i zawiera definicje dla ATLANTIC-M-DUO
+import toshiba3FTable from './toshiba-3f'; // Załóżmy, że to na razie pojedyncza tabela
+// import { toshiba1FTable } from './toshiba-1f'; // Jeśli masz osobną dla 1F, odkomentuj i stwórz plik
+import { atlanticBaseTables } from './atlanticTables';
+import { lazarBaseTables } from './lazarTables';
+import { viessmannBaseTables } from './viessmannTables'; // Poprawnie zaimportowane
 
-// Funkcje pomocnicze do opisu zasobnika i bufora
+// Funkcje pomocnicze do opisu zasobnika i bufora (bez zmian)
 function getTankDescription(tankCapacity) {
   if (!tankCapacity || tankCapacity === 'none' || tankCapacity === 'Brak zasobnika CWU' || tankCapacity === 'Brak zasobnika CWU / Zintegrowany') {
     return 'Brak zasobnika ciepłej wody użytkowej';
   }
-  // Upewnij się, że nazwy pojemności są spójne z tym, co jest w formularzu i co zwraca ta funkcja.
-  // Przykład: '200 L STAL NIERDZEWNA'
   const cleanCapacity = String(tankCapacity).replace('-L', 'L').replace(' STAL NIERDZEWNA', '');
   return `ZASOBNIK CIEPŁEJ WODY UŻYTKOWEJ ${cleanCapacity} ZE STALI NIERDZEWNEJ`;
 }
@@ -30,30 +31,30 @@ export function getTableData(deviceType, model, tankCapacity, bufferCapacity) {
   console.log('[getTableData] OTRZYMANO PARAMETRY:', { deviceType, model, tankCapacity, bufferCapacity });
 
   let baseTableData = [];
-  const deviceTypeKey = deviceType; // Używamy kopii, aby uniknąć modyfikacji oryginału, jeśli byłaby taka potrzeba
+  const deviceTypeKey = deviceType;
 
-  // Pobieranie danych bazowych w zależności od deviceType i modelu
-  if (deviceTypeKey.startsWith('Mitsubishi-')) {
-    if (mitsubishiBaseTables && mitsubishiBaseTables[deviceTypeKey] && mitsubishiBaseTables[deviceTypeKey][model]) {
-      baseTableData = JSON.parse(JSON.stringify(mitsubishiBaseTables[deviceTypeKey][model])); // Głęboka kopia
-      console.log(`[getTableData] Dla Mitsubishi (${deviceTypeKey}, ${model}), ZNALEZIONO tabelę bazową.`);
-    } else {
-      console.warn(`[getTableData] Dla Mitsubishi (${deviceTypeKey}, ${model}), NIE ZNALEZIONO tabeli bazowej. Sprawdź klucze.`);
-    }
+  // Agregacja wszystkich tabel bazowych
+  const allDeviceTables = {
+    ...mitsubishiBaseTables,
+    ...atlanticBaseTables,
+    ...lazarBaseTables,
+    ...viessmannBaseTables,
+    // Przykładowe opakowanie dla Toshiba, jeśli chcesz ujednolicić dostęp
+    // (wymagałoby to zmiany sposobu odwoływania się w formularzu lub tutaj)
+    // 'Toshiba 3F': { 'default': toshiba3FTable },
+    // 'Toshiba 1F': { 'default': toshiba1FTable }, // Jeśli masz osobną tabelę
+  };
+
+  // Pobieranie danych bazowych
+  if (allDeviceTables[deviceTypeKey] && allDeviceTables[deviceTypeKey][model]) {
+    baseTableData = JSON.parse(JSON.stringify(allDeviceTables[deviceTypeKey][model]));
+    console.log(`[getTableData] Dla ${deviceTypeKey} (${model}), ZNALEZIONO tabelę bazową.`);
   } else if (deviceTypeKey === 'Toshiba 3F' || deviceTypeKey === 'Toshiba 1F') {
-    baseTableData = JSON.parse(JSON.stringify(toshiba3FTable)); // Głęboka kopia
-    console.log(`[getTableData] Dla Toshiba (${deviceTypeKey}), załadowano toshiba3FTable.`);
-  } else if (deviceTypeKey === 'ATLANTIC-M-DUO') { // Obsługa ATLANTIC-M-DUO
-    if (atlanticBaseTables && atlanticBaseTables[deviceTypeKey] && atlanticBaseTables[deviceTypeKey][model]) {
-      baseTableData = JSON.parse(JSON.stringify(atlanticBaseTables[deviceTypeKey][model])); // Głęboka kopia
-      console.log(`[getTableData] Dla Atlantic M-Duo (${deviceTypeKey}, ${model}), ZNALEZIONO tabelę bazową.`);
-    } else {
-      console.warn(`[getTableData] Dla Atlantic M-Duo (${deviceTypeKey}, ${model}), NIE ZNALEZIONO tabeli bazowej. Sprawdź klucze.`);
-    }
-  }
-  // Dodaj tutaj 'else if' dla innych głównych kategorii marek, np. 'ATLANTIC' (dla Extensa) itd.
-  else {
-    console.warn(`[getTableData] Nierozpoznany lub nieobsługiwany typ urządzenia: ${deviceTypeKey}.`);
+    // Zachowujemy specjalną obsługę dla Toshiba, jeśli struktura danych nie została zmieniona
+    baseTableData = JSON.parse(JSON.stringify(toshiba3FTable));
+    console.log(`[getTableData] Dla Toshiba (${deviceTypeKey}), załadowano domyślną toshiba3FTable.`);
+  } else {
+    console.warn(`[getTableData] Dla ${deviceTypeKey} (${model}), NIE ZNALEZIONO tabeli bazowej. Sprawdź klucze w odpowiednich plikach tabel i w 'allDeviceTables'.`);
   }
 
   if (!baseTableData || baseTableData.length === 0) {
@@ -61,75 +62,71 @@ export function getTableData(deviceType, model, tankCapacity, bufferCapacity) {
     return [];
   }
 
-  let finalTable = [];
-  let currentNumber = 1;
+  let finalTable = [...baseTableData.map(row => [...row])]; // Skopiuj bazowe wiersze na start
 
   // Logika dodawania zasobnika i bufora
-  const shouldAddTankRow = tankCapacity && tankCapacity !== 'none' && tankCapacity !== 'Brak zasobnika CWU' && tankCapacity !== 'Brak zasobnika CWU / Zintegrowany';
+  let skipDynamicTank = false;
+  if (deviceTypeKey === 'LAZAR' || deviceTypeKey === 'ATLANTIC-M-DUO') {
+    skipDynamicTank = true;
+  }
+  // Dla Viessmann, na podstawie Twojego starego kodu, zasobnik jest dodawany dynamicznie,
+  // więc nie ustawiamy skipDynamicTank = true, chyba że specyficzny model Viessmann tego wymaga.
+
+  const shouldAddTankRow = !skipDynamicTank && tankCapacity && tankCapacity !== 'none' && tankCapacity !== 'Brak zasobnika CWU' && tankCapacity !== 'Brak zasobnika CWU / Zintegrowany';
   const shouldAddBufferRow = bufferCapacity && bufferCapacity !== 'none' && bufferCapacity !== 'Brak bufora';
 
   const tankRowString = getTankDescription(tankCapacity);
   const bufferRowString = getBufferDescription(bufferCapacity);
 
-  const tankRow = [' ', tankRowString, 'szt.', '1']; // Zakładamy ilość 1, jeśli dodawany
-  const bufferRow = [' ', bufferRowString, 'szt.', (bufferCapacity === 'sprzeglo' ? '1' : '1')]; // Zakładamy ilość 1, jeśli dodawany
+  const tankRowData = [' ', tankRowString, 'szt.', '1'];
+  const bufferRowData = [' ', bufferRowString, 'szt.', (bufferCapacity === 'sprzeglo' ? '1' : '1')];
 
-  // Określenie, po którym elemencie tabeli bazowej wstawić zasobnik/bufor
-  // Dla Mitsubishi: po 2 głównych elementach (jednostka zewn. i wewn.)
-  // Dla Atlantic M-Duo: po 1 głównym elemencie (jednostka Duo)
-  // Dla Toshiba: traktujemy tabelę jako kompletną, chyba że chcemy modyfikować
-  let insertAtIndex = -1;
-  let isDuoModel = false;
+  // Określenie indeksu, *po którym* wstawić dynamiczne elementy (liczone od 0 dla splice)
+  let insertAfterIndex = 0; // Domyślnie po pierwszym elemencie
 
   if (deviceTypeKey.startsWith('Mitsubishi-') && !deviceTypeKey.includes('AY') && !deviceTypeKey.includes('HR')) {
-    insertAtIndex = 2; // Po dwóch pierwszych elementach dla Mitsubishi
-  } else if (deviceTypeKey === 'ATLANTIC-M-DUO') {
-    insertAtIndex = 1; // Po pierwszym elemencie dla Atlantic M-Duo
-    isDuoModel = true;  // Model Duo ma zintegrowany zasobnik
+    insertAfterIndex = 1; // Po drugim elemencie (indeks 1)
+  } else if (deviceTypeKey === 'ATLANTIC-M-DUO' || deviceTypeKey === 'LAZAR' || deviceTypeKey === 'VIESSMANN') {
+    insertAfterIndex = 0; // Po pierwszym elemencie (indeks 0)
+  } else if (deviceTypeKey === 'Toshiba 3F' || deviceTypeKey === 'Toshiba 1F') {
+    insertAfterIndex = 1; // Przykładowo, po drugim elemencie (indeks 1), dostosuj
   }
-  // Rozważ dodanie logiki dla 'Toshiba', jeśli chcesz dynamicznie dodawać tank/buffer
 
-  // Budowanie finalnej tabeli
-  for (let i = 0; i < baseTableData.length; i++) {
-    const rowCopy = [...baseTableData[i]]; // Kopia wiersza
-    rowCopy[0] = String(currentNumber++); // Numeracja
-    finalTable.push(rowCopy);
+  // Wstawianie dynamicznych wierszy
+  // Kolejność wstawiania: najpierw zasobnik, potem bufor, jeśli oba są dodawane po tym samym elemencie
+  let itemsInsertedCount = 0;
+  if (shouldAddTankRow) {
+    // Wstawiamy na pozycji tuż po elemencie o indeksie `insertAfterIndex`
+    finalTable.splice(insertAfterIndex + 1, 0, [...tankRowData]);
+    itemsInsertedCount++;
+    console.log('[getTableData] Dodano wiersz zasobnika CWU.');
+  }
+  if (shouldAddBufferRow) {
+    // Bufor wstawiamy po zasobniku (jeśli był dodany) lub po elemencie `insertAfterIndex`
+    finalTable.splice(insertAfterIndex + 1 + itemsInsertedCount, 0, [...bufferRowData]);
+    console.log('[getTableData] Dodano wiersz bufora.');
+  }
 
-    if (i === insertAtIndex - 1) { // Wstawianie po elemencie o danym indeksie (index-based, czyli po drugim to i===1)
-      // Dla modeli Duo nie dodajemy `tankRow` z formularza, bo jest zintegrowany
-      if (shouldAddTankRow && !isDuoModel) {
-        const actualTankRow = [...tankRow];
-        actualTankRow[0] = String(currentNumber++);
-        finalTable.push(actualTankRow);
-        console.log('[getTableData] Dodano wiersz zasobnika CWU.');
-      }
-      if (shouldAddBufferRow) {
-        const actualBufferRow = [...bufferRow];
-        actualBufferRow[0] = String(currentNumber++);
-        finalTable.push(actualBufferRow);
-        console.log('[getTableData] Dodano wiersz bufora.');
-      }
+  // Renumeracja całości na końcu, aby zapewnić ciągłość LP
+  let currentNumber = 1;
+  const renumberedFinalTable = finalTable.map(row => {
+    const newRow = [...row];
+    // Numeruj tylko wiersze, które mają treść w drugiej kolumnie (nazwa towaru)
+    // i nie są to "puste" separatory wprowadzone w danych bazowych
+    if (newRow[1] && String(newRow[1]).trim() !== '') {
+        // Jeśli pierwszy element jest pusty, spacją, lub już jest numerem (który chcemy nadpisać)
+        if (String(newRow[0]).trim() === '' || !isNaN(parseInt(newRow[0]))) {
+            newRow[0] = String(currentNumber++);
+        }
+        // Jeśli newRow[0] to np. litera lub inny tekstowy identyfikator, zachowaj go
+    } else {
+        // Dla wierszy, które są separatorami (np. [' ', 'ELEMENTY...']) lub całkowicie pustych,
+        // zachowaj lub ustaw puste LP
+        newRow[0] = ' ';
     }
-  }
-  
-  // Jeśli tabela bazowa była krótsza niż `insertAtIndex` (np. pusta lub tylko 1 element dla Mitsubishi)
-  // a tank/buffer powinny być dodane.
-  if (baseTableData.length < insertAtIndex) {
-      if (shouldAddTankRow && !isDuoModel && !finalTable.some(row => row[1] === tankRowString)) {
-          const actualTankRow = [...tankRow];
-          actualTankRow[0] = String(currentNumber++);
-          finalTable.push(actualTankRow);
-          console.log('[getTableData] Dodano wiersz zasobnika CWU (krótka tabela bazowa).');
-      }
-      if (shouldAddBufferRow && !finalTable.some(row => row[1] === bufferRowString)) {
-          const actualBufferRow = [...bufferRow];
-          actualBufferRow[0] = String(currentNumber++);
-          finalTable.push(actualBufferRow);
-          console.log('[getTableData] Dodano wiersz bufora (krótka tabela bazowa).');
-      }
-  }
+    return newRow;
+  });
 
-
-  console.log('[getTableData] Finalna tabela przekazana do PDF:', JSON.stringify(finalTable, null, 2));
-  return finalTable;
+  console.log('[getTableData] Finalna tabela przekazana do PDF:', JSON.stringify(renumberedFinalTable, null, 2));
+  return renumberedFinalTable;
 }

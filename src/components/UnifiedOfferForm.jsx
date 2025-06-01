@@ -5,10 +5,14 @@ import React, { useState, useEffect } from "react";
 import { generateOfferPDF } from "../utils/pdfGenerator"; 
 import { mitsubishiBaseTables } from "../data/tables/mitsubishiTables";
 import { atlanticBaseTables } from "../data/tables/atlanticTables";
+import { lazarBaseTables } from "../data/tables/lazarTables";
+import { viessmannBaseTables } from "../data/tables/viessmannTables"; // <-- POPRAWIONY IMPORT
 
 const allDevicesData = {
   ...mitsubishiBaseTables,
   ...atlanticBaseTables,
+  ...lazarBaseTables,
+  ...viessmannBaseTables,
 };
 
 // Klucz API Trello (ten jest publiczny i używany do inicjalizacji OAuth)
@@ -40,21 +44,11 @@ export default function UnifiedOfferForm() {
       console.log("Odczytano trelloCardId z URL:", cardIdFromUrl);
     }
 
-    // Obsługa powrotu z autoryzacji Trello (token jest w URL hash)
     if (window.location.hash.includes("#token=")) {
       const token = window.location.hash.substring(window.location.hash.indexOf('=') + 1);
       setTrelloUserToken(token);
       console.log("Odczytano token Trello z URL hash:", token);
-      // Wyczyść hash, aby nie był widoczny i nie przeszkadzał
       window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
-      // Możesz zapisać token w localStorage, jeśli chcesz go przechować dłużej
-      // localStorage.setItem('trelloUserToken', token);
-    } else {
-      // Spróbuj załadować token z localStorage, jeśli istnieje
-      // const storedToken = localStorage.getItem('trelloUserToken');
-      // if (storedToken) {
-      //   setTrelloUserToken(storedToken);
-      // }
     }
   }, []);
 
@@ -73,21 +67,11 @@ export default function UnifiedOfferForm() {
   }, [deviceType]);
 
   const handleGenerateAndSetPdf = async (e) => {
-    if (e) e.preventDefault(); // Zapobiegaj domyślnej akcji formularza, jeśli wywołane przez onSubmit
+    if (e) e.preventDefault();
     
-    // Modyfikacja: generateOfferPDF zwraca teraz Blob lub Uint8Array
     const pdfData = await generateOfferPDF(price, userName, deviceType, model, tank, buffer); 
     if (pdfData) {
-      setGeneratedPdfData(pdfData); // Zapisz dane PDF w stanie
-      // Automatyczne pobieranie po wygenerowaniu (opcjonalne, jeśli masz osobny przycisk)
-      // const url = URL.createObjectURL(pdfData);
-      // const a = document.createElement('a');
-      // a.href = url;
-      // a.download = `Oferta_KAMAN_${userName.replace(/ /g, '_')}.pdf`;
-      // document.body.appendChild(a);
-      // a.click();
-      // document.body.removeChild(a);
-      // URL.revokeObjectURL(url);
+      setGeneratedPdfData(pdfData);
       console.log("PDF wygenerowany i zapisany w stanie.");
     }
   };
@@ -109,7 +93,7 @@ export default function UnifiedOfferForm() {
 
 
   const handleTrelloAuth = () => {
-    const returnUrl = window.location.href.split('#')[0]; // URL bez hasha
+    const returnUrl = window.location.href.split('#')[0];
     const authUrl = `https://trello.com/1/authorize?expiration=1day&name=${encodeURIComponent(TRELLO_APP_NAME)}&scope=read,write&response_type=token&key=${TRELLO_API_KEY}&return_url=${encodeURIComponent(returnUrl)}`;
     window.location.href = authUrl;
   };
@@ -130,10 +114,6 @@ export default function UnifiedOfferForm() {
 
     setIsSavingToTrello(true);
 
-    // Konwersja Blob do Data URL, jeśli to potrzebne (zależne od pdfGenerator)
-    // Jeśli pdfGenerator.jsx zwraca Uint8Array lub Blob, nie musisz go konwertować na DataURL
-    // Wystarczy, że backend obsłuży Blob lub prześlesz jako ArrayBuffer.
-    // Dla uproszczenia, jeśli generatedPdfData to Blob:
     const reader = new FileReader();
     reader.readAsDataURL(generatedPdfData);
     reader.onloadend = async () => {
@@ -146,15 +126,13 @@ export default function UnifiedOfferForm() {
                 body: JSON.stringify({
                     cardId: trelloCardId,
                     token: trelloUserToken,
-                    fileDataUrl: base64Pdf, // Wysyłamy jako Data URL
+                    fileDataUrl: base64Pdf,
                     fileName: `Oferta_KAMAN_${userName.replace(/ /g, '_')}.pdf`
                 })
             });
 
             if (response.ok) {
                 alert("Sukces! Oferta została zapisana na karcie Trello.");
-                // Możesz chcieć zamknąć okno, jeśli to popup
-                // window.close(); 
             } else {
                 const error = await response.json();
                 alert("Błąd zapisu do Trello: " + (error.message || response.statusText));
@@ -204,8 +182,14 @@ export default function UnifiedOfferForm() {
           <option value="Toshiba 3F">Toshiba (3-fazowe)</option>
           <option value="Toshiba 1F">Toshiba (1-fazowe)</option>
         </optgroup>
-        <optgroup label="Atlantic">
+        <optgroup label="Atlantic (Pompy Ciepła)">
           <option value="ATLANTIC-M-DUO">Atlantic M-Duo</option>
+        </optgroup>
+        <optgroup label="Kotły na Pellet">
+          <option value="LAZAR">Lazar</option>
+        </optgroup>
+        <optgroup label="Viessmann (Pompy Ciepła)">
+          <option value="VIESSMANN">Viessmann Vitocal 150-A</option> 
         </optgroup>
       </select>
 
@@ -270,7 +254,6 @@ export default function UnifiedOfferForm() {
         </button>
       )}
 
-      {/* Przyciski Trello */}
       {trelloCardId && !trelloUserToken && (
         <button type="button" onClick={handleTrelloAuth} style={{marginTop: '20px', background: '#0079BF'}}>
           Autoryzuj Trello

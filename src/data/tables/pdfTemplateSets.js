@@ -157,9 +157,13 @@ export const pdfTemplateSets = {
 
   // --- VIESSMANN ---
   'VIESSMANN': [ // Viessmann Vitocal 150-A
-    '/pdf_templates/viessmann/vitocal-150-a/1_okladka.pdf',
-    '/pdf_templates/viessmann/vitocal-150-a/3_katalog.pdf',
-    '/pdf_templates/viessmann/vitocal-150-a/4_opcje.pdf',
+    '/pdf_templates/viessmann/1_okladka.pdf',
+        '/pdf_templates/viessmann/viessman.ds1.pdf',
+    '/pdf_templates/viessmann/viessman.ds2.pdf',
+    '/pdf_templates/viessmann/viessman.ds3.pdf',
+
+    '/pdf_templates/viessmann/4_opcje.pdf',
+    '/pdf_templates/viessmann/3_katalog.pdf',
     commonContactPage,
   ],
 
@@ -190,8 +194,11 @@ export const pdfTemplateSets = {
   // --- KOTŁY NA PELLET ---
   'LAZAR': [
     '/pdf_templates/kotly-pellet/lazar/1_okladka.pdf',
-    '/pdf_templates/kotly-pellet/lazar/3_katalog.pdf',
+     '/pdf_templates/kotly-pellet/lazar/lazar.ds1.pdf',
+     '/pdf_templates/kotly-pellet/lazar/lazar.ds2.pdf',
+     '/pdf_templates/kotly-pellet/lazar/lazar.ds3.pdf',
     '/pdf_templates/kotly-pellet/lazar/4_opcje.pdf',
+        '/pdf_templates/kotly-pellet/lazar/3_katalog.pdf',
     commonContactPage,
   ],
   'KAMEN-KOMPAKT-LUX': [
