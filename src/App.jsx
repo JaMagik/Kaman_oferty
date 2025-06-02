@@ -1,6 +1,8 @@
+// src/App.jsx
 import React, { useState } from "react";
 import UnifiedOfferForm from "./components/UnifiedOfferForm";
 import PhotovoltaicsOfferForm from "./components/PhotovoltaicsOfferForm";
+import OknaNestOfferForm from "./components/OknaNestOfferForm"; // Import nowego komponentu
 import './assets/style.css'; // Główne style formularzy
 import "./App.css";        // Style dla layoutu aplikacji i przełącznika
 
@@ -8,7 +10,7 @@ import "./App.css";        // Style dla layoutu aplikacji i przełącznika
 import kamanLogo from './assets/logo_kaman.png'; // Załóżmy, że logo jest tutaj
 
 function App() {
-  const [activeForm, setActiveForm] = useState("heating"); // 'heating' lub 'pv'
+  const [activeForm, setActiveForm] = useState("heating"); // 'heating', 'pv', lub 'okna'
 
   return (
     <div className="app-container">
@@ -27,12 +29,19 @@ function App() {
           >
             Generator Fotowoltaika
           </button>
+          <button
+            onClick={() => setActiveForm("okna")}
+            className={`switcher-button ${activeForm === "okna" ? "active" : ""}`}
+          >
+            Generator Okna Nest
+          </button>
         </nav>
       </header>
 
       <main className="form-content">
         {activeForm === "heating" && <UnifiedOfferForm />}
         {activeForm === "pv" && <PhotovoltaicsOfferForm />}
+        {activeForm === "okna" && <OknaNestOfferForm />}
       </main>
     </div>
   );
