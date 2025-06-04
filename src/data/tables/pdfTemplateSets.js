@@ -10,6 +10,9 @@
 
 // Centralna ścieżka do wspólnego pliku kontaktowego, aby unikać duplikacji.
 const commonContactPage = '/pdf_templates/common/5_kontakt.pdf';
+const groupPage = '/pdf_templates/common/7_grupa_kaman_pdf.pdf';
+const groupPage2 = '/pdf_templates/common/8_grupa_kaman_uslugi_pdf.pdf';
+
 
 // Domyślny zestaw szablonów, jeśli żaden inny nie pasuje (np. dla nowo dodanej opcji w formularzu)
 const defaultTemplatePaths = [
@@ -30,6 +33,8 @@ export const pdfTemplateSets = {
     '/pdf_templates/mitsubishi/standard-cylinder/4.1_cylinder_standard.pdf',
     '/pdf_templates/mitsubishi/standard-cylinder/4.2_cylinder_standard.pdf',
     '/pdf_templates/mitsubishi/standard-cylinder/4_opcje.pdf',
+    groupPage,
+    groupPage2,
     commonContactPage,
   ],
   'Mitsubishi-cylinder-PUZ': [
@@ -38,6 +43,8 @@ export const pdfTemplateSets = {
     '/pdf_templates/mitsubishi/zubadan-cylinder/3_katalog_PUZ-1.pdf',
     '/pdf_templates/mitsubishi/zubadan-cylinder/3_katalog_PUZ-2.pdf',
     '/pdf_templates/mitsubishi/zubadan-cylinder/4_opcje.pdf',
+      groupPage,
+    groupPage2,
     commonContactPage,
   ],
   'Mitsubishi-cylinder-PUZ-1F': [
@@ -46,6 +53,8 @@ export const pdfTemplateSets = {
    '/pdf_templates/mitsubishi/zubadan-cylinder/3_katalog_PUZ-1.pdf',
     '/pdf_templates/mitsubishi/zubadan-cylinder/3_katalog_PUZ-2.pdf',
         '/pdf_templates/mitsubishi/zubadan-cylinder-1f/4_opcje.pdf',
+          groupPage,
+    groupPage2,
     commonContactPage,
   ],
   'Mitsubishi-hydrobox': [
@@ -57,6 +66,8 @@ export const pdfTemplateSets = {
     '/pdf_templates/mitsubishi/standard-hydrobox/3.1_wewnetrzna_hydrobox_ds.pdf',
     '/pdf_templates/mitsubishi/standard-hydrobox/3.2_wewnetrzna_hydrobox_ds.pdf',
     '/pdf_templates/mitsubishi/standard-hydrobox/4_opcje.pdf',
+      groupPage,
+    groupPage2,
     commonContactPage,
   ],
   'Mitsubishi-hydrobox-PUZ': [
@@ -65,6 +76,8 @@ export const pdfTemplateSets = {
     '/pdf_templates/mitsubishi/zubadan-hydrobox/3_katalog_PUZ-1.pdf',
     '/pdf_templates/mitsubishi/zubadan-hydrobox/3_katalog_PUZ-2.pdf',
     '/pdf_templates/mitsubishi/zubadan-hydrobox/4_opcje.pdf',
+      groupPage,
+    groupPage2,
     commonContactPage,
   ],
   'Mitsubishi-hydrobox-PUZ-1F': [
@@ -73,6 +86,8 @@ export const pdfTemplateSets = {
     '/pdf_templates/mitsubishi/zubadan-hydrobox-1f/3_katalog_PUZ-1.pdf',
     '/pdf_templates/mitsubishi/zubadan-hydrobox-1f/3_katalog_PUZ-2.pdf',
     '/pdf_templates/mitsubishi/zubadan-hydrobox-1f/4_opcje.pdf',
+      groupPage,
+    groupPage2,
     commonContactPage,
   ],
   'Mitsubishi-ecoinverter': [
@@ -83,6 +98,8 @@ export const pdfTemplateSets = {
     '/pdf_templates/mitsubishi/ecoinverter-cylinder/3.3_ecoinverter_wewnetrzna.pdf',
     '/pdf_templates/mitsubishi/ecoinverter-cylinder/3.4_ecoinverter_wewnetrzna.pdf',
     '/pdf_templates/mitsubishi/ecoinverter-cylinder/4_opcje.pdf',
+      groupPage,
+    groupPage2,
     commonContactPage,
   ],
   'Mitsubishi-ecoinverter-hydrobox': [
@@ -94,6 +111,8 @@ export const pdfTemplateSets = {
     '/pdf_templates/mitsubishi/ecoinverter-hydrobox/3.1_ecoinverter_zewnetrzna.pdf',
     '/pdf_templates/mitsubishi/ecoinverter-hydrobox/3.2_ecoinverter_zewnetrzna.pdf',
     '/pdf_templates/mitsubishi/ecoinverter-hydrobox/4_opcje.pdf',
+      groupPage,
+    groupPage2,
     commonContactPage,
   ],
   'Mitsubishi-hp': [
@@ -101,6 +120,8 @@ export const pdfTemplateSets = {
     '/pdf_templates/mitsubishi/hyper-heating/2_opcje_dodatkowe.pdf',
     '/pdf_templates/mitsubishi/hyper-heating/3_katalog.pdf',
     '/pdf_templates/mitsubishi/hyper-heating/4_opcje.pdf',
+      groupPage,
+    groupPage2,
     commonContactPage,
   ],
 
@@ -109,12 +130,16 @@ export const pdfTemplateSets = {
     '/pdf_templates/mitsubishi-klima/ay/1_okladka.pdf',
     '/pdf_templates/mitsubishi-klima/ay/3_katalog.pdf',
     '/pdf_templates/mitsubishi-klima/ay/4_opcje.pdf',
+      groupPage,
+    groupPage2,
     commonContactPage,
   ],
   'MITSUBISHI HR': [
     '/pdf_templates/mitsubishi-klima/hr/1_okladka.pdf',
     '/pdf_templates/mitsubishi-klima/hr/3_katalog.pdf',
     '/pdf_templates/mitsubishi-klima/hr/4_opcje.pdf',
+      groupPage,
+    groupPage2,
     commonContactPage,
   ],
   
@@ -123,12 +148,16 @@ export const pdfTemplateSets = {
     '/pdf_templates/toshiba/3-fazowe/1_okladka.pdf',
     '/pdf_templates/toshiba/3-fazowe/3_katalog.pdf',
     '/pdf_templates/toshiba/3-fazowe/4_opcje.pdf',
+      groupPage,
+    groupPage2,
     commonContactPage,
   ],
   'Toshiba 1F': [
     '/pdf_templates/toshiba/1-fazowe/1_okladka.pdf',
     '/pdf_templates/toshiba/1-fazowe/3_katalog.pdf',
     '/pdf_templates/toshiba/1-fazowe/4_opcje.pdf',
+      groupPage,
+    groupPage2,
     commonContactPage,
   ],
 
@@ -137,12 +166,16 @@ export const pdfTemplateSets = {
     '/pdf_templates/atlantic/extensa-ai-duo/1_okladka.pdf',
     '/pdf_templates/atlantic/extensa-ai-duo/3_katalog.pdf',
     '/pdf_templates/atlantic/extensa-ai-duo/4_opcje.pdf',
+      groupPage,
+    groupPage2,
     commonContactPage,
   ],
   'ATLANTIC-HYDROBOX': [ // Atlantic Excelia AI Hydrobox
     '/pdf_templates/atlantic/excelia-ai-hydrobox/1_okladka.pdf',
     '/pdf_templates/atlantic/excelia-ai-hydrobox/3_katalog.pdf',
     '/pdf_templates/atlantic/excelia-ai-hydrobox/4_opcje.pdf',
+      groupPage,
+    groupPage2,
     commonContactPage,
   ],
   'ATLANTIC-M-DUO': [ // Atlantic M-Duo
@@ -151,7 +184,8 @@ export const pdfTemplateSets = {
     '/pdf_templates/atlantic/m-duo/3.1_atlantic_m_duo.pdf',
     '/pdf_templates/atlantic/m-duo/3.2_atlantic_m_duo.pdf',
     '/pdf_templates/atlantic/m-duo/4_opcje.pdf',
-
+  groupPage,
+    groupPage2,
     commonContactPage,
   ],
 
@@ -164,30 +198,20 @@ export const pdfTemplateSets = {
 
     '/pdf_templates/viessmann/4_opcje.pdf',
     '/pdf_templates/viessmann/3_katalog.pdf',
+      groupPage,
+    groupPage2,
     commonContactPage,
   ],
 
-  // --- GALMET ---
-  'GALMET-PRIMA': [
-    '/pdf_templates/galmet/prima/1_okladka.pdf',
-    '/pdf_templates/galmet/prima/3_katalog.pdf',
-    '/pdf_templates/galmet/prima/4_opcje.pdf',
-    commonContactPage,
-  ],
 
-  // --- HEIZTECHNIK ---
-  'HEIZTECHNIK': [
-    '/pdf_templates/heiztechnik/calla-verde-comfort/1_okladka.pdf',
-    '/pdf_templates/heiztechnik/calla-verde-comfort/3_katalog.pdf',
-    '/pdf_templates/heiztechnik/calla-verde-comfort/4_opcje.pdf',
-    commonContactPage,
-  ],
 
   // --- NIBE ---
   'NIBE12': [ // NIBE F1245 (Gruntowa)
     '/pdf_templates/nibe/f1245-gruntowa/1_okladka.pdf',
     '/pdf_templates/nibe/f1245-gruntowa/3_katalog.pdf',
     '/pdf_templates/nibe/f1245-gruntowa/4_opcje.pdf',
+      groupPage,
+    groupPage2,
     commonContactPage,
   ],
 
@@ -199,42 +223,32 @@ export const pdfTemplateSets = {
      '/pdf_templates/kotly-pellet/lazar/lazar.ds3.pdf',
     '/pdf_templates/kotly-pellet/lazar/4_opcje.pdf',
         '/pdf_templates/kotly-pellet/lazar/3_katalog.pdf',
-    commonContactPage,
-  ],
-  'KAMEN-KOMPAKT-LUX': [
-    '/pdf_templates/kotly-pellet/kamen-kompakt-lux/1_okladka.pdf',
-    '/pdf_templates/kotly-pellet/kamen-kompakt-lux/3_katalog.pdf',
-    '/pdf_templates/kotly-pellet/kamen-kompakt-lux/4_opcje.pdf',
-    commonContactPage,
-  ],
-  'KAMEN-PELLET-KOMPAKT': [
-    '/pdf_templates/kotly-pellet/kamen-pellet-kompakt/1_okladka.pdf',
-    '/pdf_templates/kotly-pellet/kamen-pellet-kompakt/3_katalog.pdf',
-    '/pdf_templates/kotly-pellet/kamen-pellet-kompakt/4_opcje.pdf',
-    commonContactPage,
-  ],
-  'KAMEN-DRX': [
-    '/pdf_templates/kotly-pellet/kamen-drx/1_okladka.pdf',
-    '/pdf_templates/kotly-pellet/kamen-drx/3_katalog.pdf',
-    '/pdf_templates/kotly-pellet/kamen-drx/4_opcje.pdf',
+          groupPage,
+    groupPage2,
     commonContactPage,
   ],
   'Kotlospaw Slimko Plus': [
     '/pdf_templates/kotly-pellet/kotlospaw-slimko-plus/1_okladka.pdf',
     '/pdf_templates/kotly-pellet/kotlospaw-slimko-plus/3_katalog.pdf',
     '/pdf_templates/kotly-pellet/kotlospaw-slimko-plus/4_opcje.pdf',
+      groupPage,
+    groupPage2,
     commonContactPage,
   ],
   'Kotlospaw slimko plus niski': [
     '/pdf_templates/kotly-pellet/kotlospaw-slimko-plus-niski/1_okladka.pdf',
     '/pdf_templates/kotly-pellet/kotlospaw-slimko-plus-niski/3_katalog.pdf',
     '/pdf_templates/kotly-pellet/kotlospaw-slimko-plus-niski/4_opcje.pdf',
+      groupPage,
+    groupPage2,
     commonContactPage,
   ],
   'QMPELL': [
     '/pdf_templates/kotly-pellet/qmpell-evo/1_okladka.pdf',
     '/pdf_templates/kotly-pellet/qmpell-evo/3_katalog.pdf',
     '/pdf_templates/kotly-pellet/qmpell-evo/4_opcje.pdf',
+      groupPage,
+    groupPage2,
     commonContactPage,
   ],
 
@@ -243,40 +257,29 @@ export const pdfTemplateSets = {
     '/pdf_templates/kotly-hybrydowe/kotlospaw-drewko-hybrid/1_okladka.pdf',
     '/pdf_templates/kotly-hybrydowe/kotlospaw-drewko-hybrid/3_katalog.pdf',
     '/pdf_templates/kotly-hybrydowe/kotlospaw-drewko-hybrid/4_opcje.pdf',
+      groupPage,
+    groupPage2,
     commonContactPage,
   ],
   'Kotlospaw drewko plus palnik easy ROT': [
     '/pdf_templates/kotly-hybrydowe/kotlospaw-drewko-plus-easy-rot/1_okladka.pdf',
     '/pdf_templates/kotly-hybrydowe/kotlospaw-drewko-plus-easy-rot/3_katalog.pdf',
     '/pdf_templates/kotly-hybrydowe/kotlospaw-drewko-plus-easy-rot/4_opcje.pdf',
-    commonContactPage,
-  ],
-  'Kotlospaw drewko plus palnik REVO': [
-    '/pdf_templates/kotly-hybrydowe/kotlospaw-drewko-plus-revo/1_okladka.pdf',
-    '/pdf_templates/kotly-hybrydowe/kotlospaw-drewko-plus-revo/3_katalog.pdf',
-    '/pdf_templates/kotly-hybrydowe/kotlospaw-drewko-plus-revo/4_opcje.pdf',
+      groupPage,
+    groupPage2,
     commonContactPage,
   ],
   
-  // --- KLIMATYZATORY INNE ---
-  'ROTENSO': [
-    '/pdf_templates/klimatyzatory-inne/rotenso/1_okladka.pdf',
-    '/pdf_templates/klimatyzatory-inne/rotenso/3_katalog.pdf',
-    '/pdf_templates/klimatyzatory-inne/rotenso/4_opcje.pdf',
-    commonContactPage,
-  ],
+  
   'KAISAI': [
     '/pdf_templates/klimatyzatory-inne/kaisai/1_okladka.pdf',
     '/pdf_templates/klimatyzatory-inne/kaisai/3_katalog.pdf',
     '/pdf_templates/klimatyzatory-inne/kaisai/4_opcje.pdf',
+      groupPage,
+    groupPage2,
     commonContactPage,
   ],
-  'MIDEA': [
-    '/pdf_templates/klimatyzatory-inne/midea/1_okladka.pdf',
-    '/pdf_templates/klimatyzatory-inne/midea/3_katalog.pdf',
-    '/pdf_templates/klimatyzatory-inne/midea/4_opcje.pdf',
-    commonContactPage,
-  ],
+
 };
 
 export function getTemplatePathsForDevice(deviceType) {
