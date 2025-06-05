@@ -204,8 +204,8 @@ export async function generateOfferPDF(
         if (!res.ok) throw new Error(`Nie udało się wczytać pliku szablonu PDF: ${path}.`);
         return res.arrayBuffer();
       })),
-      fetch('/fonts/OpenSans-Regular.ttf').then(res => {
-        if (!res.ok) throw new Error(`Nie udało się wczytać czcionki OpenSans-Regular.ttf.`);
+      fetch('/fonts/OpenSans-Bold.ttf').then(res => {
+        if (!res.ok) throw new Error(`Nie udało się wczytać czcionki OpenSans-Bold.ttf.`);
         return res.arrayBuffer();
       })
       // Aby dodać czcionkę ExtraBold (800):
