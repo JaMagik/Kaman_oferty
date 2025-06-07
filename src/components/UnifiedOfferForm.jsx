@@ -13,6 +13,7 @@ import { qmpellBaseTables } from "../data/tables/qmpellEvoTables"; // <-- POPRAW
 import { kotlospawDrewkoPlusBaseTables } from "../data/tables/kotlospawDrewkoPlusTable"; // <-- POPRAWIONY IMPORT
 import { kotlospawDrewkoHybridBaseTables } from "../data/tables/kotlospawDrewkoHybridTable"; // <-- POPRAWIONY IMPORT
 import {toshiba1fBaseTables} from '../data/tables/toshiba1fTable';
+import {kaisaiHydroboxBaseTables} from '../data/tables/kaisaiTable';
 
 
 
@@ -31,6 +32,7 @@ const allDevicesData = {
   ...kotlospawDrewkoPlusBaseTables, // <-- POPRAWIONY IMPORT
   ...kotlospawDrewkoHybridBaseTables, // <-- POPRAWIONY IMPORT
   ...toshiba1fBaseTables, // <-- POPRAWIONY IMPORT
+  ...kaisaiHydroboxBaseTables, // <-- POPRAWIONY IMPORT
 };
 
 // Klucz API Trello (ten jest publiczny i używany do inicjalizacji OAuth)
@@ -258,6 +260,9 @@ export default function UnifiedOfferForm() {
 </optgroup>
  <optgroup label="Viessmann (Pompy Ciepła)">
           <option value="VIESSMANN">Viessmann Vitocal 150-A</option>
+        </optgroup>
+        <optgroup label="Kaisai ( Pompy Ciepła)">
+          <option value="Kaisai">Kaisai</option>
         </optgroup>
 
         <optgroup label="Mitsubishi (Klimatyzatory)">

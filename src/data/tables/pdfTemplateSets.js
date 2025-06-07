@@ -309,9 +309,12 @@ export const pdfTemplateSets = {
   ],
   
   
-  'KAISAI': [
-    '/pdf_templates/klimatyzatory-inne/kaisai/1_okladka.pdf',
-    '/pdf_templates/klimatyzatory-inne/kaisai/3_katalog.pdf',
+  'Kaisai': [
+    '/pdf_templates/kaisai/1_okladka.pdf',
+    opcjeDodatkowePompy,
+    '/pdf_templates/kaisai/karta_produktu_kaisai_1.pdf',
+    '/pdf_templates/kaisai/karta_produktu_kaisai_2.pdf',
+
      oNas,
       groupPage,
     groupPage2,

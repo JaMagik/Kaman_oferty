@@ -10,6 +10,8 @@ import { kotlospawSlimkoPlusNiskiBaseTables } from './kotlospawSlimkoPlusNiskiTa
 import { qmpellBaseTables } from "./qmpellEvoTables"; 
 import { kotlospawDrewkoPlusBaseTables } from "./kotlospawDrewkoPlusTable"; // <-- POPRAWIONY IMPORT
 import { kotlospawDrewkoHybridBaseTables } from "./kotlospawDrewkoHybridTable"; // <-- POPRAWIONY IMPORT
+import {kaisaiHydroboxBaseTables} from './kaisaiTable';
+
 
 
 
@@ -63,7 +65,8 @@ export function getTableData(deviceType, model, tankCapacity, bufferCapacity) {
   const allDeviceTables = {
     ...mitsubishiBaseTables, ...atlanticBaseTables, ...lazarBaseTables,
     ...viessmannBaseTables, ...kotlospawSlimkoPlusBaseTables,...kotlospawSlimkoPlusNiskiBaseTables,
-    ...qmpellBaseTables, ...kotlospawDrewkoPlusBaseTables, ...kotlospawDrewkoHybridBaseTables,...toshiba1fBaseTables
+    ...qmpellBaseTables, ...kotlospawDrewkoPlusBaseTables, ...kotlospawDrewkoHybridBaseTables,...toshiba1fBaseTables,
+    ...kaisaiHydroboxBaseTables,
   };
 
   if (allDeviceTables[deviceTypeKey] && allDeviceTables[deviceTypeKey][model]) {
@@ -105,7 +108,7 @@ export function getTableData(deviceType, model, tankCapacity, bufferCapacity) {
   let insertAfterIndex = 0;
   if (deviceTypeKey.startsWith('Mitsubishi-') && !deviceTypeKey.includes('AY') && !deviceTypeKey.includes('HR')) {
     insertAfterIndex = 1;
-  } else if (['ATLANTIC-M-DUO', 'LAZAR','Toshiba 1F', 'VIESSMANN', 'Kotlospaw Slimko Plus', 'Kotlospaw Slimko Plus Niski', 'QMPELL', 'Kotlospaw Drewko Plus', 'Kotlospaw Drewko Hybrid',].includes(deviceTypeKey)) {
+  } else if (['ATLANTIC-M-DUO', 'LAZAR','Kaisai','ATLANTIC-HYDROBOX','Toshiba 1F', 'VIESSMANN', 'Kotlospaw Slimko Plus', 'Kotlospaw Slimko Plus Niski', 'QMPELL', 'Kotlospaw Drewko Plus', 'Kotlospaw Drewko Hybrid',].includes(deviceTypeKey)) {
     insertAfterIndex = 0;
   } else if (['Toshiba 3F', 'Toshiba 1F'].includes(deviceTypeKey)) {
     insertAfterIndex = 1;
