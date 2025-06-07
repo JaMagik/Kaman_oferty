@@ -8,13 +8,29 @@ import { atlanticBaseTables } from "../data/tables/atlanticTables";
 import { lazarBaseTables } from "../data/tables/lazarTables";
 import { viessmannBaseTables } from "../data/tables/viessmannTables";
 import { kotlospawSlimkoPlusBaseTables } from "../data/tables/kotlospawSlimkoPlusTable"; // <-- POPRAWIONY IMPORT
+import { kotlospawSlimkoPlusNiskiBaseTables } from "../data/tables/kotlospawSlimkoPlusNiskiTable"; // <-- POPRAWIONY IMPORT
+import { qmpellBaseTables } from "../data/tables/qmpellEvoTables"; // <-- POPRAWIONY IMPORT
+import { kotlospawDrewkoPlusBaseTables } from "../data/tables/kotlospawDrewkoPlusTable"; // <-- POPRAWIONY IMPORT
+import { kotlospawDrewkoHybridBaseTables } from "../data/tables/kotlospawDrewkoHybridTable"; // <-- POPRAWIONY IMPORT
+import {toshiba1fBaseTables} from '../data/tables/toshiba1fTable';
+
+
+
+
+
+
 
 const allDevicesData = {
   ...mitsubishiBaseTables,
   ...atlanticBaseTables,
   ...lazarBaseTables,
   ...viessmannBaseTables,
-  ...kotlospawSlimkoPlusBaseTables
+  ...kotlospawSlimkoPlusBaseTables,
+  ...kotlospawSlimkoPlusNiskiBaseTables,
+  ...qmpellBaseTables,
+  ...kotlospawDrewkoPlusBaseTables, // <-- POPRAWIONY IMPORT
+  ...kotlospawDrewkoHybridBaseTables, // <-- POPRAWIONY IMPORT
+  ...toshiba1fBaseTables, // <-- POPRAWIONY IMPORT
 };
 
 // Klucz API Trello (ten jest publiczny i używany do inicjalizacji OAuth)
@@ -213,39 +229,43 @@ export default function UnifiedOfferForm() {
           <option value="Mitsubishi-cylinder">Mitsubishi Cylinder (Standard PUD)</option>
           <option value="Mitsubishi-cylinder-PUZ">Mitsubishi Cylinder (Zubadan PUZ)</option>
           <option value="Mitsubishi-cylinder-PUZ-1F">Mitsubishi Cylinder (Zubadan PUZ 1-faz.)</option>
-          <option value="Mitsubishi-hydrobox">Mitsubishi Hydrobox (Standard PUD)</option>
+
           <option value="Mitsubishi-hydrobox-PUZ">Mitsubishi Hydrobox (Zubadan PUZ)</option>
           <option value="Mitsubishi-hydrobox-PUZ-1F">Mitsubishi Hydrobox (Zubadan PUZ 1-faz.)</option>
           <option value="Mitsubishi-ecoinverter">Mitsubishi Ecoinverter (Cylinder)</option>
           <option value="Mitsubishi-ecoinverter-hydrobox">Mitsubishi Ecoinverter (Hydrobox)</option>
-          <option value="Mitsubishi-hp">Mitsubishi Hyper Heating</option>
         </optgroup>
-        <optgroup label="Mitsubishi (Klimatyzatory)">
-          <option value="MITSUBISHI AY">Klimatyzator Mitsubishi AY</option>
-          <option value="MITSUBISHI HR">Klimatyzator Mitsubishi HR</option>
-        </optgroup>
-        <optgroup label="Toshiba">
-          <option value="Toshiba 3F">Toshiba (3-fazowe)</option>
+        <optgroup label="Toshiba ( Pompy Ciepła)">
           <option value="Toshiba 1F">Toshiba (1-fazowe)</option>
         </optgroup>
         <optgroup label="Atlantic (Pompy Ciepła)">
           <option value="ATLANTIC-M-DUO">Atlantic S-TRI hydrobox</option>
           <option value="ATLANTIC-S">Atlantic S-TRI-Duo cylinder</option>
         </optgroup>
-        <optgroup label="Kotły na Pellet">
-          <option value="LAZAR">Lazar</option>
-          {/* Możesz dodać tutaj inne typy kotłów, jeśli zostaną zdefiniowane w pelletBoilerDeviceTypes */}
-          <option value="QMPELL">QMPell EVO</option>
-          <option value="Kotlospaw Slimko Plus">Kotlospaw Slimko Plus</option>
-          <option value="Kotlospaw slimko plus niski">Kotlospaw slimko plus niski</option>
-        </optgroup>
-        <optgroup label="Kotły Hybrydowe (traktowane jak na pellet dla bufora)">
-             <option value="DREWKO-HYBRID">Kotłospaw Drewko Hybrid</option>
-             <option value="Kotlospaw drewko plus palnik easy ROT">Kotłospaw Drewko Plus + Palnik Easy Rot</option>
-        </optgroup>
-        <optgroup label="Viessmann (Pompy Ciepła)">
+     <optgroup label="Kotły na Pellet - Lazar">
+  <option value="LAZAR">Lazar</option>
+</optgroup>
+<optgroup label="Kotły na Pellet - QMPell">
+  <option value="QMPELL">QMPell EVO</option>
+</optgroup>
+<optgroup label="Kotły Kotłospaw">
+  <option value="Kotlospaw Slimko Plus">Kotlospaw Slimko Plus</option>
+  <option value="Kotlospaw slimko plus niski">Kotlospaw Slimko Plus niski</option>
+    <option value="Kotlospaw drewko plus">Kotlospaw Drewko Plus</option>
+        <option value="Kotlospaw drewko hybrid">Kotlospaw Drewko Hybrid</option>
+
+
+</optgroup>
+ <optgroup label="Viessmann (Pompy Ciepła)">
           <option value="VIESSMANN">Viessmann Vitocal 150-A</option>
         </optgroup>
+
+        <optgroup label="Mitsubishi (Klimatyzatory)">
+          <option value="MITSUBISHI AY">Klimatyzator Mitsubishi AY</option>
+          <option value="MITSUBISHI HR">Klimatyzator Mitsubishi HR</option>
+        </optgroup>
+       
+        
       </select>
 
       <label htmlFor="model">Model (Moc):</label>
@@ -263,7 +283,8 @@ export default function UnifiedOfferForm() {
 
       <label htmlFor="tank">Pojemność zasobnika CWU:</label>
       <select id="tank" value={tank} onChange={(e) => setTank(e.target.value)}>
-        <option value="none">Brak zasobnika CWU / Zintegrowany</option>
+        <option value="none">Zasobnik CWU nie wymagany/ Zintegrowany</option>
+        <option value="integrated">Zasobnik CWU zintegrowany</option>
         <option value="200L">200 L</option>
         <option value="300L">300 L</option>
         <option value="400L">400 L</option>

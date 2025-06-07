@@ -1,6 +1,6 @@
 // --- Kotłospaw Slimko Plus 12 kW ---
 const slimkoPlus_12kW_base = [
-  ['1', 'Kocioł na pellet – Kotłospaw Slimko Plus 12 kW', 'szt.', '1', 'Automatyczny kocioł 5 klasy z podajnikiem, zasobnikiem na pellet 150 litrów i palnikiem z funkcją automatycznego czyszczenia.'],
+  ['1', 'Kocioł na pellet – Kotłospaw Slimko Plus z podajnikiem bocznym 12 kW', 'szt.', '1', 'Automatyczny kocioł 5 klasy z podajnikiem, zasobnikiem na pellet 150 litrów i palnikiem z funkcją automatycznego czyszczenia.'],
   ['2', 'Grupa bezpieczeństwa CWU', 'kpl.', '1', 'Zawór bezpieczeństwa, zawór zwrotny i manometr zabezpieczający zasobnik ciepłej wody.'],
   ['3', 'Grupa bezpieczeństwa C.O.', 'kpl.', '1', 'Komplet: zawór bezpieczeństwa, manometr i odpowietrznik automatyczny dla ochrony obiegu grzewczego.'],
   ['4', 'Elementy podłączeniowe hydrauliczne i elektryczne', 'kpl.', '1', 'Komplet: zawory, złączki, kształtki, filtry, odpowietrzniki, przewody i zabezpieczenia do wykonania przyłącza.'],
@@ -17,35 +17,35 @@ const slimkoPlus_12kW_base = [
 // --- Kotłospaw Slimko Plus 16 kW ---
 const slimkoPlus_16kW_base = slimkoPlus_12kW_base.map(row => 
   row[0] === '1'
-    ? ['1', 'Kocioł na pellet – Kotłospaw Slimko Plus 16 kW', 'szt.', '1', 'Automatyczny kocioł 5 klasy z podajnikiem, zasobnikiem na pellet 150 litrów i palnikiem z funkcją automatycznego czyszczenia.']
+    ? ['1', 'Kocioł na pellet – Kotłospaw Slimko Plus 16 kW z podajnikiem bocznym', 'szt.', '1', 'Automatyczny kocioł 5 klasy z podajnikiem, zasobnikiem na pellet 150 litrów i palnikiem z funkcją automatycznego czyszczenia.']
     : [...row]
 );
 
 // --- Kotłospaw Slimko Plus 20 kW ---
 const slimkoPlus_20kW_base = slimkoPlus_12kW_base.map(row => 
   row[0] === '1'
-    ? ['1', 'Kocioł na pellet – Kotłospaw Slimko Plus 20 kW', 'szt.', '1', 'Automatyczny kocioł 5 klasy z podajnikiem, zasobnikiem na pellet 150 litrów i palnikiem z funkcją automatycznego czyszczenia.']
+    ? ['1', 'Kocioł na pellet – Kotłospaw Slimko Plus 20 kW z podajnikiem bocznym', 'szt.', '1', 'Automatyczny kocioł 5 klasy z podajnikiem, zasobnikiem na pellet 150 litrów i palnikiem z funkcją automatycznego czyszczenia.']
     : [...row]
 );
 
 // --- Kotłospaw Slimko Plus 24 kW ---
 const slimkoPlus_24kW_base = slimkoPlus_12kW_base.map(row => 
   row[0] === '1'
-    ? ['1', 'Kocioł na pellet – Kotłospaw Slimko Plus 24 kW', 'szt.', '1', 'Automatyczny kocioł 5 klasy z podajnikiem, zasobnikiem na pellet 150 litrów i palnikiem z funkcją automatycznego czyszczenia.']
+    ? ['1', 'Kocioł na pellet – Kotłospaw Slimko Plus 24 kW z podajnikiem bocznym', 'szt.', '1', 'Automatyczny kocioł 5 klasy z podajnikiem, zasobnikiem na pellet 150 litrów i palnikiem z funkcją automatycznego czyszczenia.']
     : [...row]
 );
 
 // --- Kotłospaw Slimko Plus 30 kW ---
 const slimkoPlus_30kW_base = slimkoPlus_12kW_base.map(row => 
   row[0] === '1'
-    ? ['1', 'Kocioł na pellet – Kotłospaw Slimko Plus 30 kW', 'szt.', '1', 'Automatyczny kocioł 5 klasy z podajnikiem, zasobnikiem na pellet 150 litrów i palnikiem z funkcją automatycznego czyszczenia.']
+    ? ['1', 'Kocioł na pellet – Kotłospaw Slimko Plus 30 kW z podajnikiem bocznym', 'szt.', '1', 'Automatyczny kocioł 5 klasy z podajnikiem, zasobnikiem na pellet 150 litrów i palnikiem z funkcją automatycznego czyszczenia.']
     : [...row]
 );
 
 
-export const kotlospawSlimkoPlusBaseTables = {
+export const kotlospawSlimkoPlusNiskiBaseTables = {
   // ... (ewentualne inne wpisy dla Atlantic, np. 'ATLANTIC' dla Extensa AI Duo, jeśli nadal potrzebne)
-  'Kotlospaw Slimko Plus': { // Klucz odpowiadający 'deviceType' dla M-Duo
+  'Kotlospaw slimko plus niski': { // Klucz odpowiadający 'deviceType' dla M-Duo
      '12 kW': slimkoPlus_12kW_base,
 '16 kW': slimkoPlus_16kW_base,
 '20 kW': slimkoPlus_20kW_base,

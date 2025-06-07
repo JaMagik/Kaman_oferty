@@ -1,134 +1,138 @@
 // ścieżka: src/data/tables/index.js
 
 import { mitsubishiBaseTables } from './mitsubishiTables';
-import toshiba3FTable from './toshiba-3f'; // Załóżmy, że to na razie pojedyncza tabela
-// import { toshiba1FTable } from './toshiba-1f'; // Jeśli masz osobną dla 1F, odkomentuj i stwórz plik
+import {toshiba1fBaseTables} from './toshiba1fTable';
 import { atlanticBaseTables } from './atlanticTables';
 import { lazarBaseTables } from './lazarTables';
-import { viessmannBaseTables } from './viessmannTables'; // Poprawnie zaimportowane
-import { kotlospawSlimkoPlusBaseTables } from './kotlospawSlimkoPlusTable'; // Poprawnie zaimportowane
+import { viessmannBaseTables } from './viessmannTables';
+import { kotlospawSlimkoPlusBaseTables } from './kotlospawSlimkoPlusTable';
+import { kotlospawSlimkoPlusNiskiBaseTables } from './kotlospawSlimkoPlusNiskiTable';
+import { qmpellBaseTables } from "./qmpellEvoTables"; 
+import { kotlospawDrewkoPlusBaseTables } from "./kotlospawDrewkoPlusTable"; // <-- POPRAWIONY IMPORT
+import { kotlospawDrewkoHybridBaseTables } from "./kotlospawDrewkoHybridTable"; // <-- POPRAWIONY IMPORT
 
-// Funkcje pomocnicze do opisu zasobnika i bufora (bez zmian)
-function getTankDescription(tankCapacity) {
-  if (!tankCapacity || tankCapacity === 'none' || tankCapacity === 'Brak zasobnika CWU' || tankCapacity === 'Brak zasobnika CWU / Zintegrowany') {
-    return 'Brak zasobnika ciepłej wody użytkowej';
+
+
+
+
+
+// --- Funkcje generujące wiersze (pozostają bez zmian) ---
+
+function getTankRowData(tankCapacity) {
+  if (!tankCapacity || ['none', 'integrated', 'Brak zasobnika CWU', 'Brak zasobnika CWU / Zintegrowany'].includes(tankCapacity)) {
+    return null;
   }
-  const cleanCapacity = String(tankCapacity).replace('-L', 'L').replace(' STAL NIERDZEWNA', '');
-  return `ZASOBNIK CIEPŁEJ WODY UŻYTKOWEJ ${cleanCapacity} ZE STALI NIERDZEWNEJ`;
+  const tankDescriptions = {
+    '200L': { name: 'Zasobnik CWU 200L', description: 'Emaliowany zasobnik ciepłej wody użytkowej o poj. 200L wyposażony w wysokiej klasy izolację termiczną.' },
+    '300L': { name: 'Zasobnik CWU 300L', description: 'Emaliowany zasobnik ciepłej wody użytkowej o poj. 300L wyposażony w wysokiej klasy izolację termiczną.' },
+    '400L': { name: 'Zasobnik CWU 400L', description: 'Emaliowany zasobnik ciepłej wody użytkowej o poj. 400L wyposażony w wysokiej klasy izolację termiczną' },
+    '200 L STAL NIERDZEWNA': { name: 'Zasobnik CWU 200L (Stal Nierdzewna)', description: 'Zasobnik ciepłej wody użytkowej ze stali nierdzewnej o poj. 200L. Charakteryzuje się najwyższą trwałością i odpornością na korozję.' },
+    '250 L STAL NIERDZEWNA': { name: 'Zasobnik CWU 250L (Stal Nierdzewna)', description: 'Zasobnik ciepłej wody użytkowej ze stali nierdzewnej o poj. 250L. Gwarancja najwyższej jakości i trwałości.' },
+    '300 L STAL NIERDZEWNA': { name: 'Zasobnik CWU 300L (Stal Nierdzewna)', description: 'Zasobnik ciepłej wody użytkowej ze stali nierdzewnej o poj. 300L. Gwarancja najwyższej jakości i trwałości, idealny do nowoczesnych systemów grzewczych.' },
+  };
+  const data = tankDescriptions[tankCapacity];
+  if (!data) return null;
+  return [' ', data.name, 'szt.', '1', data.description];
 }
 
-function getBufferDescription(bufferCapacity) {
+function getBufferRowData(bufferCapacity) {
   if (!bufferCapacity || bufferCapacity === 'none' || bufferCapacity === 'Brak bufora') {
-    return 'Brak bufora';
+    return null;
   }
-  if (bufferCapacity === 'sprzeglo' || bufferCapacity === 'Sprzęgło hydrauliczne z osprzętem') {
-    return 'Sprzęgło hydrauliczne z osprzętem';
-  }
-  const cleanCapacity = String(bufferCapacity).replace('-L', 'L');
-  return `Bufor (sprzęgło hydrauliczne) ${cleanCapacity} + osprzęt`;
+  const bufferDescriptions = {
+    'sprzeglo': { name: 'Sprzęgło hydrauliczne z osprzętem', description: 'Kompaktowe sprzęgło hydrauliczne zapewniające separację obiegu źródła ciepła od obiegów grzewczych, stabilizując pracę i ciśnienie w całej instalacji.' },
+    '40L': { name: 'Bufor 40 L z osprzętem', description: 'Kompaktowy zbiornik buforowy 40L, który zwiększa zład wody w instalacji, optymalizuje pracę pompy ciepła i zapewnia jej dłuższą żywotność. Komplet z niezbędnym osprzętem.' },
+    '60L': { name: 'Bufor 60 L z osprzętem', description: 'Zbiornik buforowy 60L, zwiększający zład wody w instalacji. Optymalizuje pracę pompy ciepła, redukując liczbę jej uruchomień. Komplet z niezbędnym osprzętem.' },
+    '80L': { name: 'Bufor 80 L z osprzętem', description: 'Zbiornik buforowy 80L, zwiększający zład wody w instalacji. Optymalizuje pracę pompy ciepła, redukując liczbę jej uruchomień. Komplet z niezbędnym osprzętem.' },
+    '100L': { name: 'Bufor 100 L z osprzętem', description: 'Zbiornik buforowy 100L, który magazynuje energię cieplną, zwiększa zład wody, optymalizuje pracę źródła ciepła i zapewnia jego dłuższą żywotność. Komplet z niezbędnym osprzętem.' },
+    '120L': { name: 'Bufor 120 L z osprzętem', description: 'Zbiornik buforowy 120L, który zwiększa zład wody w instalacji, optymalizuje pracę pompy ciepła/kotła i zapewnia dłuższą żywotność urządzenia. Komplet z niezbędnym osprzętem.' },
+    '140L': { name: 'Bufor 140 L z osprzętem', description: 'Zbiornik buforowy 140L, który zwiększa zład wody w instalacji, optymalizuje pracę pompy ciepła/kotła i zapewnia dłuższą żywotność urządzenia. Komplet z niezbędnym osprzętem.' },
+    '200L': { name: 'Bufor 200 L z osprzętem', description: 'Zbiornik buforowy 200L, zalecany dla bardziej rozbudowanych instalacji, magazynuje nadmiar ciepła, zapewniając stabilną pracę i oszczędności.' },
+  };
+  const bufferKey = bufferCapacity.includes('Sprzęgło') ? 'sprzeglo' : bufferCapacity;
+  const data = bufferDescriptions[bufferKey];
+  if (!data) return null;
+  return [' ', data.name, 'szt.', '1', data.description];
 }
+
 
 export function getTableData(deviceType, model, tankCapacity, bufferCapacity) {
-  console.log('[getTableData] OTRZYMANO PARAMETRY:', { deviceType, model, tankCapacity, bufferCapacity });
-
   let baseTableData = [];
   const deviceTypeKey = deviceType;
 
-  // Agregacja wszystkich tabel bazowych
   const allDeviceTables = {
-    ...mitsubishiBaseTables,
-    ...atlanticBaseTables,
-    ...lazarBaseTables,
-    ...viessmannBaseTables,
-    ...kotlospawSlimkoPlusBaseTables,
-    // Przykładowe opakowanie dla Toshiba, jeśli chcesz ujednolicić dostęp
-    // (wymagałoby to zmiany sposobu odwoływania się w formularzu lub tutaj)
-    // 'Toshiba 3F': { 'default': toshiba3FTable },
-    // 'Toshiba 1F': { 'default': toshiba1FTable }, // Jeśli masz osobną tabelę
+    ...mitsubishiBaseTables, ...atlanticBaseTables, ...lazarBaseTables,
+    ...viessmannBaseTables, ...kotlospawSlimkoPlusBaseTables,...kotlospawSlimkoPlusNiskiBaseTables,
+    ...qmpellBaseTables, ...kotlospawDrewkoPlusBaseTables, ...kotlospawDrewkoHybridBaseTables,...toshiba1fBaseTables
   };
 
-  // Pobieranie danych bazowych
   if (allDeviceTables[deviceTypeKey] && allDeviceTables[deviceTypeKey][model]) {
     baseTableData = JSON.parse(JSON.stringify(allDeviceTables[deviceTypeKey][model]));
-    console.log(`[getTableData] Dla ${deviceTypeKey} (${model}), ZNALEZIONO tabelę bazową.`);
-  } else if (deviceTypeKey === 'Toshiba 3F' || deviceTypeKey === 'Toshiba 1F') {
-    // Zachowujemy specjalną obsługę dla Toshiba, jeśli struktura danych nie została zmieniona
+  } else if (['Toshiba 3F', 'Toshiba 1F'].includes(deviceTypeKey)) {
     baseTableData = JSON.parse(JSON.stringify(toshiba3FTable));
-    console.log(`[getTableData] Dla Toshiba (${deviceTypeKey}), załadowano domyślną toshiba3FTable.`);
-  } else {
-    console.warn(`[getTableData] Dla ${deviceTypeKey} (${model}), NIE ZNALEZIONO tabeli bazowej. Sprawdź klucze w odpowiednich plikach tabel i w 'allDeviceTables'.`);
   }
-
+  
   if (!baseTableData || baseTableData.length === 0) {
-    console.warn(`[getTableData] Brak danych bazowych dla ${deviceTypeKey} i modelu ${model}. Zwracam pustą tablicę.`);
+    console.warn(`Brak danych bazowych dla ${deviceTypeKey} i ${model}.`);
     return [];
   }
 
-  let finalTable = [...baseTableData.map(row => [...row])]; // Skopiuj bazowe wiersze na start
+  let finalTable = [...baseTableData.map(row => [...row])];
 
-  // Logika dodawania zasobnika i bufora
+  // --- POPRAWIONA LOGIKA v2 ---
+
+  // 1. Zdecyduj, czy pominąć dynamiczny ZASOBNIK na podstawie typu urządzenia.
+  // Urządzenia ze zintegrowanym zasobnikiem lub takie, gdzie zasobnik jest stałym elementem tabeli bazowej.
   let skipDynamicTank = false;
-  if (deviceTypeKey === 'LAZAR' || deviceTypeKey === 'ATLANTIC-M-DUO') {
+  if (['LAZAR', 'ATLANTIC-M-DUO'].includes(deviceTypeKey)) {
     skipDynamicTank = true;
   }
-  // Dla Viessmann, na podstawie Twojego starego kodu, zasobnik jest dodawany dynamicznie,
-  // więc nie ustawiamy skipDynamicTank = true, chyba że specyficzny model Viessmann tego wymaga.
+  
+  // 2. Zdecyduj, czy pominąć dynamiczny BUFOR, sprawdzając, czy już istnieje w tabeli bazowej.
+  const baseTableHasBuffer = baseTableData.some(row =>
+    row[1] && (row[1].toLowerCase().includes('bufor') || row[1].toLowerCase().includes('sprzęgło'))
+  );
 
-  const shouldAddTankRow = !skipDynamicTank && tankCapacity && tankCapacity !== 'none' && tankCapacity !== 'Brak zasobnika CWU' && tankCapacity !== 'Brak zasobnika CWU / Zintegrowany';
-  const shouldAddBufferRow = bufferCapacity && bufferCapacity !== 'none' && bufferCapacity !== 'Brak bufora';
+  // 3. Pobierz dane dla dynamicznych wierszy.
+  const tankRowData = getTankRowData(tankCapacity);
+  const bufferRowData = getBufferRowData(bufferCapacity);
 
-  const tankRowString = getTankDescription(tankCapacity);
-  const bufferRowString = getBufferDescription(bufferCapacity);
+  // 4. Ustal, czy wstawić wiersze.
+  const shouldAddTankRow = !skipDynamicTank && tankRowData;
+  const shouldAddBufferRow = !baseTableHasBuffer && bufferRowData;
 
-  const tankRowData = [' ', tankRowString, 'szt.', '1'];
-  const bufferRowData = [' ', bufferRowString, 'szt.', (bufferCapacity === 'sprzeglo' ? '1' : '1')];
-
-  // Określenie indeksu, *po którym* wstawić dynamiczne elementy (liczone od 0 dla splice)
-  let insertAfterIndex = 0; // Domyślnie po pierwszym elemencie
-
+  // 5. Wstaw wiersze do tabeli
+  let insertAfterIndex = 0;
   if (deviceTypeKey.startsWith('Mitsubishi-') && !deviceTypeKey.includes('AY') && !deviceTypeKey.includes('HR')) {
-    insertAfterIndex = 1; // Po drugim elemencie (indeks 1)
-  } else if (deviceTypeKey === 'ATLANTIC-M-DUO' || deviceTypeKey === 'LAZAR' || deviceTypeKey === 'VIESSMANN' || deviceTypeKey === 'Kotlospaw Slimko Plus') {
-    insertAfterIndex = 0; // Po pierwszym elemencie (indeks 0)
-  } else if (deviceTypeKey === 'Toshiba 3F' || deviceTypeKey === 'Toshiba 1F') {
-    insertAfterIndex = 1; // Przykładowo, po drugim elemencie (indeks 1), dostosuj
+    insertAfterIndex = 1;
+  } else if (['ATLANTIC-M-DUO', 'LAZAR','Toshiba 1F', 'VIESSMANN', 'Kotlospaw Slimko Plus', 'Kotlospaw Slimko Plus Niski', 'QMPELL', 'Kotlospaw Drewko Plus', 'Kotlospaw Drewko Hybrid',].includes(deviceTypeKey)) {
+    insertAfterIndex = 0;
+  } else if (['Toshiba 3F', 'Toshiba 1F'].includes(deviceTypeKey)) {
+    insertAfterIndex = 1;
   }
 
-  // Wstawianie dynamicznych wierszy
-  // Kolejność wstawiania: najpierw zasobnik, potem bufor, jeśli oba są dodawane po tym samym elemencie
   let itemsInsertedCount = 0;
   if (shouldAddTankRow) {
-    // Wstawiamy na pozycji tuż po elemencie o indeksie `insertAfterIndex`
-    finalTable.splice(insertAfterIndex + 1, 0, [...tankRowData]);
+    finalTable.splice(insertAfterIndex + 1, 0, tankRowData);
     itemsInsertedCount++;
-    console.log('[getTableData] Dodano wiersz zasobnika CWU.');
   }
   if (shouldAddBufferRow) {
-    // Bufor wstawiamy po zasobniku (jeśli był dodany) lub po elemencie `insertAfterIndex`
-    finalTable.splice(insertAfterIndex + 1 + itemsInsertedCount, 0, [...bufferRowData]);
-    console.log('[getTableData] Dodano wiersz bufora.');
+    finalTable.splice(insertAfterIndex + 1 + itemsInsertedCount, 0, bufferRowData);
   }
 
-  // Renumeracja całości na końcu, aby zapewnić ciągłość LP
+  // Renumeracja
   let currentNumber = 1;
   const renumberedFinalTable = finalTable.map(row => {
     const newRow = [...row];
-    // Numeruj tylko wiersze, które mają treść w drugiej kolumnie (nazwa towaru)
-    // i nie są to "puste" separatory wprowadzone w danych bazowych
     if (newRow[1] && String(newRow[1]).trim() !== '') {
-        // Jeśli pierwszy element jest pusty, spacją, lub już jest numerem (który chcemy nadpisać)
         if (String(newRow[0]).trim() === '' || !isNaN(parseInt(newRow[0]))) {
             newRow[0] = String(currentNumber++);
         }
-        // Jeśli newRow[0] to np. litera lub inny tekstowy identyfikator, zachowaj go
     } else {
-        // Dla wierszy, które są separatorami (np. [' ', 'ELEMENTY...']) lub całkowicie pustych,
-        // zachowaj lub ustaw puste LP
         newRow[0] = ' ';
     }
     return newRow;
   });
 
-  console.log('[getTableData] Finalna tabela przekazana do PDF:', JSON.stringify(renumberedFinalTable, null, 2));
   return renumberedFinalTable;
 }

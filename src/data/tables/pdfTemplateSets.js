@@ -14,6 +14,9 @@ const groupPage = '/pdf_templates/common/7_grupa_kaman_pdf.pdf';
 const groupPage2 = '/pdf_templates/common/8_grupa_kaman_uslugi_pdf.pdf';
 const oNas = '/pdf_templates/common/O_grupie.pdf';
 const opcjeDodatkowePiece = '/pdf_templates/common/2_opcje_dodatkowe_piece.pdf';
+const opcjeDodatkowePompy = '/pdf_templates/common/2_opcje_dodatkowe_pompy.pdf';
+
+const wyposazenieKotlospaw = '/pdf_templates/common/wyposazenie_producenta_kotlospaw.pdf';
 
 
 
@@ -29,7 +32,7 @@ export const pdfTemplateSets = {
   // --- MITSUBISHI (Pompy Ciepła) ---
   'Mitsubishi-cylinder': [
     '/pdf_templates/mitsubishi/standard-cylinder/1_okladka.pdf',
-    '/pdf_templates/mitsubishi/standard-cylinder/2_opcje_dodatkowe.pdf',
+    opcjeDodatkowePompy,
      '/pdf_templates/mitsubishi/standard-cylinder/3.1_wewnetrzna_zubadan_ds.pdf',
     '/pdf_templates/mitsubishi/standard-cylinder/3.2_wewnetrzna_zubadan_ds.pdf',
      '/pdf_templates/mitsubishi/standard-cylinder/3.3_wewnetrzna_zubadan_ds.pdf',
@@ -42,7 +45,7 @@ export const pdfTemplateSets = {
   ],
   'Mitsubishi-cylinder-PUZ': [
     '/pdf_templates/mitsubishi/zubadan-cylinder/1_okladka.pdf',
-        '/pdf_templates/mitsubishi/zubadan-cylinder/2_opcje_dodatkowe.pdf',
+           opcjeDodatkowePompy,
     '/pdf_templates/mitsubishi/zubadan-cylinder/3_katalog_PUZ-1.pdf',
     '/pdf_templates/mitsubishi/zubadan-cylinder/3_katalog_PUZ-2.pdf',
      oNas,
@@ -52,7 +55,7 @@ export const pdfTemplateSets = {
   ],
   'Mitsubishi-cylinder-PUZ-1F': [
     '/pdf_templates/mitsubishi/zubadan-cylinder-1f/1_okladka.pdf',
-    '/pdf_templates/mitsubishi/zubadan-cylinder-1f/2_opcje_dodatkowe.pdf',
+       opcjeDodatkowePompy,
    '/pdf_templates/mitsubishi/zubadan-cylinder/3_katalog_PUZ-1.pdf',
     '/pdf_templates/mitsubishi/zubadan-cylinder/3_katalog_PUZ-2.pdf',
         oNas,
@@ -62,7 +65,7 @@ export const pdfTemplateSets = {
   ],
   'Mitsubishi-hydrobox': [
     '/pdf_templates/mitsubishi/standard-hydrobox/1_okladka.pdf',
-    '/pdf_templates/mitsubishi/standard-hydrobox/2_opcje_dodatkowe.pdf',
+        opcjeDodatkowePompy,
       '/pdf_templates/mitsubishi/standard-hydrobox/3.1_wewnetrzna_zubadan_ds.pdf',
     '/pdf_templates/mitsubishi/standard-hydrobox/3.2_wewnetrzna_zubadan_ds.pdf',
      '/pdf_templates/mitsubishi/standard-hydrobox/3.3_wewnetrzna_zubadan_ds.pdf',
@@ -75,7 +78,8 @@ export const pdfTemplateSets = {
   ],
   'Mitsubishi-hydrobox-PUZ': [
     '/pdf_templates/mitsubishi/zubadan-hydrobox/1_okladka.pdf',
-    '/pdf_templates/mitsubishi/zubadan-hydrobox/2_opcje_dodatkowe.pdf',
+       opcjeDodatkowePompy,
+
     '/pdf_templates/mitsubishi/zubadan-hydrobox/3_katalog_PUZ-1.pdf',
     '/pdf_templates/mitsubishi/zubadan-hydrobox/3_katalog_PUZ-2.pdf',
      oNas,
@@ -85,7 +89,8 @@ export const pdfTemplateSets = {
   ],
   'Mitsubishi-hydrobox-PUZ-1F': [
     '/pdf_templates/mitsubishi/zubadan-hydrobox-1f/1_okladka.pdf',
-    '/pdf_templates/mitsubishi/zubadan-hydrobox-1f/2_opcje_dodatkowe.pdf',
+       opcjeDodatkowePompy,
+
     '/pdf_templates/mitsubishi/zubadan-hydrobox-1f/3_katalog_PUZ-1.pdf',
     '/pdf_templates/mitsubishi/zubadan-hydrobox-1f/3_katalog_PUZ-2.pdf',
       oNas,
@@ -95,7 +100,8 @@ export const pdfTemplateSets = {
   ],
   'Mitsubishi-ecoinverter': [
     '/pdf_templates/mitsubishi/ecoinverter-cylinder/1_okladka.pdf',
-     '/pdf_templates/mitsubishi/ecoinverter-cylinder/2_opcje_dodatkowe.pdf',
+      opcjeDodatkowePompy,
+
     '/pdf_templates/mitsubishi/ecoinverter-cylinder/3.1_ecoinverter_zewnetrzna.pdf',
     '/pdf_templates/mitsubishi/ecoinverter-cylinder/3.2_ecoinverter_zewnetrzna.pdf',
     '/pdf_templates/mitsubishi/ecoinverter-cylinder/3.3_ecoinverter_wewnetrzna.pdf',
@@ -107,7 +113,7 @@ export const pdfTemplateSets = {
   ],
   'Mitsubishi-ecoinverter-hydrobox': [
     '/pdf_templates/mitsubishi/ecoinverter-hydrobox/1_okladka.pdf',
-    '/pdf_templates/mitsubishi/ecoinverter-hydrobox/2_opcje_dodatkowe.pdf',
+       opcjeDodatkowePompy,
         '/pdf_templates/mitsubishi/standard-cylinder/3.1_wewnetrzna_zubadan_ds.pdf',
     '/pdf_templates/mitsubishi/standard-cylinder/3.2_wewnetrzna_zubadan_ds.pdf',
      '/pdf_templates/mitsubishi/standard-cylinder/3.3_wewnetrzna_zubadan_ds.pdf',
@@ -120,6 +126,7 @@ export const pdfTemplateSets = {
   ],
   'Mitsubishi-hp': [
     '/pdf_templates/mitsubishi/hyper-heating/1_okladka.pdf',
+        opcjeDodatkowePompy,
     '/pdf_templates/mitsubishi/hyper-heating/2_opcje_dodatkowe.pdf',
     '/pdf_templates/mitsubishi/hyper-heating/3_katalog.pdf',
      oNas,
@@ -150,14 +157,18 @@ export const pdfTemplateSets = {
   'Toshiba 3F': [
     '/pdf_templates/toshiba/3-fazowe/1_okladka.pdf',
     '/pdf_templates/toshiba/3-fazowe/3_katalog.pdf',
-     oNas,,
+     oNas,
       groupPage,
     groupPage2,
     commonContactPage,
   ],
   'Toshiba 1F': [
-    '/pdf_templates/toshiba/1-fazowe/1_okladka.pdf',
-    '/pdf_templates/toshiba/1-fazowe/3_katalog.pdf',
+    '/pdf_templates/Toshiba/1-fazowe/1_okladka.pdf',
+    opcjeDodatkowePompy,
+    '/pdf_templates/Toshiba/1-fazowe/karta_katalogowa_toshiba_1.pdf',
+    '/pdf_templates/Toshiba/1-fazowe/karta_katalogowa_toshiba_2.pdf',
+        '/pdf_templates/Toshiba/1-fazowe/karta_katalogowa_toshiba_3.pdf',
+            '/pdf_templates/Toshiba/1-fazowe/karta_katalogowa_toshiba_4.pdf',
      oNas,
       groupPage,
     groupPage2,
@@ -231,11 +242,11 @@ export const pdfTemplateSets = {
   // --- KOTŁY NA PELLET ---
   'LAZAR': [
     '/pdf_templates/kotly-pellet/lazar/1_okladka.pdf',
+    opcjeDodatkowePiece,
      '/pdf_templates/kotly-pellet/lazar/lazar.ds1.pdf',
      '/pdf_templates/kotly-pellet/lazar/lazar.ds2.pdf',
      '/pdf_templates/kotly-pellet/lazar/lazar.ds3.pdf',
      oNas,
-        '/pdf_templates/kotly-pellet/lazar/3_katalog.pdf',
           groupPage,
     groupPage2,
     commonContactPage,
@@ -243,6 +254,7 @@ export const pdfTemplateSets = {
   'Kotlospaw Slimko Plus': [
     '/pdf_templates/kotly-pellet/kotlospaw-slimko-plus/1_okladka.pdf',
     opcjeDodatkowePiece,
+    wyposazenieKotlospaw,
     '/pdf_templates/kotly-pellet/kotlospaw-slimko-plus/slimko_plus_karta_katalogowa_1.pdf',
     '/pdf_templates/kotly-pellet/kotlospaw-slimko-plus/slimko_plus_karta_katalogowa_2.pdf',
      oNas,
@@ -252,7 +264,10 @@ export const pdfTemplateSets = {
   ],
   'Kotlospaw slimko plus niski': [
     '/pdf_templates/kotly-pellet/kotlospaw-slimko-plus-niski/1_okladka.pdf',
-    '/pdf_templates/kotly-pellet/kotlospaw-slimko-plus-niski/3_katalog.pdf',
+    opcjeDodatkowePiece,
+    wyposazenieKotlospaw,
+    '/pdf_templates/kotly-pellet/kotlospaw-slimko-plus-niski/slimko_plus_karta_katalogowa_1.pdf',
+    '/pdf_templates/kotly-pellet/kotlospaw-slimko-plus-niski/slimko_plus_karta_katalogowa_2.pdf',
      oNas,
       groupPage,
     groupPage2,
@@ -260,7 +275,9 @@ export const pdfTemplateSets = {
   ],
   'QMPELL': [
     '/pdf_templates/kotly-pellet/qmpell-evo/1_okladka.pdf',
-    '/pdf_templates/kotly-pellet/qmpell-evo/3_katalog.pdf',
+        opcjeDodatkowePiece,
+    '/pdf_templates/kotly-pellet/qmpell-evo/karta_katalogowa_qmpell1.pdf',
+        '/pdf_templates/kotly-pellet/qmpell-evo/karta_katalogowa_qmpell2.pdf',
      oNas,
       groupPage,
     groupPage2,
@@ -268,17 +285,23 @@ export const pdfTemplateSets = {
   ],
 
   // --- KOTŁY HYBRYDOWE ---
-  'DREWKO-HYBRID': [
-    '/pdf_templates/kotly-hybrydowe/kotlospaw-drewko-hybrid/1_okladka.pdf',
-    '/pdf_templates/kotly-hybrydowe/kotlospaw-drewko-hybrid/3_katalog.pdf',
+  'Kotlospaw drewko hybrid': [
+    '/pdf_templates/kotly-pellet/kotlospaw-drewko-hybrid/1_okladka.pdf',
+    opcjeDodatkowePiece,
+    wyposazenieKotlospaw,
+    '/pdf_templates/kotly-pellet/kotlospaw-drewko-hybrid/kotlospaw_drewko_plus_ds1.pdf',
+    '/pdf_templates/kotly-pellet/kotlospaw-drewko-hybrid/kotlospaw_drewko_plus_ds2.pdf',
      oNas,
       groupPage,
     groupPage2,
     commonContactPage,
   ],
-  'Kotlospaw drewko plus palnik easy ROT': [
-    '/pdf_templates/kotly-hybrydowe/kotlospaw-drewko-plus-easy-rot/1_okladka.pdf',
-    '/pdf_templates/kotly-hybrydowe/kotlospaw-drewko-plus-easy-rot/3_katalog.pdf',
+  'Kotlospaw drewko plus': [
+    '/pdf_templates/kotly-pellet/kotlospaw-drewko-plus/1_okladka.pdf',
+    opcjeDodatkowePiece,
+    wyposazenieKotlospaw,
+'/pdf_templates/kotly-pellet/kotlospaw-drewko-plus/kotlospaw_drewko_plus_ds1.pdf',
+    '/pdf_templates/kotly-pellet/kotlospaw-drewko-plus/kotlospaw_drewko_plus_ds2.pdf',
      oNas,
       groupPage,
     groupPage2,
