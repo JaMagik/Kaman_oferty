@@ -6,6 +6,7 @@ import toshiba3FTable from './toshiba-3f'; // Załóżmy, że to na razie pojedy
 import { atlanticBaseTables } from './atlanticTables';
 import { lazarBaseTables } from './lazarTables';
 import { viessmannBaseTables } from './viessmannTables'; // Poprawnie zaimportowane
+import { kotlospawSlimkoPlusBaseTables } from './kotlospawSlimkoPlusTable'; // Poprawnie zaimportowane
 
 // Funkcje pomocnicze do opisu zasobnika i bufora (bez zmian)
 function getTankDescription(tankCapacity) {
@@ -39,6 +40,7 @@ export function getTableData(deviceType, model, tankCapacity, bufferCapacity) {
     ...atlanticBaseTables,
     ...lazarBaseTables,
     ...viessmannBaseTables,
+    ...kotlospawSlimkoPlusBaseTables,
     // Przykładowe opakowanie dla Toshiba, jeśli chcesz ujednolicić dostęp
     // (wymagałoby to zmiany sposobu odwoływania się w formularzu lub tutaj)
     // 'Toshiba 3F': { 'default': toshiba3FTable },
@@ -86,7 +88,7 @@ export function getTableData(deviceType, model, tankCapacity, bufferCapacity) {
 
   if (deviceTypeKey.startsWith('Mitsubishi-') && !deviceTypeKey.includes('AY') && !deviceTypeKey.includes('HR')) {
     insertAfterIndex = 1; // Po drugim elemencie (indeks 1)
-  } else if (deviceTypeKey === 'ATLANTIC-M-DUO' || deviceTypeKey === 'LAZAR' || deviceTypeKey === 'VIESSMANN') {
+  } else if (deviceTypeKey === 'ATLANTIC-M-DUO' || deviceTypeKey === 'LAZAR' || deviceTypeKey === 'VIESSMANN' || deviceTypeKey === 'Kotlospaw Slimko Plus') {
     insertAfterIndex = 0; // Po pierwszym elemencie (indeks 0)
   } else if (deviceTypeKey === 'Toshiba 3F' || deviceTypeKey === 'Toshiba 1F') {
     insertAfterIndex = 1; // Przykładowo, po drugim elemencie (indeks 1), dostosuj

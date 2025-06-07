@@ -5,7 +5,25 @@
   flex-direction: column;
   min-height: 100vh;
   width: 100%;
-  /* Tło jest ustawione na body w index.css */
+  /* Domyślne tło, jeśli obraz nie zostanie załadowany lub jako fallback */
+  background-color: var(--light-gray-bg);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: background-image 0.5s ease-in-out; /* Płynne przejście tła */
+}
+
+/* Style dla dynamicznych teł */
+.app-container.bg-heating {
+  background-image: url('./assets/backgrounds/heating-background.jpg');
+}
+
+.app-container.bg-pv {
+  background-image: url('./assets/backgrounds/pv-background.jpg');
+}
+
+.app-container.bg-okna {
+  background-image: url('./assets/backgrounds/okna-background.jpg');
 }
 
 .app-header {
@@ -33,10 +51,10 @@
 
 .form-switcher {
   display: flex;
-  gap: 0;
+  gap: 0; /* Usunięto odstęp, aby przyciski były bliżej siebie w grupie */
   background-color: rgba(255, 255, 255, 0.08); /* Bardzo subtelne tło dla grupy */
-  border-radius: 8px;
-  padding: 5px; /* Zwiększony padding wokół grupy */
+  border-radius: 8px; /* Zaokrąglenie dla całej grupy przycisków */
+  padding: 5px; /* Wewnętrzny padding grupy, aby przyciski nie dotykały krawędzi */
   border: 1px solid rgba(255, 255, 255, 0.15); /* Delikatna ramka dla grupy */
 }
 
@@ -44,8 +62,8 @@
   padding: 10px 20px;
   font-size: 0.9rem;
   font-weight: 600;
-  border: none;
-  border-radius: 6px;
+  border: none; /* Usunięcie indywidualnych ramek przycisków */
+  border-radius: 6px; /* Zaokrąglenie dla poszczególnych przycisków */
   background-color: transparent;
   color: rgba(255, 255, 255, 0.75); /* Lekko przygaszony biały dla nieaktywnych */
   cursor: pointer;
@@ -63,9 +81,11 @@
 .switcher-button.active {
   background-color: var(--kaman-red);
   color: var(--text-color-light);
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2), 
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2),
               inset 0 1px 1px rgba(255,255,255,0.1);
-  border-bottom: 3px solid var(--gold-accent); /* Złoty akcent */
+  /* Można przywrócić złoty akcent, jeśli zdefiniujesz --gold-accent w :root w index.css
+     border-bottom: 3px solid var(--gold-accent);
+  */
 }
 
 .form-content {
@@ -77,8 +97,16 @@
   padding: 40px 20px 50px 20px; /* Dodatkowy padding na dole */
   width: 100%;
   box-sizing: border-box;
-  overflow-y: auto;
+  overflow-y: auto; /* Umożliwia przewijanie, jeśli zawartość jest dłuższa niż ekran */
 }
+
+/*
+  Upewnij się, że formularz (.form-container) ma własne, nieprzezroczyste tło
+  (np. background: #ffffff; w src/assets/style.css),
+  aby tło aplikacji nie prześwitywało przez sam formularz,
+  a jedynie było widoczne wokół niego.
+*/
+
 
 @media (max-width: 768px) {
   .app-header {
@@ -93,7 +121,7 @@
     justify-content: center;
   }
   .form-content {
-    padding: 25px 15px;
+    padding: 25px 15px; /* Mniejszy padding na mniejszych ekranach */
   }
   .app-logo {
     height: 40px;
@@ -102,16 +130,19 @@
 
 @media (max-width: 480px) {
   .switcher-button {
-    font-size: 0.8rem;
+    font-size: 0.8rem; /* Mniejsza czcionka na bardzo małych ekranach */
     padding: 9px 10px; /* Mniejszy padding dla małych ekranów */
-    flex-basis: 0; /* Pozwól przyciskom się zmniejszać */
-    flex-grow: 1;
+    flex-basis: 0; /* Pozwól przyciskom się zmniejszać, jeśli jest mało miejsca */
+    flex-grow: 1; /* Pozwól przyciskom rosnąć, aby wypełnić dostępną przestrzeń */
     text-align: center;
   }
   .form-switcher {
-    gap: 5px;
+    gap: 5px; /* Mały odstęp między przyciskami, jeśli są w jednej linii i się zawijają */
   }
+  /* Style dla h2 w .form-container są w src/assets/style.css,
+     ale można by je tu dostosować dla mobilnych, np.:
   .form-container h2 {
     font-size: 1.5rem;
   }
+  */
 }

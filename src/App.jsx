@@ -1,5 +1,5 @@
 // src/App.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import UnifiedOfferForm from "./components/UnifiedOfferForm";
 import PhotovoltaicsOfferForm from "./components/PhotovoltaicsOfferForm";
 import OknaNestOfferForm from "./components/OknaNestOfferForm"; // Import nowego komponentu
@@ -9,11 +9,30 @@ import "./App.css";        // Style dla layoutu aplikacji i przełącznika
 // Zaimportuj swoje logo - zmień ścieżkę, jeśli jest inna
 import kamanLogo from './assets/logo_kaman.png'; // Załóżmy, że logo jest tutaj
 
+// Import obrazów tła
+import heatingBg from './assets/backgrounds/heating-background.jpg';
+import pvBg from './assets/backgrounds/pv-background.jpg';
+import oknaBg from './assets/backgrounds/okna-background.jpg';
+
+const backgroundMap = {
+  heating: heatingBg,
+  pv: pvBg,
+  okna: oknaBg,
+};
+
 function App() {
   const [activeForm, setActiveForm] = useState("heating"); // 'heating', 'pv', lub 'okna'
+  const [appBackground, setAppBackground] = useState(backgroundMap.heating);
+
+  useEffect(() => {
+    setAppBackground(backgroundMap[activeForm]);
+  }, [activeForm]);
+
+  // Zamiast dynamicznie zmieniać styl inline, będziemy zmieniać klasę
+  // aby style tła były zarządzane przez CSS dla lepszej organizacji.
 
   return (
-    <div className="app-container">
+    <div className={`app-container bg-${activeForm}`}>
       <header className="app-header">
         <img src={kamanLogo} alt="KAMAN Logo" className="app-logo" />
         <nav className="form-switcher">

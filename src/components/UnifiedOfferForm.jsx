@@ -6,13 +6,15 @@ import { generateOfferPDF } from "../utils/pdfGenerator";
 import { mitsubishiBaseTables } from "../data/tables/mitsubishiTables";
 import { atlanticBaseTables } from "../data/tables/atlanticTables";
 import { lazarBaseTables } from "../data/tables/lazarTables";
-import { viessmannBaseTables } from "../data/tables/viessmannTables"; // <-- POPRAWIONY IMPORT
+import { viessmannBaseTables } from "../data/tables/viessmannTables";
+import { kotlospawSlimkoPlusBaseTables } from "../data/tables/kotlospawSlimkoPlusTable"; // <-- POPRAWIONY IMPORT
 
 const allDevicesData = {
   ...mitsubishiBaseTables,
   ...atlanticBaseTables,
   ...lazarBaseTables,
   ...viessmannBaseTables,
+  ...kotlospawSlimkoPlusBaseTables
 };
 
 // Klucz API Trello (ten jest publiczny i używany do inicjalizacji OAuth)
@@ -227,7 +229,8 @@ export default function UnifiedOfferForm() {
           <option value="Toshiba 1F">Toshiba (1-fazowe)</option>
         </optgroup>
         <optgroup label="Atlantic (Pompy Ciepła)">
-          <option value="ATLANTIC-M-DUO">Atlantic M-Duo</option>
+          <option value="ATLANTIC-M-DUO">Atlantic S-TRI hydrobox</option>
+          <option value="ATLANTIC-S">Atlantic S-TRI-Duo cylinder</option>
         </optgroup>
         <optgroup label="Kotły na Pellet">
           <option value="LAZAR">Lazar</option>
@@ -261,11 +264,8 @@ export default function UnifiedOfferForm() {
       <label htmlFor="tank">Pojemność zasobnika CWU:</label>
       <select id="tank" value={tank} onChange={(e) => setTank(e.target.value)}>
         <option value="none">Brak zasobnika CWU / Zintegrowany</option>
-        <option value="100L">100 L</option>
-        <option value="120L">120 L</option>
-        <option value="140L">140 L</option>
-        <option value="200L">200 L (standard)</option>
-        <option value="300L">300 L (standard)</option>
+        <option value="200L">200 L</option>
+        <option value="300L">300 L</option>
         <option value="400L">400 L</option>
          <option value="200 L STAL NIERDZEWNA">200 L STAL NIERDZEWNA</option>
         <option value="250 L STAL NIERDZEWNA">250 L STAL NIERDZEWNA</option>
