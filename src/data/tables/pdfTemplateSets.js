@@ -32,7 +32,7 @@ export const pdfTemplateSets = {
   // --- MITSUBISHI (Pompy Ciepła) ---
   'Mitsubishi-cylinder': [
     '/pdf_templates/mitsubishi/standard-cylinder/1_okladka.pdf',
-    opcjeDodatkowePompy,
+ 
      '/pdf_templates/mitsubishi/standard-cylinder/3.1_wewnetrzna_zubadan_ds.pdf',
     '/pdf_templates/mitsubishi/standard-cylinder/3.2_wewnetrzna_zubadan_ds.pdf',
      '/pdf_templates/mitsubishi/standard-cylinder/3.3_wewnetrzna_zubadan_ds.pdf',
@@ -45,7 +45,7 @@ export const pdfTemplateSets = {
   ],
   'Mitsubishi-cylinder-PUZ': [
     '/pdf_templates/mitsubishi/zubadan-cylinder/1_okladka.pdf',
-           opcjeDodatkowePompy,
+          
     '/pdf_templates/mitsubishi/zubadan-cylinder/3_katalog_PUZ-1.pdf',
     '/pdf_templates/mitsubishi/zubadan-cylinder/3_katalog_PUZ-2.pdf',
      oNas,
@@ -55,7 +55,7 @@ export const pdfTemplateSets = {
   ],
   'Mitsubishi-cylinder-PUZ-1F': [
     '/pdf_templates/mitsubishi/zubadan-cylinder-1f/1_okladka.pdf',
-       opcjeDodatkowePompy,
+      
    '/pdf_templates/mitsubishi/zubadan-cylinder/3_katalog_PUZ-1.pdf',
     '/pdf_templates/mitsubishi/zubadan-cylinder/3_katalog_PUZ-2.pdf',
         oNas,
@@ -65,7 +65,7 @@ export const pdfTemplateSets = {
   ],
   'Mitsubishi-hydrobox': [
     '/pdf_templates/mitsubishi/standard-hydrobox/1_okladka.pdf',
-        opcjeDodatkowePompy,
+   
       '/pdf_templates/mitsubishi/standard-hydrobox/3.1_wewnetrzna_zubadan_ds.pdf',
     '/pdf_templates/mitsubishi/standard-hydrobox/3.2_wewnetrzna_zubadan_ds.pdf',
      '/pdf_templates/mitsubishi/standard-hydrobox/3.3_wewnetrzna_zubadan_ds.pdf',
@@ -78,7 +78,7 @@ export const pdfTemplateSets = {
   ],
   'Mitsubishi-hydrobox-PUZ': [
     '/pdf_templates/mitsubishi/zubadan-hydrobox/1_okladka.pdf',
-       opcjeDodatkowePompy,
+       
 
     '/pdf_templates/mitsubishi/zubadan-hydrobox/3_katalog_PUZ-1.pdf',
     '/pdf_templates/mitsubishi/zubadan-hydrobox/3_katalog_PUZ-2.pdf',
@@ -89,7 +89,7 @@ export const pdfTemplateSets = {
   ],
   'Mitsubishi-hydrobox-PUZ-1F': [
     '/pdf_templates/mitsubishi/zubadan-hydrobox-1f/1_okladka.pdf',
-       opcjeDodatkowePompy,
+      
 
     '/pdf_templates/mitsubishi/zubadan-hydrobox-1f/3_katalog_PUZ-1.pdf',
     '/pdf_templates/mitsubishi/zubadan-hydrobox-1f/3_katalog_PUZ-2.pdf',
@@ -100,7 +100,7 @@ export const pdfTemplateSets = {
   ],
   'Mitsubishi-ecoinverter': [
     '/pdf_templates/mitsubishi/ecoinverter-cylinder/1_okladka.pdf',
-      opcjeDodatkowePompy,
+  
 
     '/pdf_templates/mitsubishi/ecoinverter-cylinder/3.1_ecoinverter_zewnetrzna.pdf',
     '/pdf_templates/mitsubishi/ecoinverter-cylinder/3.2_ecoinverter_zewnetrzna.pdf',
@@ -113,7 +113,7 @@ export const pdfTemplateSets = {
   ],
   'Mitsubishi-ecoinverter-hydrobox': [
     '/pdf_templates/mitsubishi/ecoinverter-hydrobox/1_okladka.pdf',
-       opcjeDodatkowePompy,
+       
         '/pdf_templates/mitsubishi/standard-cylinder/3.1_wewnetrzna_zubadan_ds.pdf',
     '/pdf_templates/mitsubishi/standard-cylinder/3.2_wewnetrzna_zubadan_ds.pdf',
      '/pdf_templates/mitsubishi/standard-cylinder/3.3_wewnetrzna_zubadan_ds.pdf',
@@ -126,7 +126,7 @@ export const pdfTemplateSets = {
   ],
   'Mitsubishi-hp': [
     '/pdf_templates/mitsubishi/hyper-heating/1_okladka.pdf',
-        opcjeDodatkowePompy,
+  
     '/pdf_templates/mitsubishi/hyper-heating/2_opcje_dodatkowe.pdf',
     '/pdf_templates/mitsubishi/hyper-heating/3_katalog.pdf',
      oNas,
@@ -164,7 +164,7 @@ export const pdfTemplateSets = {
   ],
   'Toshiba 1F': [
     '/pdf_templates/Toshiba/1-fazowe/1_okladka.pdf',
-    opcjeDodatkowePompy,
+  
     '/pdf_templates/Toshiba/1-fazowe/karta_katalogowa_toshiba_1.pdf',
     '/pdf_templates/Toshiba/1-fazowe/karta_katalogowa_toshiba_2.pdf',
         '/pdf_templates/Toshiba/1-fazowe/karta_katalogowa_toshiba_3.pdf',
@@ -242,7 +242,7 @@ export const pdfTemplateSets = {
   // --- KOTŁY NA PELLET ---
   'LAZAR': [
     '/pdf_templates/kotly-pellet/lazar/1_okladka.pdf',
-    opcjeDodatkowePiece,
+    
      '/pdf_templates/kotly-pellet/lazar/lazar.ds1.pdf',
      '/pdf_templates/kotly-pellet/lazar/lazar.ds2.pdf',
      '/pdf_templates/kotly-pellet/lazar/lazar.ds3.pdf',
@@ -253,7 +253,7 @@ export const pdfTemplateSets = {
   ],
   'Kotlospaw Slimko Plus': [
     '/pdf_templates/kotly-pellet/kotlospaw-slimko-plus/1_okladka.pdf',
-    opcjeDodatkowePiece,
+  
     wyposazenieKotlospaw,
     '/pdf_templates/kotly-pellet/kotlospaw-slimko-plus/slimko_plus_karta_katalogowa_1.pdf',
     '/pdf_templates/kotly-pellet/kotlospaw-slimko-plus/slimko_plus_karta_katalogowa_2.pdf',
@@ -264,7 +264,7 @@ export const pdfTemplateSets = {
   ],
   'Kotlospaw slimko plus niski': [
     '/pdf_templates/kotly-pellet/kotlospaw-slimko-plus-niski/1_okladka.pdf',
-    opcjeDodatkowePiece,
+
     wyposazenieKotlospaw,
     '/pdf_templates/kotly-pellet/kotlospaw-slimko-plus-niski/slimko_plus_karta_katalogowa_1.pdf',
     '/pdf_templates/kotly-pellet/kotlospaw-slimko-plus-niski/slimko_plus_karta_katalogowa_2.pdf',
@@ -275,7 +275,7 @@ export const pdfTemplateSets = {
   ],
   'QMPELL': [
     '/pdf_templates/kotly-pellet/qmpell-evo/1_okladka.pdf',
-        opcjeDodatkowePiece,
+    
     '/pdf_templates/kotly-pellet/qmpell-evo/karta_katalogowa_qmpell1.pdf',
         '/pdf_templates/kotly-pellet/qmpell-evo/karta_katalogowa_qmpell2.pdf',
      oNas,
@@ -287,7 +287,7 @@ export const pdfTemplateSets = {
   // --- KOTŁY HYBRYDOWE ---
   'Kotlospaw drewko hybrid': [
     '/pdf_templates/kotly-pellet/kotlospaw-drewko-hybrid/1_okladka.pdf',
-    opcjeDodatkowePiece,
+
     wyposazenieKotlospaw,
     '/pdf_templates/kotly-pellet/kotlospaw-drewko-hybrid/kotlospaw_drewko_plus_ds1.pdf',
     '/pdf_templates/kotly-pellet/kotlospaw-drewko-hybrid/kotlospaw_drewko_plus_ds2.pdf',
@@ -298,7 +298,7 @@ export const pdfTemplateSets = {
   ],
   'Kotlospaw drewko plus': [
     '/pdf_templates/kotly-pellet/kotlospaw-drewko-plus/1_okladka.pdf',
-    opcjeDodatkowePiece,
+
     wyposazenieKotlospaw,
 '/pdf_templates/kotly-pellet/kotlospaw-drewko-plus/kotlospaw_drewko_plus_ds1.pdf',
     '/pdf_templates/kotly-pellet/kotlospaw-drewko-plus/kotlospaw_drewko_plus_ds2.pdf',
@@ -311,7 +311,7 @@ export const pdfTemplateSets = {
   
   'Kaisai': [
     '/pdf_templates/kaisai/1_okladka.pdf',
-    opcjeDodatkowePompy,
+
     '/pdf_templates/kaisai/karta_produktu_kaisai_1.pdf',
     '/pdf_templates/kaisai/karta_produktu_kaisai_2.pdf',
 

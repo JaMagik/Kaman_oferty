@@ -4,6 +4,7 @@ import { PDFDocument, rgb } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 import { getTableData } from '../data/tables';
 import { getTemplatePathsForDevice } from '../data/tables/pdfTemplateSets';
+import { opcjeDlaPompCiepla, opcjeDlaKotlow } from '../data/tables/opcjeDodatkowe.js';
 
 const wrapText = (text, textFont, textSize, maxWidth) => {
     if (typeof text !== 'string') { text = String(text); }
@@ -36,10 +37,10 @@ function drawTable(pdfDoc, initialPage, font, tableData, startY) {
     };
 
     const headerFontSize = 9.5;
-    const contentFontSize = 8.5; // Czcionka dla Nazwy, Lp, Jm, Ilości
-    const descriptionFontSize = 7.8; // Delikatnie mniejsza czcionka dla Opisu
+    const contentFontSize = 8.5;
+    const descriptionFontSize = 7.8;
     const contentLineHeight = contentFontSize * 1.3;
-    const descriptionLineHeight = descriptionFontSize * 1.3; // Osobna wysokość linii dla opisu
+    const descriptionLineHeight = descriptionFontSize * 1.3;
 
     const textColor = rgb(0.1, 0.1, 0.1);
     const headerColor = rgb(1, 1, 1);
@@ -93,12 +94,8 @@ function drawTable(pdfDoc, initialPage, font, tableData, startY) {
 
         const nameLines = wrapText(name, font, contentFontSize, table.columnWidths[1] - (2 * table.padding.left));
         const descLines = wrapText(description, font, descriptionFontSize, table.columnWidths[2] - (2 * table.padding.left));
-
-        // Oblicz wysokość bloku tekstu dla obu kolumn
         const nameBlockHeight = nameLines.length * contentLineHeight;
         const descBlockHeight = descLines.length * descriptionLineHeight;
-
-        // Wybierz większą wysokość bloku i dodaj padding
         const dynamicRowHeight = Math.max(nameBlockHeight, descBlockHeight) + table.padding.top + table.padding.bottom;
 
         if (currentY - dynamicRowHeight < pageBottomMargin) {
@@ -126,7 +123,6 @@ function drawTable(pdfDoc, initialPage, font, tableData, startY) {
         
         const textStartY = currentY + dynamicRowHeight - table.padding.top - contentFontSize;
         const descTextStartY = currentY + dynamicRowHeight - table.padding.top - descriptionFontSize;
-
 
         const lpTextWidth = font.widthOfTextAtSize(lp, contentFontSize);
         currentPage.drawText(lp, { x: columnPositions[0] + (table.columnWidths[0] - lpTextWidth) / 2, y: textStartY, size: contentFontSize, font, color: textColor });
@@ -160,6 +156,124 @@ function drawTable(pdfDoc, initialPage, font, tableData, startY) {
     return currentY;
 }
 
+function drawOptionalExtrasTable(page, regularFont, boldFont, data) {
+    const { width: pageWidth, height: pageHeight } = page.getSize();
+    let currentY = pageHeight - 40;
+    const tableX = 50;
+    const kamanRed = rgb(0.815, 0.008, 0.106);
+
+    const title = 'WYPOSAŻENIE UZUPEŁNIAJĄCE (OPCJONALNIE)';
+    const titleFontSize = 14;
+    const titleBannerHeight = 40;
+    page.drawRectangle({
+        x: 0,
+        y: currentY - titleBannerHeight,
+        width: pageWidth,
+        height: titleBannerHeight,
+        color: kamanRed,
+    });
+    const titleWidth = boldFont.widthOfTextAtSize(title, titleFontSize);
+    page.drawText(title, {
+        x: (pageWidth - titleWidth) / 2,
+        y: currentY - titleBannerHeight + (titleBannerHeight - titleFontSize) / 2,
+        font: boldFont,
+        size: titleFontSize,
+        color: rgb(1, 1, 1),
+    });
+    currentY -= titleBannerHeight + 25;
+
+    const tableStartY = currentY;
+
+    const table = {
+        x: tableX,
+        columnWidths: [30, 170, 220, 40, 50],
+        headerHeight: 22,
+        padding: { top: 6, bottom: 6, left: 5, right: 5 },
+    };
+    
+    const headerFontSize = 9.5;
+    const contentFontSize = 8.5;
+    const descriptionFontSize = 7.8;
+    const contentLineHeight = contentFontSize * 1.3;
+    const descriptionLineHeight = descriptionFontSize * 1.3;
+    const textColor = rgb(0.1, 0.1, 0.1);
+    const headerColor = rgb(1, 1, 1);
+    const headerBgColor = rgb(0.6, 0, 0.15); // Przywrócenie czerwonego tła nagłówka
+    const evenRowBgColor = rgb(0.98, 0.96, 0.96);
+    const lineColor = rgb(0.85, 0.85, 0.85);
+    const tableWidth = table.columnWidths.reduce((a, b) => a + b, 0);
+    const columnPositions = [table.x];
+    for (let i = 0; i < table.columnWidths.length; i++) {
+        columnPositions.push(columnPositions[i] + table.columnWidths[i]);
+    }
+
+    const headerY = currentY - table.headerHeight;
+    const headerTextY = headerY + (table.headerHeight - headerFontSize) / 2 + 1;
+    page.drawRectangle({ x: table.x, y: headerY, width: tableWidth, height: table.headerHeight, color: headerBgColor });
+    const headers = ['Lp.', 'Nazwa towaru', 'Opis', 'J.m.', 'Cena'];
+    let currentHeaderX = table.x;
+    headers.forEach((header, i) => {
+        const textWidth = boldFont.widthOfTextAtSize(header, headerFontSize);
+        page.drawText(header, { x: currentHeaderX + (table.columnWidths[i] - textWidth) / 2, y: headerTextY, size: headerFontSize, font: boldFont, color: headerColor });
+        currentHeaderX += table.columnWidths[i];
+    });
+    currentY = headerY;
+
+    data.forEach((row, rowIndex) => {
+        const [lp, name, description, unit, price] = row;
+        const nameLines = wrapText(name, regularFont, contentFontSize, table.columnWidths[1] - 10);
+        const descLines = wrapText(description, regularFont, descriptionFontSize, table.columnWidths[2] - 10);
+        const rowLineCount = Math.max(nameLines.length, descLines.length, 1);
+        const dynamicRowHeight = (rowLineCount * Math.max(contentLineHeight, descriptionLineHeight)) + table.padding.top + table.padding.bottom;
+        
+        currentY -= dynamicRowHeight;
+
+        if (rowIndex % 2 === 0) {
+            page.drawRectangle({ x: table.x, y: currentY, width: tableWidth, height: dynamicRowHeight, color: evenRowBgColor });
+        }
+        
+        const textStartY = currentY + dynamicRowHeight - table.padding.top - contentFontSize;
+        const descTextStartY = currentY + dynamicRowHeight - table.padding.top - descriptionFontSize;
+
+        page.drawText(lp, { x: columnPositions[0] + (table.columnWidths[0] - regularFont.widthOfTextAtSize(lp, contentFontSize)) / 2, y: textStartY, size: contentFontSize, font: regularFont, color: textColor });
+        let nameY = textStartY;
+        nameLines.forEach(line => {
+            page.drawText(line, { x: columnPositions[1] + 5, y: nameY, size: contentFontSize, font: regularFont, color: textColor, lineHeight: contentLineHeight });
+            nameY -= contentLineHeight;
+        });
+        let descY = descTextStartY;
+        descLines.forEach(line => {
+            page.drawText(line, { x: columnPositions[2] + 5, y: descY, size: descriptionFontSize, font: regularFont, color: textColor, lineHeight: descriptionLineHeight });
+            descY -= descriptionLineHeight;
+        });
+        page.drawText(unit, { x: columnPositions[3] + (table.columnWidths[3] - regularFont.widthOfTextAtSize(unit, contentFontSize)) / 2, y: textStartY, size: contentFontSize, font: regularFont, color: textColor });
+        page.drawText(price, { x: columnPositions[4] + (table.columnWidths[4] - regularFont.widthOfTextAtSize(price, contentFontSize)) / 2, y: textStartY, size: contentFontSize, font: regularFont, color: textColor });
+        
+        page.drawLine({ start: { x: table.x, y: currentY }, end: { x: table.x + tableWidth, y: currentY }, thickness: 0.5, color: lineColor });
+    });
+
+    for(let i=0; i <= table.columnWidths.length; i++) {
+        page.drawLine({ start: { x: columnPositions[i], y: currentY }, end: { x: columnPositions[i], y: tableStartY }, thickness: 0.5, color: lineColor });
+    }
+
+    const footerText = "UWAGI: OPCJE DODATKOWE NIE SĄ WYMAGANE PRZEZ PRODUCENTÓW* DO PRACY INSTALACJI I O ICH ZASADNOŚCI KAŻDORAZOWO NALEŻY KONSULTOWAĆ SIĘ Z OPIEKUNEM HANDLOWYM LUB DORADCĄ TECHNICZNYM";
+    const footerFontSize = 8.5;
+    const footerLines = wrapText(footerText, boldFont, footerFontSize, tableWidth - 40);
+    let footerY = currentY - 35;
+    footerLines.forEach(line => {
+        const lineWidth = boldFont.widthOfTextAtSize(line, footerFontSize);
+        page.drawText(line, {
+            x: tableX + (tableWidth - lineWidth) / 2, y: footerY, font: boldFont, size: footerFontSize, color: rgb(0.3, 0.3, 0.3), lineHeight: footerFontSize * 1.3,
+        });
+        footerY -= footerFontSize * 1.3;
+    });
+
+    const bottomBannerHeight = 10;
+    page.drawRectangle({
+        x: 0, y: 0, width: pageWidth, height: bottomBannerHeight, color: kamanRed,
+    });
+}
+
 
 export async function generateOfferPDF(
   cena,
@@ -174,24 +288,18 @@ export async function generateOfferPDF(
         return null;
     }
 
+    const kotlyDeviceTypes = ["LAZAR", "Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "QMPELL", "Kotlospaw drewko hybrid", "Kotlospaw drewko plus"];
+    const isKotel = kotlyDeviceTypes.includes(deviceType);
+
     const pageTopMargin = 40;
     const pageBottomMargin = 40;
 
     try {
         const selectedTemplatePaths = getTemplatePathsForDevice(deviceType);
         const assetBuffers = await Promise.all([
-            ...selectedTemplatePaths.map(path => fetch(path).then(res => {
-                if (!res.ok) throw new Error(`Nie udało się wczytać pliku szablonu PDF: ${path}.`);
-                return res.arrayBuffer();
-            })),
-            fetch('/fonts/OpenSans-Bold.ttf').then(res => {
-                if (!res.ok) throw new Error(`Nie udało się wczytać czcionki OpenSans-Bold.ttf.`);
-                return res.arrayBuffer();
-            }),
-            fetch('/fonts/OpenSans-Regular.ttf').then(res => {
-                if (!res.ok) throw new Error(`Nie udało się wczytać czcionki OpenSans-Regular.ttf.`);
-                return res.arrayBuffer();
-            })
+            ...selectedTemplatePaths.map(path => fetch(path).then(res => res.arrayBuffer())),
+            fetch('/fonts/OpenSans-Bold.ttf').then(res => res.arrayBuffer()),
+            fetch('/fonts/OpenSans-Regular.ttf').then(res => res.arrayBuffer())
         ]);
 
         const regularFontBytes = assetBuffers.pop();
@@ -219,46 +327,34 @@ export async function generateOfferPDF(
             "Dziękujemy za zainteresowanie ofertą firmy KAMAN.",
             "Każde urządzenie dobierane jest indywidualnie po szczegółowych ustaleniach technicznych."
         ];
-        const userNameText = `Oferta dla: ${userName}`;
-
         const introFontSize = 9.5;
-        const userNameFontSize = 20;
         const introLineHeight = introFontSize * 1.4;
+        const bannerHeight = 55;
+        const bannerY = currentY - bannerHeight;
 
-        const headerBlockHeight = 80;
-        const bannerY = currentY - headerBlockHeight;
+        dynamicPage.drawRectangle({ x: 0, y: bannerY, width: pageWidth, height: bannerHeight, color: rgb(0.815, 0.008, 0.106) });
 
-        dynamicPage.drawRectangle({
-            x: 0,
-            y: bannerY,
-            width: pageWidth,
-            height: headerBlockHeight,
-            color: rgb(0.815, 0.008, 0.106),
-        });
-
-        let introTextY = bannerY + headerBlockHeight - 18;
+        let introTextY = bannerY + bannerHeight - 20;
         introLines.forEach(line => {
             const textWidth = boldFont.widthOfTextAtSize(line, introFontSize);
-            dynamicPage.drawText(line, {
-                x: (pageWidth - textWidth) / 2,
-                y: introTextY,
-                font: boldFont,
-                size: introFontSize,
-                color: rgb(1, 1, 1),
-            });
+            dynamicPage.drawText(line, { x: (pageWidth - textWidth) / 2, y: introTextY, font: boldFont, size: introFontSize, color: rgb(1, 1, 1) });
             introTextY -= introLineHeight;
         });
-
+        
+        currentY = bannerY - 25;
+        
+        const userNameText = `Oferta dla: ${userName}`;
+        const userNameFontSize = 22;
         const userNameTextWidth = boldFont.widthOfTextAtSize(userNameText, userNameFontSize);
         dynamicPage.drawText(userNameText, {
             x: (pageWidth - userNameTextWidth) / 2,
-            y: bannerY + 15,
-            font: boldFont,
+            y: currentY,
             size: userNameFontSize,
-            color: rgb(1, 1, 1),
+            font: boldFont,
+            color: rgb(0.7, 0, 0.16),
         });
-        
-        currentY = bannerY - 15;
+
+        currentY -= (userNameFontSize + 15);
         
         const tableStartY = currentY;
         let lastYPosAfterTable = tableStartY;
@@ -266,9 +362,7 @@ export async function generateOfferPDF(
         if (tableData && tableData.length > 0) {
             lastYPosAfterTable = drawTable(finalPdfDoc, dynamicPage, regularFont, tableData, tableStartY);
         } else {
-            dynamicPage.drawText("Brak danych do wyświetlenia w tabeli dla wybranej konfiguracji.", {
-                x: 50, y: tableStartY - 20, size: 12, font: regularFont, color: rgb(0.5, 0.5, 0.5)
-            });
+            dynamicPage.drawText("Brak danych do wyświetlenia w tabeli...", { x: 50, y: tableStartY - 20, size: 12, font: regularFont, color: rgb(0.5, 0.5, 0.5) });
             lastYPosAfterTable = tableStartY - 40;
         }
 
@@ -277,24 +371,20 @@ export async function generateOfferPDF(
         const priceTextWidth = boldFont.widthOfTextAtSize(priceString, priceFontSize);
 
         let pageForPrice = finalPdfDoc.getPage(finalPdfDoc.getPageCount() - 1);
-        let heightOfPageForPrice = pageForPrice.getHeight();
-        let widthOfPageForPrice = pageForPrice.getWidth();
         let priceYPosition = lastYPosAfterTable - 40;
 
         if (priceYPosition < pageBottomMargin) {
-             const newPricePage = finalPdfDoc.addPage();
-             pageForPrice = newPricePage;
-             priceYPosition = newPricePage.getHeight() - pageTopMargin - 60;
+             const newPage = finalPdfDoc.addPage();
+             pageForPrice = newPage;
+             priceYPosition = newPage.getHeight() - pageTopMargin - 60;
         }
         
-        pageForPrice.drawText(priceString, {
-            x: (widthOfPageForPrice - priceTextWidth) / 2,
-            y: priceYPosition,
-            size: priceFontSize,
-            font: boldFont,
-            color: rgb(0.7, 0, 0.16),
-        });
+        pageForPrice.drawText(priceString, { x: (pageForPrice.getWidth() - priceTextWidth) / 2, y: priceYPosition, size: priceFontSize, font: boldFont, color: rgb(0.7, 0, 0.16) });
         
+        const extrasPage = finalPdfDoc.addPage();
+        const optionalExtrasData = isKotel ? opcjeDlaKotlow : opcjeDlaPompCiepla;
+        drawOptionalExtrasTable(extrasPage, regularFont, boldFont, optionalExtrasData);
+
         for (let i = 1; i < templatePdfBuffers.length; i++) {
             if (templatePdfBuffers[i]) {
                 const templateDoc = await PDFDocument.load(templatePdfBuffers[i]);
@@ -311,7 +401,7 @@ export async function generateOfferPDF(
 
     } catch (error) {
         console.error('Błąd podczas generowania PDF:', error);
-        alert(`Wystąpił błąd podczas generowania oferty: ${error.message}. Sprawdź konsolę deweloperską (F12).`);
+        alert(`Wystąpił błąd podczas generowania oferty: ${error.message}. Sprawdź konsolę.`);
         return null;
     }
 }
