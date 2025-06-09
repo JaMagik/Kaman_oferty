@@ -46,7 +46,7 @@ const pelletBoilerDeviceTypes = ["LAZAR", "Kotlospaw Slimko Plus", "Kotlospaw sl
 // Opcje buforów dla pomp ciepła
 const heatPumpBufferOptions = [
   { value: "sprzeglo", label: "Sprzęgło hydrauliczne z osprzętem" },
-  { value: "none", label: "Brak bufora" },
+  { value: "none", label: "Bufor niewymagany" },
   { value: "40-120L", label: "Bufor 40-120 L + osprzęt" },
   { value: "40L", label: "Bufor 40 L + osprzęt" },
   { value: "60L", label: "Bufor 60 L + osprzęt" },
@@ -59,7 +59,7 @@ const heatPumpBufferOptions = [
 // Opcje buforów dla kotłów na pellet
 const pelletBoilerBufferOptions = [
   { value: "sprzeglo", label: "Sprzęgło hydrauliczne z osprzętem" },
-  { value: "none", label: "Brak bufora" },
+  { value: "none", label: "Bufor niewymagany" },
   { value: "100L", label: "Bufor 100 L + osprzęt" },
   { value: "120L", label: "Bufor 120 L + osprzęt" },
   { value: "140L", label: "Bufor 140 L + osprzęt" },
@@ -228,7 +228,7 @@ export default function UnifiedOfferForm() {
       <label htmlFor="deviceType">Typ Urządzenia/Oferty:</label>
       <select id="deviceType" value={deviceType} onChange={(e) => setDeviceType(e.target.value)}>
         <optgroup label="Mitsubishi (Pompy Ciepła)">
-          <option value="Mitsubishi-cylinder">Mitsubishi Cylinder (Standard PUD)</option>
+          <option value="Mitsubishi-hydrobox">Mitsubishi Hydrobox (Standard PUD)</option>
           <option value="Mitsubishi-cylinder-PUZ">Mitsubishi Cylinder (Zubadan PUZ)</option>
           <option value="Mitsubishi-cylinder-PUZ-1F">Mitsubishi Cylinder (Zubadan PUZ 1-faz.)</option>
 
@@ -288,9 +288,11 @@ export default function UnifiedOfferForm() {
 
       <label htmlFor="tank">Pojemność zasobnika CWU:</label>
       <select id="tank" value={tank} onChange={(e) => setTank(e.target.value)}>
+              <option value="140L">140 L</option>
+
+        <option value="200L">200 L</option>
         <option value="none">Zasobnik CWU nie wymagany/ Zintegrowany</option>
         <option value="integrated">Zasobnik CWU zintegrowany</option>
-        <option value="200L">200 L</option>
         <option value="300L">300 L</option>
         <option value="400L">400 L</option>
          <option value="200 L STAL NIERDZEWNA">200 L STAL NIERDZEWNA</option>

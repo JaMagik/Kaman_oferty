@@ -50,11 +50,18 @@ function getBufferRowData(bufferCapacity) {
     '120L': { name: 'Bufor 120 L z osprzętem', description: 'Zbiornik buforowy 120L, który zwiększa zład wody w instalacji, optymalizuje pracę pompy ciepła/kotła i zapewnia dłuższą żywotność urządzenia. Komplet z niezbędnym osprzętem.' },
     '140L': { name: 'Bufor 140 L z osprzętem', description: 'Zbiornik buforowy 140L, który zwiększa zład wody w instalacji, optymalizuje pracę pompy ciepła/kotła i zapewnia dłuższą żywotność urządzenia. Komplet z niezbędnym osprzętem.' },
     '200L': { name: 'Bufor 200 L z osprzętem', description: 'Zbiornik buforowy 200L, zalecany dla bardziej rozbudowanych instalacji, magazynuje nadmiar ciepła, zapewniając stabilną pracę i oszczędności.' },
+      'zawor': { name: 'Zawór mięszający czterodrogowy', description: 'Zawór mięszający czterodrogowy z siłownikiem i pompą obiegową do ochrony powrotu.' },
+
   };
-  const bufferKey = bufferCapacity.includes('Sprzęgło') ? 'sprzeglo' : bufferCapacity;
-  const data = bufferDescriptions[bufferKey];
-  if (!data) return null;
-  return [' ', data.name, 'szt.', '1', data.description];
+  let bufferKey = bufferCapacity; // Domyślnie użyj przekazanej wartości
+
+if (typeof bufferCapacity === 'string') {
+  if (bufferCapacity.toLowerCase().includes('sprzęgło')) {
+    bufferKey = 'sprzeglo';
+  } else if (bufferCapacity.toLowerCase().includes('zawór')) {
+    bufferKey = 'zawor';
+  }
+}
 }
 
 
