@@ -23,7 +23,9 @@ const wrapText = (text, textFont, textSize, maxWidth) => {
     return lines;
 };
 
-// CAŁKOWICIE NOWA, NIEZAWODNA FUNKCJA drawTable
+// ZMODYFIKOWANA FUNKCJA drawTable
+// src/utils/pdfGenerator.jsx
+
 function drawTable(pdfDoc, initialPage, fonts, tableData, startY) {
     let currentPage = initialPage;
     let currentY = startY;
@@ -32,7 +34,7 @@ function drawTable(pdfDoc, initialPage, fonts, tableData, startY) {
         x: 50,
         columnWidths: [30, 150, 240, 40, 50],
         headerHeight: 22,
-        padding: { top: 6, bottom: 6, left: 5, right: 5 },
+        padding: { top: 5, bottom: 5, left: 5, right: 5 },
         headerFontSize: 9.5,
         contentFontSize: 8.5,
         descriptionFontSize: 7.5,
@@ -52,7 +54,11 @@ function drawTable(pdfDoc, initialPage, fonts, tableData, startY) {
     let tableSegmentTopY = startY;
 
     const drawHeader = (page, y) => {
-        const headerTextY = y - tableConfig.headerHeight / 2 + tableConfig.headerFontSize / 2 - 2;
+        // --- POCZĄTEK ZMIANY ---
+        // Poprawiona formuła na idealne wyśrodkowanie tekstu w pionie
+        const headerTextY = (y - tableConfig.headerHeight) + (tableConfig.headerHeight - tableConfig.headerFontSize) / 2;
+        // --- KONIEC ZMIANY ---
+        
         page.drawRectangle({
             x: tableConfig.x, y: y - tableConfig.headerHeight, width: tableWidth,
             height: tableConfig.headerHeight, color: tableConfig.headerBgColor,
@@ -293,28 +299,32 @@ export async function generateOfferPDF(
         const { width: pageWidth, height: pageHeight } = dynamicPage.getSize();
         const tableData = getTableData(deviceType, model, tankCapacity, bufferCapacity, systemType);
         
-        let currentY = pageHeight - 30;
+        // Zaczynamy rysowanie od samej góry
+        let currentY = pageHeight;
         
+        // --- POCZĄTEK: Logika czerwonego banera przesunięta na górę ---
         const introLines = [
             "Dziękujemy za zainteresowanie ofertą firmy KAMAN.",
             "Każde urządzenie dobierane jest indywidualnie po szczegółowych ustaleniach technicznych."
         ];
         const introFontSize = 9.5;
         const introLineHeight = introFontSize * 1.4;
-        const bannerHeight = 55;
+        const bannerHeight = 45; // Zmniejszona wysokość banera, aby był bardziej kompaktowy
         const bannerY = currentY - bannerHeight;
 
         dynamicPage.drawRectangle({ x: 0, y: bannerY, width: pageWidth, height: bannerHeight, color: rgb(0.815, 0.008, 0.106) });
 
-        let introTextY = bannerY + bannerHeight - 20;
+        let introTextY = bannerY + bannerHeight - 15; // Dostosowanie pozycji tekstu w banerze
         introLines.forEach(line => {
             const textWidth = boldFont.widthOfTextAtSize(line, introFontSize);
             dynamicPage.drawText(line, { x: (pageWidth - textWidth) / 2, y: introTextY, font: boldFont, size: introFontSize, color: rgb(1, 1, 1) });
             introTextY -= introLineHeight;
         });
         
-        currentY = bannerY - 25;
-        
+        // Ustawienie nowej pozycji startowej dla reszty treści
+        currentY = bannerY - 20;
+        // --- KONIEC: Logika czerwonego banera ---
+
         const userNameText = `Oferta dla: ${userName}`;
         const userNameFontSize = 22;
         const userNameTextWidth = boldFont.widthOfTextAtSize(userNameText, userNameFontSize);

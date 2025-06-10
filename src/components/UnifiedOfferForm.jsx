@@ -1,5 +1,3 @@
-// ścieżka: src/components/UnifiedOfferForm.jsx
-
 import React, { useState, useEffect } from "react";
 import { generateOfferPDF } from "../utils/pdfGenerator";
 import { mitsubishiBaseTables } from "../data/tables/mitsubishiTables";
@@ -41,28 +39,24 @@ const boilerDeviceTypes = [
     "Kotlospaw drewko hybrid"
 ];
 
+// Opcje buforów dla pomp ciepła
 const heatPumpBufferOptions = [
   { value: "sprzeglo", label: "Sprzęgło hydrauliczne z osprzętem" },
   { value: "none", label: "Bufor niewymagany" },
-  { value: "40L", label: "Bufor 40 L + osprzęt" },
-  { value: "60L", label: "Bufor 60 L + osprzęt" },
-  { value: "80L", label: "Bufor 80 L + osprzęt" },
-  { value: "100L", label: "Bufor 100 L + osprzęt" },
-  { value: "120L", label: "Bufor 120 L + osprzęt" },
-  { value: "140L", label: "Bufor 140 L + osprzęt" },
+  { value: "40-100L", label: "Bufor 40-100 L + osprzęt" },
+  { value: "200L", label: "Bufor 200 L + osprzęt" },
+  { value: "300L", label: "Bufor 300 L + osprzęt" },
 ];
 
+// Opcje buforów dla kotłów ("pieców")
 const boilerBufferOptions = [
-  { value: "sprzeglo", label: "Sprzęgło hydrauliczne z osprzętem" },
+   { value: "sprzeglo", label: "Sprzęgło hydrauliczne z osprzętem" },
   { value: "none", label: "Bufor niewymagany" },
+  { value: "zawor-4d", label: "Zawór czterodrożny z siłownikiem" },
   { value: "100L", label: "Bufor 100 L + osprzęt" },
   { value: "120L", label: "Bufor 120 L + osprzęt" },
   { value: "140L", label: "Bufor 140 L + osprzęt" },
   { value: "200L", label: "Bufor 200 L + osprzęt" },
-  { value: "300L", label: "Bufor 300 L + osprzęt" },
-  { value: "500L", label: "Bufor 500 L + osprzęt" },
-  { value: "800L", label: "Bufor 800 L + osprzęt" },
-  { value: "1000L", label: "Bufor 1000 L + osprzęt" },
 ];
 
 
@@ -81,8 +75,52 @@ export default function UnifiedOfferForm() {
   const [isSavingToTrello, setIsSavingToTrello] = useState(false);
   const [generatedPdfData, setGeneratedPdfData] = useState(null);
   
-  // NOWY stan dla wyboru typu układu kotła
   const [systemType, setSystemType] = useState('zamkniety');
+
+  // Funkcja do formatowania ceny do wyświetlenia w polu input
+  const formatPriceForDisplay = (value) => {
+    if (!value) return '';
+    const [integer, decimal] = String(value).split('.');
+    
+    // Używamy toLocaleString do automatycznego dodania separatorów tysięcy
+    const formattedInteger = Number(integer).toLocaleString('pl-PL');
+    
+    // Jeśli jest część dziesiętna, dołączamy ją z przecinkiem
+    if (decimal !== undefined) {
+      return `${formattedInteger},${decimal}`;
+    }
+    // Jeśli użytkownik właśnie wpisał przecinek/kropkę, zostawiamy ją
+    if(String(value).slice(-1) === '.') {
+      return `${formattedInteger},`;
+    }
+
+    return formattedInteger;
+  };
+
+  // Funkcja obsługująca zmiany w polu ceny
+  const handlePriceChange = (e) => {
+    const rawValue = e.target.value;
+    
+    // 1. Usuwamy spacje i wszystko, co nie jest cyfrą, kropką lub przecinkiem
+    let cleanedValue = rawValue.replace(/[^0-9,.]/g, '').replace(/\s/g, '');
+    
+    // 2. Zamieniamy przecinek na kropkę
+    cleanedValue = cleanedValue.replace(',', '.');
+
+    // 3. Zapewniamy, że jest tylko jedna kropka
+    const parts = cleanedValue.split('.');
+    if (parts.length > 2) {
+        cleanedValue = parts[0] + '.' + parts.slice(1).join('');
+    }
+
+    // 4. Ograniczamy do dwóch miejsc po przecinku
+    if (parts[1] && parts[1].length > 2) {
+      parts[1] = parts[1].substring(0, 2);
+      cleanedValue = parts.join('.');
+    }
+
+    setPrice(cleanedValue);
+  };
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -121,7 +159,6 @@ export default function UnifiedOfferForm() {
 
   const handleGenerateAndSetPdf = async (e) => {
     if (e) e.preventDefault();
-    // Przekazanie `systemType` do funkcji generującej PDF
     const pdfData = await generateOfferPDF(price, userName, deviceType, model, tank, buffer, systemType);
     if (pdfData) {
       setGeneratedPdfData(pdfData);
@@ -210,7 +247,15 @@ export default function UnifiedOfferForm() {
       <input id="userName" type="text" value={userName} onChange={(e) => setUserName(e.target.value)} placeholder="Podaj imię i nazwisko" required />
 
       <label htmlFor="price">Cena Końcowa (PLN):</label>
-      <input id="price" type="text" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Podaj cenę" required />
+      <input
+        id="price"
+        type="text"
+        inputMode="decimal"
+        value={formatPriceForDisplay(price)}
+        onChange={handlePriceChange}
+        placeholder="Podaj cenę"
+        required
+      />
 
       <label htmlFor="deviceType">Typ Urządzenia/Oferty:</label>
       <select id="deviceType" value={deviceType} onChange={(e) => setDeviceType(e.target.value)}>
@@ -280,7 +325,6 @@ export default function UnifiedOfferForm() {
         ))}
       </select>
 
-      {/* NOWA SEKCJA WARUNKOWA */}
       {isBoiler && (
         <div className="input-group" style={{marginTop: '10px'}}>
             <label htmlFor="systemType">Typ układu hydraulicznego:</label>

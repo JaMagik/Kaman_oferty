@@ -1,7 +1,7 @@
 // ścieżka: src/data/tables/index.js
 
 import { mitsubishiBaseTables } from './mitsubishiTables';
-import {toshiba1fBaseTables} from './toshiba1fTable';
+import { toshiba1fBaseTables } from './toshiba1fTable';
 import { atlanticBaseTables } from './atlanticTables';
 import { lazarBaseTables } from './lazarTables';
 import { viessmannBaseTables } from './viessmannTables';
@@ -10,7 +10,7 @@ import { kotlospawSlimkoPlusNiskiBaseTables } from './kotlospawSlimkoPlusNiskiTa
 import { qmpellBaseTables } from "./qmpellEvoTables"; 
 import { kotlospawDrewkoPlusBaseTables } from "./kotlospawDrewkoPlusTable";
 import { kotlospawDrewkoHybridBaseTables } from "./kotlospawDrewkoHybridTable";
-import {kaisaiHydroboxBaseTables} from './kaisaiTable';
+import { kaisaiHydroboxBaseTables } from './kaisaiTable';
 
 const allDeviceTables = {
     ...mitsubishiBaseTables, ...atlanticBaseTables, ...lazarBaseTables,
@@ -34,7 +34,6 @@ function getTankRowData(tankCapacity) {
   };
   const data = tankDescriptions[tankCapacity];
   if (!data) return null;
-  // Dodajemy 'common' jako flagę, aby ten wiersz nie był nigdy odfiltrowywany
   return [' ', data.name, 'szt.', '1', data.description, 'common'];
 }
 
@@ -44,6 +43,12 @@ function getBufferRowData(bufferCapacity) {
   }
   const bufferDescriptions = {
     'sprzeglo': { name: 'Sprzęgło hydrauliczne z osprzętem', description: 'Kompaktowe sprzęgło hydrauliczne zapewniające separację obiegu źródła ciepła od obiegów grzewczych, stabilizując pracę i ciśnienie w całej instalacji.' },
+    'zawor-4d': { name: 'Zawór czterodrożny z siłownikiem', description: 'Zawór mieszający czterodrogowy z siłownikiem, chroni powrót kotła i reguluje temperaturę zasilania instalacji grzewczej.'},
+    
+    // --- POCZĄTEK ZMIANY: DODAJ TĘ LINIĘ ---
+    '40-100L': { name: 'Bufor 40-100 L z osprzętem', description: 'Zbiornik buforowy zwiększający zład wody w instalacji. Optymalizuje pracę pompy ciepła, redukując liczbę jej uruchomień. Komplet z niezbędnym osprzętem.' },
+    // --- KONIEC ZMIANY ---
+
     '40L': { name: 'Bufor 40 L z osprzętem', description: 'Kompaktowy zbiornik buforowy 40L, który zwiększa zład wody w instalacji, optymalizuje pracę pompy ciepła i zapewnia jej dłuższą żywotność. Komplet z niezbędnym osprzętem.' },
     '60L': { name: 'Bufor 60 L z osprzętem', description: 'Zbiornik buforowy 60L, zwiększający zład wody w instalacji. Optymalizuje pracę pompy ciepła, redukując liczbę jej uruchomień. Komplet z niezbędnym osprzętem.' },
     '80L': { name: 'Bufor 80 L z osprzętem', description: 'Zbiornik buforowy 80L, zwiększający zład wody w instalacji. Optymalizuje pracę pompy ciepła, redukując liczbę jej uruchomień. Komplet z niezbędnym osprzętem.' },
@@ -51,25 +56,40 @@ function getBufferRowData(bufferCapacity) {
     '120L': { name: 'Bufor 120 L z osprzętem', description: 'Zbiornik buforowy 120L, który zwiększa zład wody w instalacji, optymalizuje pracę pompy ciepła/kotła i zapewnia dłuższą żywotność urządzenia. Komplet z niezbędnym osprzętem.' },
     '140L': { name: 'Bufor 140 L z osprzętem', description: 'Zbiornik buforowy 140L, który zwiększa zład wody w instalacji, optymalizuje pracę pompy ciepła/kotła i zapewnia dłuższą żywotność urządzenia. Komplet z niezbędnym osprzętem.' },
     '200L': { name: 'Bufor 200 L z osprzętem', description: 'Zbiornik buforowy 200L, zalecany dla bardziej rozbudowanych instalacji, magazynuje nadmiar ciepła, zapewniając stabilną pracę i oszczędności.' },
+    '300L': { name: 'Bufor 300 L z osprzętem', description: 'Zbiornik buforowy 300L do magazynowania nadmiaru ciepła, zapewniając stabilną pracę i oszczędności.'},
   };
   const bufferKey = bufferCapacity.includes('Sprzęgło') ? 'sprzeglo' : bufferCapacity;
   const data = bufferDescriptions[bufferKey];
   if (!data) return null;
-  // Dodajemy 'common' jako flagę, aby ten wiersz nie był nigdy odfiltrowywany
   return [' ', data.name, 'szt.', '1', data.description, 'common'];
 }
-
 export function getTableData(deviceType, model, tankCapacity, bufferCapacity, systemType) {
   const boilerDeviceTypes = ["LAZAR", "Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid"];
   const isBoiler = boilerDeviceTypes.includes(deviceType);
+  
+  const returnPumpBoilers = ["Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid"];
 
   if (!allDeviceTables[deviceType] || !allDeviceTables[deviceType][model]) {
     console.warn(`Brak danych bazowych dla ${deviceType} i ${model}.`);
     return [];
   }
 
-  const baseTableData = JSON.parse(JSON.stringify(allDeviceTables[deviceType][model]));
+  let baseTableData = JSON.parse(JSON.stringify(allDeviceTables[deviceType][model]));
+  
+  // --- POCZĄTEK NOWEJ LOGIKI ---
+  if (isBoiler) {
+    // Sprawdzamy, czy POKAZAĆ pompę ochrony powrotu
+    const showReturnPump = returnPumpBoilers.includes(deviceType) && // 1. Czy to kocioł Kotłospaw lub QMPELL?
+                             bufferCapacity !== 'none' &&               // 2. Czy wybrano jakikolwiek bufor/sprzęgło?
+                             bufferCapacity !== 'zawor-4d';             // 3. Czy NIE wybrano zaworu 4-drogowego?
 
+    if (!showReturnPump) {
+      // Jeśli warunki nie są spełnione, filtrujemy (usuwamy) pompę z tablicy
+      baseTableData = baseTableData.filter(row => !row[1].includes('Pompa ochrony powrotu'));
+    }
+  }
+  // --- KONIEC NOWEJ LOGIKI ---
+  
   let workingTable;
 
   if (isBoiler) {
@@ -85,12 +105,18 @@ export function getTableData(deviceType, model, tankCapacity, bufferCapacity, sy
   const tankRow = getTankRowData(tankCapacity);
   const bufferRow = getBufferRowData(bufferCapacity);
   
+  // Wstawianie wierszy dla zasobnika i bufora/zaworu
+  let insertIndex = 1;
+  if(workingTable.some(row => row[1].includes("Kocioł"))){
+    insertIndex = workingTable.findIndex(row => row[1].includes("Kocioł")) + 1;
+  }
+  
   if (tankRow) {
-      workingTable.splice(1, 0, tankRow);
+      workingTable.splice(insertIndex, 0, tankRow);
+      insertIndex++;
   }
   if (bufferRow) {
-    const bufferInsertIndex = tankRow ? 2 : 1;
-    workingTable.splice(bufferInsertIndex, 0, bufferRow);
+    workingTable.splice(insertIndex, 0, bufferRow);
   }
 
   // Finalna, poprawna renumeracja po wszystkich operacjach
