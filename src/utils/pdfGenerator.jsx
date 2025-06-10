@@ -24,9 +24,12 @@ const wrapText = (text, textFont, textSize, maxWidth) => {
     return lines;
 };
 
-function drawTable(page, fonts, tableData, startY) {
+// --- POCZĄTEK POPRAWKI: Zmieniono sygnaturę i logikę dodawania strony ---
+function drawTable(pdfDoc, initialPage, fonts, tableData, startY) {
+    let currentPage = initialPage;
     let currentY = startY;
     const { regular: regularFont, bold: boldFont } = fonts;
+
     const tableConfig = {
         columnWidths: [30, 150, 240, 40, 50],
         headerHeight: 22,
@@ -42,7 +45,7 @@ function drawTable(page, fonts, tableData, startY) {
         pageMargins: { top: 40, bottom: 40 }
     };
     const tableWidth = tableConfig.columnWidths.reduce((a, b) => a + b, 0);
-    const tableStartX = (page.getWidth() - tableWidth) / 2;
+    const tableStartX = (currentPage.getWidth() - tableWidth) / 2;
 
     const columnPositions = [tableStartX];
     for (let i = 0; i < tableConfig.columnWidths.length; i++) {
@@ -70,7 +73,7 @@ function drawTable(page, fonts, tableData, startY) {
         return headerY;
     };
 
-    currentY = drawHeader(page, currentY);
+    currentY = drawHeader(currentPage, currentY);
 
     tableData.forEach((row, rowIndex) => {
         const [lp, name, unit, quantity, description] = row;
@@ -83,40 +86,38 @@ function drawTable(page, fonts, tableData, startY) {
         ) + tableConfig.padding.top + tableConfig.padding.bottom;
 
         if (currentY - rowHeight < tableConfig.pageMargins.bottom) {
-            for (let i = 0; i <= tableConfig.columnWidths.length; i++) {
-                page.drawLine({ start: { x: columnPositions[i], y: currentY }, end: { x: columnPositions[i], y: tableSegmentTopY }, thickness: 0.5, color: tableConfig.lineColor });
-            }
-            page = page.addPage();
-            currentY = page.getHeight() - tableConfig.pageMargins.top;
+             for (let i = 0; i <= tableConfig.columnWidths.length; i++) { currentPage.drawLine({ start: { x: columnPositions[i], y: currentY }, end: { x: columnPositions[i], y: tableSegmentTopY }, thickness: 0.5, color: tableConfig.lineColor }); }
+            currentPage = pdfDoc.addPage(); // POPRAWKA: Używamy pdfDoc do dodania strony
+            currentY = currentPage.getHeight() - tableConfig.pageMargins.top;
             tableSegmentTopY = currentY;
-            currentY = drawHeader(page, currentY);
+            currentY = drawHeader(currentPage, currentY);
         }
 
         const rowY = currentY - rowHeight;
-        if (rowIndex % 2 === 1) { page.drawRectangle({ x: tableStartX, y: rowY, width: tableWidth, height: rowHeight, color: tableConfig.evenRowBgColor }); }
+        if (rowIndex % 2 === 1) { currentPage.drawRectangle({ x: tableStartX, y: rowY, width: tableWidth, height: rowHeight, color: tableConfig.evenRowBgColor }); }
         
         const textBaseY = currentY - tableConfig.padding.top;
         const vCenterOffset = (rowHeight - (Math.max(nameLines.length, descLines.length) * (tableConfig.contentFontSize * 1.2))) / 2 - tableConfig.padding.bottom;
         const centeredY = textBaseY - vCenterOffset - tableConfig.contentFontSize;
         const centeredDescY = textBaseY - vCenterOffset - tableConfig.descriptionFontSize;
 
-        page.drawText(String(lp), { x: columnPositions[0] + (tableConfig.columnWidths[0] - regularFont.widthOfTextAtSize(String(lp), tableConfig.contentFontSize)) / 2, y: centeredY, font: regularFont, size: tableConfig.contentFontSize, color: tableConfig.rowFontColor });
-        let nameY = centeredY;
-        nameLines.forEach(line => { page.drawText(line, { x: columnPositions[1] + 5, y: nameY, font: regularFont, size: tableConfig.contentFontSize, lineHeight: tableConfig.contentFontSize * 1.3, color: tableConfig.rowFontColor }); nameY -= tableConfig.contentFontSize * 1.3; });
-        let descY = centeredDescY;
-        descLines.forEach(line => { page.drawText(line, { x: columnPositions[2] + 5, y: descY, font: regularFont, size: tableConfig.descriptionFontSize, lineHeight: tableConfig.descriptionFontSize * 1.3, color: tableConfig.rowFontColor }); descY -= tableConfig.descriptionFontSize * 1.3; });
-        page.drawText(String(unit), { x: columnPositions[3] + (tableConfig.columnWidths[3] - regularFont.widthOfTextAtSize(String(unit), tableConfig.contentFontSize)) / 2, y: centeredY, font: regularFont, size: tableConfig.contentFontSize, color: tableConfig.rowFontColor });
-        page.drawText(String(quantity), { x: columnPositions[4] + (tableConfig.columnWidths[4] - regularFont.widthOfTextAtSize(String(quantity), tableConfig.contentFontSize)) / 2, y: centeredY, font: regularFont, size: tableConfig.contentFontSize, color: tableConfig.rowFontColor });
+        currentPage.drawText(String(lp), { x: columnPositions[0] + (tableConfig.columnWidths[0] - regularFont.widthOfTextAtSize(String(lp), tableConfig.contentFontSize)) / 2, y: centeredY, font: regularFont, size: tableConfig.contentFontSize, color: tableConfig.rowFontColor });
+        let nameY = centeredY + (nameLines.length > 1 ? (tableConfig.contentFontSize * 1.3 * (nameLines.length - 1)) / 2 : 0);
+        nameLines.forEach(line => { currentPage.drawText(line, { x: columnPositions[1] + 5, y: nameY, font: regularFont, size: tableConfig.contentFontSize, lineHeight: tableConfig.contentFontSize * 1.3, color: tableConfig.rowFontColor }); nameY -= tableConfig.contentFontSize * 1.3; });
+        let descY = centeredDescY + (descLines.length > 1 ? (tableConfig.descriptionFontSize * 1.3 * (descLines.length - 1)) / 2 : 0);
+        descLines.forEach(line => { currentPage.drawText(line, { x: columnPositions[2] + 5, y: descY, font: regularFont, size: tableConfig.descriptionFontSize, lineHeight: tableConfig.descriptionFontSize * 1.3, color: tableConfig.rowFontColor }); descY -= tableConfig.descriptionFontSize * 1.3; });
+        currentPage.drawText(String(unit), { x: columnPositions[3] + (tableConfig.columnWidths[3] - regularFont.widthOfTextAtSize(String(unit), tableConfig.contentFontSize)) / 2, y: centeredY, font: regularFont, size: tableConfig.contentFontSize, color: tableConfig.rowFontColor });
+        currentPage.drawText(String(quantity), { x: columnPositions[4] + (tableConfig.columnWidths[4] - regularFont.widthOfTextAtSize(String(quantity), tableConfig.contentFontSize)) / 2, y: centeredY, font: regularFont, size: tableConfig.contentFontSize, color: tableConfig.rowFontColor });
         
         currentY = rowY;
-        page.drawLine({ start: { x: tableStartX, y: currentY }, end: { x: tableStartX + tableWidth, y: currentY }, thickness: 0.5, color: tableConfig.lineColor });
+        currentPage.drawLine({ start: { x: tableStartX, y: currentY }, end: { x: tableStartX + tableWidth, y: currentY }, thickness: 0.5, color: tableConfig.lineColor });
     });
 
-    for (let i = 0; i <= tableConfig.columnWidths.length; i++) { page.drawLine({ start: { x: columnPositions[i], y: currentY }, end: { x: columnPositions[i], y: startY }, thickness: 0.5, color: tableConfig.lineColor }); }
+    for (let i = 0; i <= tableConfig.columnWidths.length; i++) { currentPage.drawLine({ start: { x: columnPositions[i], y: currentY }, end: { x: columnPositions[i], y: startY }, thickness: 0.5, color: tableConfig.lineColor }); }
     return currentY;
 }
+// --- KONIEC POPRAWKI ---
 
-// Zmodyfikowana funkcja rysowania stron z opcjami
 function drawExtrasPage(page, fonts, data, title, logoImage = null) {
     const { width: pageWidth, height: pageHeight } = page.getSize();
     const { regular: regularFont, bold: boldFont } = fonts;
@@ -141,27 +142,12 @@ function drawExtrasPage(page, fonts, data, title, logoImage = null) {
 
     const footerText = "UWAGI: OPCJE DODATKOWE NIE SĄ WYMAGANE PRZEZ PRODUCENTÓW* DO PRACY INSTALACJI I O ICH ZASADNOŚCI KAŻDORAZOWO NALEŻY KONSULTOWAĆ SIĘ Z OPIEKUNEM HANDLOWYM LUB DORADCĄ TECHNICZNYM";
     const footerFontSize = 9;
+    const footerLineHeight = footerFontSize * 1.4;
     const footerLines = wrapText(footerText, boldFont, footerFontSize, pageWidth - 80);
-    const bottomBannerHeight = (footerLines.length * footerFontSize * 1.5) + 30;
+    const bottomBannerHeight = (footerLines.length * footerLineHeight) + 30;
 
     let currentY = pageHeight;
     
-    // Rysuj LOGO na górze
-    if (logoImage) {
-        currentY -= 40; 
-        const logoDims = logoImage.scale(0.12);
-        page.drawImage(logoImage, {
-            x: (pageWidth - logoDims.width) / 2,
-            y: currentY - logoDims.height,
-            width: logoDims.width,
-            height: logoDims.height,
-        });
-        currentY -= (logoDims.height + 15);
-    } else {
-        currentY -= 80;
-    }
-    
-    // Rysuj BANER pod logiem
     page.drawRectangle({ x: 0, y: currentY - topBannerHeight, width: pageWidth, height: topBannerHeight, color: maroonColor });
     const titleWidth = boldFont.widthOfTextAtSize(title, titleFontSize);
     page.drawText(title, {
@@ -171,7 +157,6 @@ function drawExtrasPage(page, fonts, data, title, logoImage = null) {
     });
     currentY -= (topBannerHeight + 20);
 
-    // Rysuj TABELĘ
     const tableX = (pageWidth - tableWidth) / 2;
     const tableStartY = currentY;
     const columnPositions = [tableX];
@@ -188,8 +173,24 @@ function drawExtrasPage(page, fonts, data, title, logoImage = null) {
         page.drawText(header, { x: columnPositions[i] + (tableConfig.columnWidths[i] - textWidth) / 2, y: headerTextY, size: tableConfig.headerFontSize, font: boldFont, color: whiteColor });
     });
     currentY = headerY;
+    let segmentTopY = tableStartY;
 
     data.forEach((row, rowIndex) => {
+        if (row.type === 'separator') {
+            for (let i = 0; i <= tableConfig.columnWidths.length; i++) { page.drawLine({ start: { x: columnPositions[i], y: currentY }, end: { x: columnPositions[i], y: segmentTopY }, thickness: 0.5, color: lineColor }); }
+            const separatorBannerHeight = 22;
+            currentY -= separatorBannerHeight;
+            page.drawRectangle({ x: tableX, y: currentY, width: tableWidth, height: separatorBannerHeight, color: maroonColor });
+            const separatorTitleWidth = boldFont.widthOfTextAtSize(row.title, tableConfig.headerFontSize);
+            page.drawText(row.title, {
+                x: tableX + (tableWidth - separatorTitleWidth) / 2,
+                y: currentY + (separatorBannerHeight - tableConfig.headerFontSize) / 2,
+                font: boldFont, size: tableConfig.headerFontSize, color: whiteColor,
+            });
+            segmentTopY = currentY;
+            return; 
+        }
+
         const [lp, name, description, unit, price] = row;
         const nameLines = wrapText(name, regularFont, tableConfig.contentFontSize, tableConfig.columnWidths[1] - 10);
         const descLines = wrapText(description, regularFont, tableConfig.descriptionFontSize, tableConfig.columnWidths[2] - 10);
@@ -211,22 +212,19 @@ function drawExtrasPage(page, fonts, data, title, logoImage = null) {
         page.drawLine({ start: { x: tableX, y: currentY }, end: { x: tableX + tableWidth, y: currentY }, thickness: 0.5, color: lineColor });
     });
 
-    for (let i = 0; i <= tableConfig.columnWidths.length; i++) { page.drawLine({ start: { x: columnPositions[i], y: currentY }, end: { x: columnPositions[i], y: tableStartY }, thickness: 0.5, color: lineColor }); }
+    for (let i = 0; i <= tableConfig.columnWidths.length; i++) { page.drawLine({ start: { x: columnPositions[i], y: currentY }, end: { x: columnPositions[i], y: segmentTopY }, thickness: 0.5, color: lineColor }); }
 
-    // Rysuj DOLNY baner PONIŻEJ tabeli
-    currentY -= 30; // Margines
+    currentY -= 30;
     page.drawRectangle({ x: 0, y: currentY - bottomBannerHeight, width: pageWidth, height: bottomBannerHeight, color: maroonColor });
-    const textBlockHeight = footerLines.length * (footerFontSize * 1.4);
-    let footerTextY = (currentY - bottomBannerHeight) + (bottomBannerHeight - textBlockHeight) / 2 + (textBlockHeight - footerFontSize);
+    const totalTextHeight = footerLines.length * footerLineHeight - (footerLineHeight - footerFontSize);
+    let footerTextY = (currentY - bottomBannerHeight) + (bottomBannerHeight + totalTextHeight) / 2 - footerFontSize;
     footerLines.forEach(line => {
         const lineWidth = boldFont.widthOfTextAtSize(line, footerFontSize);
         page.drawText(line, { x: (pageWidth - lineWidth) / 2, y: footerTextY, font: boldFont, size: footerFontSize, color: whiteColor });
-        footerTextY -= footerFontSize * 1.4;
+        footerTextY -= footerLineHeight;
     });
 }
 
-
-// Wklej w miejsce istniejącej funkcji w pliku: src/utils/pdfGenerator.jsx
 
 export async function generateOfferPDF(
   cena,
@@ -248,13 +246,7 @@ export async function generateOfferPDF(
 
     try {
         const selectedTemplatePaths = getTemplatePathsForDevice(deviceType);
-        const assetPaths = [
-            ...selectedTemplatePaths,
-            '/fonts/OpenSans-Bold.ttf',
-            '/fonts/OpenSans-Regular.ttf',
-            '/logos/kaman_logo.png',
-        ];
-
+        const assetPaths = [ ...selectedTemplatePaths, '/fonts/OpenSans-Bold.ttf', '/fonts/OpenSans-Regular.ttf', '/logos/kaman_logo.png' ];
         const assetBuffers = await Promise.all(assetPaths.map(path => fetch(path).then(res => res.ok ? res.arrayBuffer() : null).catch(() => null)));
         
         const kamanLogoBytes = assetBuffers.pop();
@@ -268,11 +260,8 @@ export async function generateOfferPDF(
         const regularFont = await finalPdfDoc.embedFont(regularFontBytes);
         
         let kamanLogoImage = null;
-        try {
-            if (kamanLogoBytes) kamanLogoImage = await finalPdfDoc.embedPng(kamanLogoBytes);
-        } catch (e) {
-            console.error("Błąd ładowania logo KAMAN. Upewnij się, że plik /logos/kaman_logo.png jest poprawnym plikiem PNG.", e);
-        }
+        try { if (kamanLogoBytes) kamanLogoImage = await finalPdfDoc.embedPng(kamanLogoBytes); } 
+        catch (e) { console.error("Błąd ładowania logo KAMAN. Upewnij się, że plik /logos/kaman_logo.png jest poprawnym plikiem PNG.", e); }
 
         if (templatePdfBuffers[0]) {
             const okladkaDoc = await PDFDocument.load(templatePdfBuffers[0]);
@@ -284,42 +273,28 @@ export async function generateOfferPDF(
         const { width: pageWidth, height: pageHeight } = dynamicPage.getSize();
         const tableData = getTableData(deviceType, model, tankCapacity, bufferCapacity, systemType);
         
-        let currentY = pageHeight - 35; 
+        let currentY = pageHeight - 35;
         
         if (kamanLogoImage) {
-            // --- POCZĄTEK ZMIANY: Mniejsze logo i większy odstęp ---
-            const logoDims = kamanLogoImage.scale(0.07); // Dodatkowo zmniejszone logo
-            dynamicPage.drawImage(kamanLogoImage, {
-                x: (pageWidth - logoDims.width) / 2,
-                y: currentY - logoDims.height,
-                width: logoDims.width,
-                height: logoDims.height,
-            });
-            currentY -= (logoDims.height + 25); // Zwiększony odstęp pod logiem
-            // --- KONIEC ZMIANY ---
+            const logoDims = kamanLogoImage.scale(0.08); 
+            dynamicPage.drawImage(kamanLogoImage, { x: (pageWidth - logoDims.width) / 2, y: currentY - logoDims.height, width: logoDims.width, height: logoDims.height });
+            currentY -= (logoDims.height + 25);
         }
         
         const userNameText = `Oferta dla: ${userName}`;
         const userNameFontSize = 22;
         const userNameTextWidth = boldFont.widthOfTextAtSize(userNameText, userNameFontSize);
-        dynamicPage.drawText(userNameText, {
-            x: (pageWidth - userNameTextWidth) / 2,
-            y: currentY,
-            size: userNameFontSize,
-            font: boldFont,
-            color: rgb(0.7, 0, 0.16),
-        });
-
+        dynamicPage.drawText(userNameText, { x: (pageWidth - userNameTextWidth) / 2, y: currentY, size: userNameFontSize, font: boldFont, color: rgb(0.7, 0, 0.16) });
         currentY -= (userNameFontSize + 20);
         
         const pageBottomMargin = 40;
-        let lastYPosAfterTable = drawTable(dynamicPage, { regular: regularFont, bold: boldFont }, tableData, currentY);
+        let lastYPosAfterTable = drawTable(finalPdfDoc, dynamicPage, { regular: regularFont, bold: boldFont }, tableData, currentY);
 
         const priceString = `Cena końcowa: ${cena} PLN brutto`;
         const priceFontSize = 15;
         const priceTextWidth = boldFont.widthOfTextAtSize(priceString, priceFontSize);
 
-        let pageForPrice = dynamicPage;
+        let pageForPrice = finalPdfDoc.getPage(finalPdfDoc.getPageCount() - 1);
         let priceYPosition = lastYPosAfterTable - 40;
 
         if (priceYPosition < pageBottomMargin) {
@@ -329,19 +304,29 @@ export async function generateOfferPDF(
         
         pageForPrice.drawText(priceString, { x: (pageForPrice.getWidth() - priceTextWidth) / 2, y: priceYPosition, size: priceFontSize, font: boldFont, color: rgb(0.7, 0, 0.16) });
         
-        const extrasPage = finalPdfDoc.addPage();
-        const optionalExtrasData = isKotel ? opcjeDlaKotlow : opcjeDlaPompCiepla;
-        drawExtrasPage(extrasPage, {regular: regularFont, bold: boldFont}, optionalExtrasData, 'WYPOSAŻENIE UZUPEŁNIAJĄCE (OPCJONALNIE)', kamanLogoImage);
-        
+        let combinedExtrasData = isKotel ? [...opcjeDlaKotlow] : [...opcjeDlaPompCiepla];
+        let producerOptions = null;
         if (kotlospawDeviceTypes.includes(deviceType)) {
-            const producerPage = finalPdfDoc.addPage();
-            drawExtrasPage(producerPage, {regular: regularFont, bold: boldFont}, opcjeKotlospawProducent, 'WYPOSAŻENIE UZUPEŁNIAJĄCE (OPCJONALNIE) OD PRODUCENTA', kamanLogoImage);
+            producerOptions = opcjeKotlospawProducent;
+        } else if (deviceType === 'LAZAR') {
+            producerOptions = opcjeLazarProducent;
+        }
+
+        if (producerOptions) {
+            combinedExtrasData.push({ type: 'separator', title: 'WYPOSAŻENIE UZUPEŁNIAJĄCE (OPCJONALNIE) OD PRODUCENTA' });
+            combinedExtrasData.push(...producerOptions);
         }
         
-        if (deviceType === 'LAZAR') {
-            const producerPage = finalPdfDoc.addPage();
-            drawExtrasPage(producerPage, {regular: regularFont, bold: boldFont}, opcjeLazarProducent, 'WYPOSAŻENIE UZUPEŁNIAJĄCE (OPCJONALNIE) OD PRODUCENTA', kamanLogoImage);
-        }
+        let lpCounter = 1;
+        const finalExtrasData = combinedExtrasData.map(row => {
+            if (row.type === 'separator') return row;
+            const newRow = [...row];
+            newRow[0] = String(lpCounter++);
+            return newRow;
+        });
+        
+        const extrasPage = finalPdfDoc.addPage();
+        drawExtrasPage(extrasPage, {regular: regularFont, bold: boldFont}, finalExtrasData, 'WYPOSAŻENIE UZUPEŁNIAJĄCE (OPCJONALNIE)');
 
         for (let i = 1; i < templatePdfBuffers.length; i++) {
             if (templatePdfBuffers[i] && templatePdfBuffers[i].byteLength > 0) {
@@ -351,9 +336,7 @@ export async function generateOfferPDF(
                         const [copiedPage] = await finalPdfDoc.copyPages(templateDoc, [pageIndex]);
                         finalPdfDoc.addPage(copiedPage);
                     }
-                } catch(e) {
-                    console.error("Could not load template PDF buffer at index", i, e);
-                }
+                } catch(e) { console.error("Could not load template PDF buffer at index", i, e); }
             }
         }
 
