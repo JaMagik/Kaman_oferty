@@ -1,5 +1,3 @@
-// ścieżka: src/utils/pdfGenerator.jsx
-
 import { PDFDocument, rgb } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 import { getTableData } from '../data/tables';
@@ -25,137 +23,109 @@ const wrapText = (text, textFont, textSize, maxWidth) => {
     return lines;
 };
 
-function drawTable(pdfDoc, initialPage, font, tableData, startY) {
+// CAŁKOWICIE NOWA, NIEZAWODNA FUNKCJA drawTable
+function drawTable(pdfDoc, initialPage, fonts, tableData, startY) {
     let currentPage = initialPage;
     let currentY = startY;
 
-    const table = {
+    const tableConfig = {
         x: 50,
         columnWidths: [30, 150, 240, 40, 50],
         headerHeight: 22,
         padding: { top: 6, bottom: 6, left: 5, right: 5 },
+        headerFontSize: 9.5,
+        contentFontSize: 8.5,
+        descriptionFontSize: 7.5,
+        lineColor: rgb(0.8, 0.8, 0.8),
+        headerBgColor: rgb(0.6, 0, 0.15),
+        headerFontColor: rgb(1, 1, 1),
+        rowFontColor: rgb(0.1, 0.1, 0.1),
+        evenRowBgColor: rgb(0.98, 0.96, 0.96),
+        pageMargins: { top: 40, bottom: 40 }
     };
-
-    const headerFontSize = 9.5;
-    const contentFontSize = 8.5;
-    const descriptionFontSize = 7.8;
-    const contentLineHeight = contentFontSize * 1.3;
-    const descriptionLineHeight = descriptionFontSize * 1.3;
-
-    const textColor = rgb(0.1, 0.1, 0.1);
-    const headerColor = rgb(1, 1, 1);
-    const headerBgColor = rgb(0.6, 0, 0.15);
-    const evenRowBgColor = rgb(0.98, 0.96, 0.96);
-    const lineColor = rgb(0.8, 0.8, 0.8);
-    const pageBottomMargin = 40;
-    const pageTopMargin = 40;
-
-    const tableWidth = table.columnWidths.reduce((a, b) => a + b, 0);
-    const columnPositions = [table.x];
-    for (let i = 0; i < table.columnWidths.length; i++) {
-        columnPositions.push(columnPositions[i] + table.columnWidths[i]);
+    const tableWidth = tableConfig.columnWidths.reduce((a, b) => a + b, 0);
+    const columnPositions = [tableConfig.x];
+    for (let i = 0; i < tableConfig.columnWidths.length; i++) {
+        columnPositions.push(columnPositions[i] + tableConfig.columnWidths[i]);
     }
 
-    let tableSegmentStartY = startY;
+    let tableSegmentTopY = startY;
 
     const drawHeader = (page, y) => {
-        const headerTextY = y + (table.headerHeight - headerFontSize) / 2 + 1;
+        const headerTextY = y - tableConfig.headerHeight / 2 + tableConfig.headerFontSize / 2 - 2;
         page.drawRectangle({
-            x: table.x, y: y, width: tableWidth,
-            height: table.headerHeight, color: headerBgColor,
+            x: tableConfig.x, y: y - tableConfig.headerHeight, width: tableWidth,
+            height: tableConfig.headerHeight, color: tableConfig.headerBgColor,
         });
         const headers = ['Lp.', 'Nazwa towaru', 'Opis', 'J.m.', 'Ilość'];
-        const colWidthsForHeader = table.columnWidths;
-        
-        let currentX = table.x;
         headers.forEach((header, i) => {
-            const textWidth = font.widthOfTextAtSize(header, headerFontSize);
+            const textWidth = fonts.bold.widthOfTextAtSize(header, tableConfig.headerFontSize);
             page.drawText(header, {
-                x: currentX + (colWidthsForHeader[i] - textWidth) / 2,
+                x: columnPositions[i] + (tableConfig.columnWidths[i] - textWidth) / 2,
                 y: headerTextY,
-                size: headerFontSize,
-                font,
-                color: headerColor,
+                font: fonts.bold, size: tableConfig.headerFontSize, color: tableConfig.headerFontColor,
             });
-            currentX += colWidthsForHeader[i];
         });
+        return y - tableConfig.headerHeight;
     };
-    
-    const headerY = currentY - table.headerHeight;
-    drawHeader(currentPage, headerY);
-    currentY = headerY;
+
+    currentY = drawHeader(currentPage, currentY);
 
     tableData.forEach((row, rowIndex) => {
-        const lp = String(row[0] || '');
-        const name = row[1] || '';
-        const unit = String(row[2] || '');
-        const quantity = String(row[3] || '');
-        const description = row.length > 4 ? String(row[4]) : '';
-
-        const nameLines = wrapText(name, font, contentFontSize, table.columnWidths[1] - (2 * table.padding.left));
-        const descLines = wrapText(description, font, descriptionFontSize, table.columnWidths[2] - (2 * table.padding.left));
-        const nameBlockHeight = nameLines.length * contentLineHeight;
-        const descBlockHeight = descLines.length * descriptionLineHeight;
-        const dynamicRowHeight = Math.max(nameBlockHeight, descBlockHeight) + table.padding.top + table.padding.bottom;
-
-        if (currentY - dynamicRowHeight < pageBottomMargin) {
-            for(let i=0; i <= table.columnWidths.length; i++) {
-                const xPos = columnPositions[i];
-                currentPage.drawLine({ start: { x: xPos, y: currentY }, end: { x: xPos, y: tableSegmentStartY - table.headerHeight }, thickness: 0.5, color: lineColor });
-            }
-            
-            currentPage = pdfDoc.addPage();
-            currentY = currentPage.getHeight() - pageTopMargin;
-            tableSegmentStartY = currentY;
-            const newHeaderY = currentY - table.headerHeight;
-            drawHeader(currentPage, newHeaderY);
-            currentY = newHeaderY;
-        }
+        const [lp, name, unit, quantity, description] = row;
+        const nameLines = wrapText(name, fonts.regular, tableConfig.contentFontSize, tableConfig.columnWidths[1] - 10);
+        const descLines = wrapText(description || '', fonts.regular, tableConfig.descriptionFontSize, tableConfig.columnWidths[2] - 10);
         
-        currentY -= dynamicRowHeight;
+        const rowHeight = Math.max(
+            nameLines.length * tableConfig.contentFontSize * 1.3, 
+            descLines.length * tableConfig.descriptionFontSize * 1.3
+        ) + tableConfig.padding.top + tableConfig.padding.bottom;
+
+        if (currentY - rowHeight < tableConfig.pageMargins.bottom) {
+            for (let i = 0; i <= tableConfig.columnWidths.length; i++) {
+                currentPage.drawLine({ start: { x: columnPositions[i], y: currentY }, end: { x: columnPositions[i], y: tableSegmentTopY }, thickness: 0.5, color: tableConfig.lineColor });
+            }
+            currentPage = pdfDoc.addPage();
+            currentY = currentPage.getHeight() - tableConfig.pageMargins.top;
+            tableSegmentTopY = currentY;
+            currentY = drawHeader(currentPage, currentY);
+        }
+
+        const rowY = currentY - rowHeight;
 
         if (rowIndex % 2 === 1) {
-            currentPage.drawRectangle({
-                x: table.x, y: currentY, width: tableWidth,
-                height: dynamicRowHeight, color: evenRowBgColor,
-            });
+            currentPage.drawRectangle({ x: tableConfig.x, y: rowY, width: tableWidth, height: rowHeight, color: tableConfig.evenRowBgColor });
         }
         
-        const textStartY = currentY + dynamicRowHeight - table.padding.top - contentFontSize;
-        const descTextStartY = currentY + dynamicRowHeight - table.padding.top - descriptionFontSize;
-
-        const lpTextWidth = font.widthOfTextAtSize(lp, contentFontSize);
-        currentPage.drawText(lp, { x: columnPositions[0] + (table.columnWidths[0] - lpTextWidth) / 2, y: textStartY, size: contentFontSize, font, color: textColor });
+        const textBaseY = currentY - tableConfig.padding.top;
         
-        let nameY = textStartY;
+        currentPage.drawText(String(lp), { x: columnPositions[0] + (tableConfig.columnWidths[0] - fonts.regular.widthOfTextAtSize(String(lp), tableConfig.contentFontSize)) / 2, y: textBaseY - tableConfig.contentFontSize, font: fonts.regular, size: tableConfig.contentFontSize, color: tableConfig.rowFontColor });
+        
+        let nameY = textBaseY;
         nameLines.forEach(line => {
-            currentPage.drawText(line, { x: columnPositions[1] + table.padding.left, y: nameY, size: contentFontSize, font, color: textColor, lineHeight: contentLineHeight });
-            nameY -= contentLineHeight;
+            currentPage.drawText(line, { x: columnPositions[1] + 5, y: nameY - tableConfig.contentFontSize, font: fonts.regular, size: tableConfig.contentFontSize, lineHeight: tableConfig.contentFontSize * 1.3, color: tableConfig.rowFontColor });
+            nameY -= tableConfig.contentFontSize * 1.3;
         });
-        
-        let descY = descTextStartY;
+
+        let descY = textBaseY;
         descLines.forEach(line => {
-            currentPage.drawText(line, { x: columnPositions[2] + table.padding.left, y: descY, size: descriptionFontSize, font, color: textColor, lineHeight: descriptionLineHeight });
-            descY -= descriptionLineHeight;
+            currentPage.drawText(line, { x: columnPositions[2] + 5, y: descY - tableConfig.descriptionFontSize, font: fonts.regular, size: tableConfig.descriptionFontSize, lineHeight: tableConfig.descriptionFontSize * 1.3, color: tableConfig.rowFontColor });
+            descY -= tableConfig.descriptionFontSize * 1.3;
         });
         
-        const unitTextWidth = font.widthOfTextAtSize(unit, contentFontSize);
-        currentPage.drawText(unit, { x: columnPositions[3] + (table.columnWidths[3] - unitTextWidth) / 2, y: textStartY, size: contentFontSize, font, color: textColor });
+        currentPage.drawText(String(unit), { x: columnPositions[3] + (tableConfig.columnWidths[3] - fonts.regular.widthOfTextAtSize(String(unit), tableConfig.contentFontSize)) / 2, y: textBaseY - tableConfig.contentFontSize, font: fonts.regular, size: tableConfig.contentFontSize, color: tableConfig.rowFontColor });
+        currentPage.drawText(String(quantity), { x: columnPositions[4] + (tableConfig.columnWidths[4] - fonts.regular.widthOfTextAtSize(String(quantity), tableConfig.contentFontSize)) / 2, y: textBaseY - tableConfig.contentFontSize, font: fonts.regular, size: tableConfig.contentFontSize, color: tableConfig.rowFontColor });
         
-        const quantityTextWidth = font.widthOfTextAtSize(quantity, contentFontSize);
-        currentPage.drawText(quantity, { x: columnPositions[4] + (table.columnWidths[4] - quantityTextWidth) / 2, y: textStartY, size: contentFontSize, font, color: textColor });
-        
-        currentPage.drawLine({ start: { x: table.x, y: currentY }, end: { x: table.x + tableWidth, y: currentY }, thickness: 0.7, color: lineColor });
+        currentY -= rowHeight;
+        currentPage.drawLine({ start: { x: tableConfig.x, y: currentY }, end: { x: tableConfig.x + tableWidth, y: currentY }, thickness: 0.5, color: tableConfig.lineColor });
     });
 
-    for(let i=0; i <= table.columnWidths.length; i++) {
-        const xPos = columnPositions[i];
-        currentPage.drawLine({ start: { x: xPos, y: currentY }, end: { x: xPos, y: tableSegmentStartY - table.headerHeight }, thickness: 0.5, color: lineColor });
+    for (let i = 0; i <= tableConfig.columnWidths.length; i++) {
+        currentPage.drawLine({ start: { x: columnPositions[i], y: currentY }, end: { x: columnPositions[i], y: tableSegmentTopY }, thickness: 0.5, color: tableConfig.lineColor });
     }
 
     return currentY;
 }
-
 function drawOptionalExtrasTable(page, regularFont, boldFont, data) {
     const { width: pageWidth, height: pageHeight } = page.getSize();
     let currentY = pageHeight - 40;
@@ -165,6 +135,7 @@ function drawOptionalExtrasTable(page, regularFont, boldFont, data) {
     const title = 'WYPOSAŻENIE UZUPEŁNIAJĄCE (OPCJONALNIE)';
     const titleFontSize = 14;
     const titleBannerHeight = 40;
+
     page.drawRectangle({
         x: 0,
         y: currentY - titleBannerHeight,
@@ -198,7 +169,7 @@ function drawOptionalExtrasTable(page, regularFont, boldFont, data) {
     const descriptionLineHeight = descriptionFontSize * 1.3;
     const textColor = rgb(0.1, 0.1, 0.1);
     const headerColor = rgb(1, 1, 1);
-    const headerBgColor = rgb(0.6, 0, 0.15); // Przywrócenie czerwonego tła nagłówka
+    const headerBgColor = rgb(0.6, 0, 0.15);
     const evenRowBgColor = rgb(0.98, 0.96, 0.96);
     const lineColor = rgb(0.85, 0.85, 0.85);
     const tableWidth = table.columnWidths.reduce((a, b) => a + b, 0);
@@ -281,7 +252,8 @@ export async function generateOfferPDF(
   deviceType,
   model,
   tankCapacity,
-  bufferCapacity
+  bufferCapacity,
+  systemType
 ) {
     if (!userName?.trim() || !String(cena).trim()) {
         alert('Uzupełnij wszystkie wymagane pola: Imię i nazwisko oraz cena!');
@@ -319,9 +291,9 @@ export async function generateOfferPDF(
 
         const dynamicPage = finalPdfDoc.addPage();
         const { width: pageWidth, height: pageHeight } = dynamicPage.getSize();
-        const tableData = getTableData(deviceType, model, tankCapacity, bufferCapacity);
+        const tableData = getTableData(deviceType, model, tankCapacity, bufferCapacity, systemType);
         
-        let currentY = pageHeight;
+        let currentY = pageHeight - 30;
         
         const introLines = [
             "Dziękujemy za zainteresowanie ofertą firmy KAMAN.",
@@ -360,7 +332,7 @@ export async function generateOfferPDF(
         let lastYPosAfterTable = tableStartY;
 
         if (tableData && tableData.length > 0) {
-            lastYPosAfterTable = drawTable(finalPdfDoc, dynamicPage, regularFont, tableData, tableStartY);
+            lastYPosAfterTable = drawTable(finalPdfDoc, dynamicPage, { regular: regularFont, bold: boldFont }, tableData, tableStartY);
         } else {
             dynamicPage.drawText("Brak danych do wyświetlenia w tabeli...", { x: 50, y: tableStartY - 20, size: 12, font: regularFont, color: rgb(0.5, 0.5, 0.5) });
             lastYPosAfterTable = tableStartY - 40;
