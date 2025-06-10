@@ -24,15 +24,13 @@ const wrapText = (text, textFont, textSize, maxWidth) => {
     return lines;
 };
 
-function drawTable(pdfDoc, initialPage, fonts, tableData, startY) {
-    let currentPage = initialPage;
+function drawTable(page, fonts, tableData, startY) {
     let currentY = startY;
-
+    const { regular: regularFont, bold: boldFont } = fonts;
     const tableConfig = {
-        x: 50,
         columnWidths: [30, 150, 240, 40, 50],
         headerHeight: 22,
-        padding: { top: 5, bottom: 5, left: 5, right: 5 },
+        padding: { top: 4, bottom: 4, left: 5, right: 5 },
         headerFontSize: 9.5,
         contentFontSize: 8.5,
         descriptionFontSize: 7.5,
@@ -44,20 +42,23 @@ function drawTable(pdfDoc, initialPage, fonts, tableData, startY) {
         pageMargins: { top: 40, bottom: 40 }
     };
     const tableWidth = tableConfig.columnWidths.reduce((a, b) => a + b, 0);
-    const columnPositions = [tableConfig.x];
+    const tableStartX = (page.getWidth() - tableWidth) / 2;
+
+    const columnPositions = [tableStartX];
     for (let i = 0; i < tableConfig.columnWidths.length; i++) {
         columnPositions.push(columnPositions[i] + tableConfig.columnWidths[i]);
     }
-
+    
     let tableSegmentTopY = startY;
 
     const drawHeader = (page, y) => {
-        const headerTextY = (y - tableConfig.headerHeight) + (tableConfig.headerHeight - tableConfig.headerFontSize) / 2;
+        const headerY = y - tableConfig.headerHeight;
         page.drawRectangle({
-            x: tableConfig.x, y: y - tableConfig.headerHeight, width: tableWidth,
+            x: tableStartX, y: headerY, width: tableWidth,
             height: tableConfig.headerHeight, color: tableConfig.headerBgColor,
         });
         const headers = ['Lp.', 'Nazwa towaru', 'Opis', 'J.m.', 'Ilość'];
+        const headerTextY = headerY + (tableConfig.headerHeight - tableConfig.headerFontSize) / 2;
         headers.forEach((header, i) => {
             const textWidth = fonts.bold.widthOfTextAtSize(header, tableConfig.headerFontSize);
             page.drawText(header, {
@@ -66,15 +67,15 @@ function drawTable(pdfDoc, initialPage, fonts, tableData, startY) {
                 font: fonts.bold, size: tableConfig.headerFontSize, color: tableConfig.headerFontColor,
             });
         });
-        return y - tableConfig.headerHeight;
+        return headerY;
     };
 
-    currentY = drawHeader(currentPage, currentY);
+    currentY = drawHeader(page, currentY);
 
     tableData.forEach((row, rowIndex) => {
         const [lp, name, unit, quantity, description] = row;
-        const nameLines = wrapText(name, fonts.regular, tableConfig.contentFontSize, tableConfig.columnWidths[1] - 10);
-        const descLines = wrapText(description || '', fonts.regular, tableConfig.descriptionFontSize, tableConfig.columnWidths[2] - 10);
+        const nameLines = wrapText(name, regularFont, tableConfig.contentFontSize, tableConfig.columnWidths[1] - 10);
+        const descLines = wrapText(description || '', regularFont, tableConfig.descriptionFontSize, tableConfig.columnWidths[2] - 10);
         
         const rowHeight = Math.max(
             nameLines.length * tableConfig.contentFontSize * 1.3, 
@@ -83,50 +84,39 @@ function drawTable(pdfDoc, initialPage, fonts, tableData, startY) {
 
         if (currentY - rowHeight < tableConfig.pageMargins.bottom) {
             for (let i = 0; i <= tableConfig.columnWidths.length; i++) {
-                currentPage.drawLine({ start: { x: columnPositions[i], y: currentY }, end: { x: columnPositions[i], y: tableSegmentTopY }, thickness: 0.5, color: tableConfig.lineColor });
+                page.drawLine({ start: { x: columnPositions[i], y: currentY }, end: { x: columnPositions[i], y: tableSegmentTopY }, thickness: 0.5, color: tableConfig.lineColor });
             }
-            currentPage = pdfDoc.addPage();
-            currentY = currentPage.getHeight() - tableConfig.pageMargins.top;
+            page = page.addPage();
+            currentY = page.getHeight() - tableConfig.pageMargins.top;
             tableSegmentTopY = currentY;
-            currentY = drawHeader(currentPage, currentY);
+            currentY = drawHeader(page, currentY);
         }
 
         const rowY = currentY - rowHeight;
-
-        if (rowIndex % 2 === 1) {
-            currentPage.drawRectangle({ x: tableConfig.x, y: rowY, width: tableWidth, height: rowHeight, color: tableConfig.evenRowBgColor });
-        }
+        if (rowIndex % 2 === 1) { page.drawRectangle({ x: tableStartX, y: rowY, width: tableWidth, height: rowHeight, color: tableConfig.evenRowBgColor }); }
         
         const textBaseY = currentY - tableConfig.padding.top;
-        
-        currentPage.drawText(String(lp), { x: columnPositions[0] + (tableConfig.columnWidths[0] - fonts.regular.widthOfTextAtSize(String(lp), tableConfig.contentFontSize)) / 2, y: textBaseY - tableConfig.contentFontSize, font: fonts.regular, size: tableConfig.contentFontSize, color: tableConfig.rowFontColor });
-        
-        let nameY = textBaseY;
-        nameLines.forEach(line => {
-            currentPage.drawText(line, { x: columnPositions[1] + 5, y: nameY - tableConfig.contentFontSize, font: fonts.regular, size: tableConfig.contentFontSize, lineHeight: tableConfig.contentFontSize * 1.3, color: tableConfig.rowFontColor });
-            nameY -= tableConfig.contentFontSize * 1.3;
-        });
+        const vCenterOffset = (rowHeight - (Math.max(nameLines.length, descLines.length) * (tableConfig.contentFontSize * 1.2))) / 2 - tableConfig.padding.bottom;
+        const centeredY = textBaseY - vCenterOffset - tableConfig.contentFontSize;
+        const centeredDescY = textBaseY - vCenterOffset - tableConfig.descriptionFontSize;
 
-        let descY = textBaseY;
-        descLines.forEach(line => {
-            currentPage.drawText(line, { x: columnPositions[2] + 5, y: descY - tableConfig.descriptionFontSize, font: fonts.regular, size: tableConfig.descriptionFontSize, lineHeight: tableConfig.descriptionFontSize * 1.3, color: tableConfig.rowFontColor });
-            descY -= tableConfig.descriptionFontSize * 1.3;
-        });
+        page.drawText(String(lp), { x: columnPositions[0] + (tableConfig.columnWidths[0] - regularFont.widthOfTextAtSize(String(lp), tableConfig.contentFontSize)) / 2, y: centeredY, font: regularFont, size: tableConfig.contentFontSize, color: tableConfig.rowFontColor });
+        let nameY = centeredY;
+        nameLines.forEach(line => { page.drawText(line, { x: columnPositions[1] + 5, y: nameY, font: regularFont, size: tableConfig.contentFontSize, lineHeight: tableConfig.contentFontSize * 1.3, color: tableConfig.rowFontColor }); nameY -= tableConfig.contentFontSize * 1.3; });
+        let descY = centeredDescY;
+        descLines.forEach(line => { page.drawText(line, { x: columnPositions[2] + 5, y: descY, font: regularFont, size: tableConfig.descriptionFontSize, lineHeight: tableConfig.descriptionFontSize * 1.3, color: tableConfig.rowFontColor }); descY -= tableConfig.descriptionFontSize * 1.3; });
+        page.drawText(String(unit), { x: columnPositions[3] + (tableConfig.columnWidths[3] - regularFont.widthOfTextAtSize(String(unit), tableConfig.contentFontSize)) / 2, y: centeredY, font: regularFont, size: tableConfig.contentFontSize, color: tableConfig.rowFontColor });
+        page.drawText(String(quantity), { x: columnPositions[4] + (tableConfig.columnWidths[4] - regularFont.widthOfTextAtSize(String(quantity), tableConfig.contentFontSize)) / 2, y: centeredY, font: regularFont, size: tableConfig.contentFontSize, color: tableConfig.rowFontColor });
         
-        currentPage.drawText(String(unit), { x: columnPositions[3] + (tableConfig.columnWidths[3] - fonts.regular.widthOfTextAtSize(String(unit), tableConfig.contentFontSize)) / 2, y: textBaseY - tableConfig.contentFontSize, font: fonts.regular, size: tableConfig.contentFontSize, color: tableConfig.rowFontColor });
-        currentPage.drawText(String(quantity), { x: columnPositions[4] + (tableConfig.columnWidths[4] - fonts.regular.widthOfTextAtSize(String(quantity), tableConfig.contentFontSize)) / 2, y: textBaseY - tableConfig.contentFontSize, font: fonts.regular, size: tableConfig.contentFontSize, color: tableConfig.rowFontColor });
-        
-        currentY -= rowHeight;
-        currentPage.drawLine({ start: { x: tableConfig.x, y: currentY }, end: { x: tableConfig.x + tableWidth, y: currentY }, thickness: 0.5, color: tableConfig.lineColor });
+        currentY = rowY;
+        page.drawLine({ start: { x: tableStartX, y: currentY }, end: { x: tableStartX + tableWidth, y: currentY }, thickness: 0.5, color: tableConfig.lineColor });
     });
 
-    for (let i = 0; i <= tableConfig.columnWidths.length; i++) {
-        currentPage.drawLine({ start: { x: columnPositions[i], y: currentY }, end: { x: columnPositions[i], y: tableSegmentTopY }, thickness: 0.5, color: tableConfig.lineColor });
-    }
-
+    for (let i = 0; i <= tableConfig.columnWidths.length; i++) { page.drawLine({ start: { x: columnPositions[i], y: currentY }, end: { x: columnPositions[i], y: startY }, thickness: 0.5, color: tableConfig.lineColor }); }
     return currentY;
 }
 
+// Zmodyfikowana funkcja rysowania stron z opcjami
 function drawExtrasPage(page, fonts, data, title, logoImage = null) {
     const { width: pageWidth, height: pageHeight } = page.getSize();
     const { regular: regularFont, bold: boldFont } = fonts;
@@ -155,18 +145,11 @@ function drawExtrasPage(page, fonts, data, title, logoImage = null) {
     const bottomBannerHeight = (footerLines.length * footerFontSize * 1.5) + 30;
 
     let currentY = pageHeight;
-    page.drawRectangle({ x: 0, y: currentY - topBannerHeight, width: pageWidth, height: topBannerHeight, color: maroonColor });
-    const titleWidth = boldFont.widthOfTextAtSize(title, titleFontSize);
-    page.drawText(title, {
-        x: (pageWidth - titleWidth) / 2,
-        y: currentY - topBannerHeight + (topBannerHeight - titleFontSize) / 2,
-        font: boldFont, size: titleFontSize, color: whiteColor,
-    });
-    currentY -= topBannerHeight;
-
+    
+    // Rysuj LOGO na górze
     if (logoImage) {
-        currentY -= 15;
-        const logoDims = logoImage.scale(0.15);
+        currentY -= 40; 
+        const logoDims = logoImage.scale(0.12);
         page.drawImage(logoImage, {
             x: (pageWidth - logoDims.width) / 2,
             y: currentY - logoDims.height,
@@ -175,29 +158,22 @@ function drawExtrasPage(page, fonts, data, title, logoImage = null) {
         });
         currentY -= (logoDims.height + 15);
     } else {
-        currentY -= 30;
+        currentY -= 80;
     }
-
-    page.drawRectangle({ x: 0, y: 0, width: pageWidth, height: bottomBannerHeight, color: maroonColor });
-    let footerTextY = bottomBannerHeight - 18;
-    footerLines.forEach(line => {
-        const lineWidth = boldFont.widthOfTextAtSize(line, footerFontSize);
-        page.drawText(line, { x: (pageWidth - lineWidth) / 2, y: footerTextY, font: boldFont, size: footerFontSize, color: whiteColor, lineHeight: footerFontSize * 1.5 });
-        footerTextY -= footerFontSize * 1.5;
+    
+    // Rysuj BANER pod logiem
+    page.drawRectangle({ x: 0, y: currentY - topBannerHeight, width: pageWidth, height: topBannerHeight, color: maroonColor });
+    const titleWidth = boldFont.widthOfTextAtSize(title, titleFontSize);
+    page.drawText(title, {
+        x: (pageWidth - titleWidth) / 2,
+        y: currentY - topBannerHeight + (topBannerHeight - titleFontSize) / 2,
+        font: boldFont, size: titleFontSize, color: whiteColor,
     });
+    currentY -= (topBannerHeight + 20);
 
-    let calculatedTableHeight = tableConfig.headerHeight;
-    data.forEach(row => {
-        const nameLines = wrapText(row[1], regularFont, tableConfig.contentFontSize, tableConfig.columnWidths[1] - 10);
-        const descLines = wrapText(row[2], regularFont, tableConfig.descriptionFontSize, tableConfig.columnWidths[2] - 10);
-        calculatedTableHeight += Math.max(nameLines.length * tableConfig.contentFontSize * 1.3, descLines.length * tableConfig.descriptionFontSize * 1.3) + tableConfig.padding.top + tableConfig.padding.bottom;
-    });
-
-    const freeSpace = currentY - bottomBannerHeight;
-    const tableStartY = bottomBannerHeight + (freeSpace + calculatedTableHeight) / 2;
-    currentY = tableStartY;
-
+    // Rysuj TABELĘ
     const tableX = (pageWidth - tableWidth) / 2;
+    const tableStartY = currentY;
     const columnPositions = [tableX];
     for (let i = 0; i < tableConfig.columnWidths.length; i++) {
         columnPositions.push(columnPositions[i] + tableConfig.columnWidths[i]);
@@ -236,8 +212,21 @@ function drawExtrasPage(page, fonts, data, title, logoImage = null) {
     });
 
     for (let i = 0; i <= tableConfig.columnWidths.length; i++) { page.drawLine({ start: { x: columnPositions[i], y: currentY }, end: { x: columnPositions[i], y: tableStartY }, thickness: 0.5, color: lineColor }); }
+
+    // Rysuj DOLNY baner PONIŻEJ tabeli
+    currentY -= 30; // Margines
+    page.drawRectangle({ x: 0, y: currentY - bottomBannerHeight, width: pageWidth, height: bottomBannerHeight, color: maroonColor });
+    const textBlockHeight = footerLines.length * (footerFontSize * 1.4);
+    let footerTextY = (currentY - bottomBannerHeight) + (bottomBannerHeight - textBlockHeight) / 2 + (textBlockHeight - footerFontSize);
+    footerLines.forEach(line => {
+        const lineWidth = boldFont.widthOfTextAtSize(line, footerFontSize);
+        page.drawText(line, { x: (pageWidth - lineWidth) / 2, y: footerTextY, font: boldFont, size: footerFontSize, color: whiteColor });
+        footerTextY -= footerFontSize * 1.4;
+    });
 }
 
+
+// Wklej w miejsce istniejącej funkcji w pliku: src/utils/pdfGenerator.jsx
 
 export async function generateOfferPDF(
   cena,
@@ -295,23 +284,20 @@ export async function generateOfferPDF(
         const { width: pageWidth, height: pageHeight } = dynamicPage.getSize();
         const tableData = getTableData(deviceType, model, tankCapacity, bufferCapacity, systemType);
         
-        let currentY = pageHeight;
+        let currentY = pageHeight - 35; 
         
-        const introLines = ["Dziękujemy za zainteresowanie ofertą firmy KAMAN.","Każde urządzenie dobierane jest indywidualnie po szczegółowych ustaleniach technicznych."];
-        const introFontSize = 9.5;
-        const bannerHeight = 45;
-        const bannerY = currentY - bannerHeight;
-
-        dynamicPage.drawRectangle({ x: 0, y: bannerY, width: pageWidth, height: bannerHeight, color: rgb(0.6, 0, 0.15) });
-
-        let introTextY = bannerY + bannerHeight - 15;
-        introLines.forEach(line => {
-            const textWidth = boldFont.widthOfTextAtSize(line, introFontSize);
-            dynamicPage.drawText(line, { x: (pageWidth - textWidth) / 2, y: introTextY, font: boldFont, size: introFontSize, color: rgb(1, 1, 1) });
-            introTextY -= introFontSize * 1.4;
-        });
-        
-        currentY = bannerY - 20;
+        if (kamanLogoImage) {
+            // --- POCZĄTEK ZMIANY: Mniejsze logo i większy odstęp ---
+            const logoDims = kamanLogoImage.scale(0.07); // Dodatkowo zmniejszone logo
+            dynamicPage.drawImage(kamanLogoImage, {
+                x: (pageWidth - logoDims.width) / 2,
+                y: currentY - logoDims.height,
+                width: logoDims.width,
+                height: logoDims.height,
+            });
+            currentY -= (logoDims.height + 25); // Zwiększony odstęp pod logiem
+            // --- KONIEC ZMIANY ---
+        }
         
         const userNameText = `Oferta dla: ${userName}`;
         const userNameFontSize = 22;
@@ -324,16 +310,16 @@ export async function generateOfferPDF(
             color: rgb(0.7, 0, 0.16),
         });
 
-        currentY -= (userNameFontSize + 15);
+        currentY -= (userNameFontSize + 20);
         
         const pageBottomMargin = 40;
-        let lastYPosAfterTable = drawTable(finalPdfDoc, dynamicPage, { regular: regularFont, bold: boldFont }, tableData, currentY);
+        let lastYPosAfterTable = drawTable(dynamicPage, { regular: regularFont, bold: boldFont }, tableData, currentY);
 
         const priceString = `Cena końcowa: ${cena} PLN brutto`;
         const priceFontSize = 15;
         const priceTextWidth = boldFont.widthOfTextAtSize(priceString, priceFontSize);
 
-        let pageForPrice = finalPdfDoc.getPage(finalPdfDoc.getPageCount() - 1);
+        let pageForPrice = dynamicPage;
         let priceYPosition = lastYPosAfterTable - 40;
 
         if (priceYPosition < pageBottomMargin) {
@@ -349,12 +335,12 @@ export async function generateOfferPDF(
         
         if (kotlospawDeviceTypes.includes(deviceType)) {
             const producerPage = finalPdfDoc.addPage();
-            drawExtrasPage(producerPage, {regular: regularFont, bold: boldFont}, opcjeKotlospawProducent, 'WYPOSAŻENIE DODATKOWE OD PRODUCENTA', kamanLogoImage);
+            drawExtrasPage(producerPage, {regular: regularFont, bold: boldFont}, opcjeKotlospawProducent, 'WYPOSAŻENIE UZUPEŁNIAJĄCE (OPCJONALNIE) OD PRODUCENTA', kamanLogoImage);
         }
         
         if (deviceType === 'LAZAR') {
             const producerPage = finalPdfDoc.addPage();
-            drawExtrasPage(producerPage, {regular: regularFont, bold: boldFont}, opcjeLazarProducent, 'WYPOSAŻENIE DODATKOWE OD PRODUCENTA', kamanLogoImage);
+            drawExtrasPage(producerPage, {regular: regularFont, bold: boldFont}, opcjeLazarProducent, 'WYPOSAŻENIE UZUPEŁNIAJĄCE (OPCJONALNIE) OD PRODUCENTA', kamanLogoImage);
         }
 
         for (let i = 1; i < templatePdfBuffers.length; i++) {
