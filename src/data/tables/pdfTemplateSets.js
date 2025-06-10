@@ -13,10 +13,8 @@ const commonContactPage = '/pdf_templates/common/5_kontakt.pdf';
 const groupPage = '/pdf_templates/common/7_grupa_kaman_pdf.pdf';
 const groupPage2 = '/pdf_templates/common/8_grupa_kaman_uslugi_pdf.pdf';
 const oNas = '/pdf_templates/common/O_grupie.pdf';
-const opcjeDodatkowePiece = '/pdf_templates/common/2_opcje_dodatkowe_piece.pdf';
-const opcjeDodatkowePompy = '/pdf_templates/common/2_opcje_dodatkowe_pompy.pdf';
 
-const wyposazenieKotlospaw = '/pdf_templates/common/wyposazenie_producenta_kotlospaw.pdf';
+
 
 
 
@@ -252,7 +250,7 @@ export const pdfTemplateSets = {
   'Kotlospaw Slimko Plus': [
     '/pdf_templates/kotly-pellet/kotlospaw-slimko-plus/1_okladka.pdf',
   
-    wyposazenieKotlospaw,
+    
     '/pdf_templates/kotly-pellet/kotlospaw-slimko-plus/slimko_plus_karta_katalogowa_1.pdf',
     '/pdf_templates/kotly-pellet/kotlospaw-slimko-plus/slimko_plus_karta_katalogowa_2.pdf',
      oNas,
@@ -263,7 +261,7 @@ export const pdfTemplateSets = {
   'Kotlospaw slimko plus niski': [
     '/pdf_templates/kotly-pellet/kotlospaw-slimko-plus-niski/1_okladka.pdf',
 
-    wyposazenieKotlospaw,
+ 
     '/pdf_templates/kotly-pellet/kotlospaw-slimko-plus-niski/slimko_plus_karta_katalogowa_1.pdf',
     '/pdf_templates/kotly-pellet/kotlospaw-slimko-plus-niski/slimko_plus_karta_katalogowa_2.pdf',
      oNas,
@@ -286,7 +284,7 @@ export const pdfTemplateSets = {
   'Kotlospaw drewko hybrid': [
     '/pdf_templates/kotly-pellet/kotlospaw-drewko-hybrid/1_okladka.pdf',
 
-    wyposazenieKotlospaw,
+
     '/pdf_templates/kotly-pellet/kotlospaw-drewko-hybrid/kotlospaw_drewko_plus_ds1.pdf',
     '/pdf_templates/kotly-pellet/kotlospaw-drewko-hybrid/kotlospaw_drewko_plus_ds2.pdf',
      oNas,
@@ -297,7 +295,6 @@ export const pdfTemplateSets = {
   'Kotlospaw drewko plus': [
     '/pdf_templates/kotly-pellet/kotlospaw-drewko-plus/1_okladka.pdf',
 
-    wyposazenieKotlospaw,
 '/pdf_templates/kotly-pellet/kotlospaw-drewko-plus/kotlospaw_drewko_plus_ds1.pdf',
     '/pdf_templates/kotly-pellet/kotlospaw-drewko-plus/kotlospaw_drewko_plus_ds2.pdf',
      oNas,

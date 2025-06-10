@@ -44,11 +44,7 @@ function getBufferRowData(bufferCapacity) {
   const bufferDescriptions = {
     'sprzeglo': { name: 'Sprzęgło hydrauliczne z osprzętem', description: 'Kompaktowe sprzęgło hydrauliczne zapewniające separację obiegu źródła ciepła od obiegów grzewczych, stabilizując pracę i ciśnienie w całej instalacji.' },
     'zawor-4d': { name: 'Zawór czterodrożny z siłownikiem', description: 'Zawór mieszający czterodrogowy z siłownikiem, chroni powrót kotła i reguluje temperaturę zasilania instalacji grzewczej.'},
-    
-    // --- POCZĄTEK ZMIANY: DODAJ TĘ LINIĘ ---
     '40-100L': { name: 'Bufor 40-100 L z osprzętem', description: 'Zbiornik buforowy zwiększający zład wody w instalacji. Optymalizuje pracę pompy ciepła, redukując liczbę jej uruchomień. Komplet z niezbędnym osprzętem.' },
-    // --- KONIEC ZMIANY ---
-
     '40L': { name: 'Bufor 40 L z osprzętem', description: 'Kompaktowy zbiornik buforowy 40L, który zwiększa zład wody w instalacji, optymalizuje pracę pompy ciepła i zapewnia jej dłuższą żywotność. Komplet z niezbędnym osprzętem.' },
     '60L': { name: 'Bufor 60 L z osprzętem', description: 'Zbiornik buforowy 60L, zwiększający zład wody w instalacji. Optymalizuje pracę pompy ciepła, redukując liczbę jej uruchomień. Komplet z niezbędnym osprzętem.' },
     '80L': { name: 'Bufor 80 L z osprzętem', description: 'Zbiornik buforowy 80L, zwiększający zład wody w instalacji. Optymalizuje pracę pompy ciepła, redukując liczbę jej uruchomień. Komplet z niezbędnym osprzętem.' },
@@ -63,8 +59,8 @@ function getBufferRowData(bufferCapacity) {
   if (!data) return null;
   return [' ', data.name, 'szt.', '1', data.description, 'common'];
 }
-// ścieżka: src/data/tables/index.js
 
+// --- ZMODYFIKOWANA FUNKCJA ---
 export function getTableData(deviceType, model, tankCapacity, bufferCapacity, systemType) {
   const boilerDeviceTypes = ["LAZAR", "Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid"];
   const isBoiler = boilerDeviceTypes.includes(deviceType);
@@ -90,25 +86,16 @@ export function getTableData(deviceType, model, tankCapacity, bufferCapacity, sy
   
   let workingTable;
 
-  // --- POCZĄTEK ZMIANY: NOWA LOGIKA DLA TYPÓW UKŁADU ---
   if (isBoiler) {
     const safeSystemType = systemType || 'zamkniety';
-
-    // Logika filtrowania w zależności od typu układu
     if (safeSystemType === 'otwarty' || safeSystemType === 'brak') {
-        // Dla "otwarty" i "brak" bierzemy na start wszystkie komponenty otwarte
         workingTable = baseTableData.filter(row => row[5] === 'common' || row[5] === 'otwarty');
+        if (safeSystemType === 'brak') {
+            workingTable = workingTable.filter(row => !row[1].includes('Naczynie wzbiorcze otwarte'));
+        }
     } else {
-        // Dla "zamknięty" (i jako domyślny)
         workingTable = baseTableData.filter(row => row[5] === 'common' || row[5] === 'zamkniety');
     }
-
-    // Jeśli wybrano opcję "Brak", dodatkowo usuwamy pozycję z naczyniem wzbiorczym
-    if (safeSystemType === 'brak') {
-        workingTable = workingTable.filter(row => !row[1].includes('Naczynie wzbiorcze otwarte'));
-    }
-    // --- KONIEC ZMIANY ---
-
   } else {
     workingTable = baseTableData;
   }
@@ -116,11 +103,31 @@ export function getTableData(deviceType, model, tankCapacity, bufferCapacity, sy
   const tankRow = getTankRowData(tankCapacity);
   const bufferRow = getBufferRowData(bufferCapacity);
   
-  let insertIndex = 1;
-  if(workingTable.some(row => row[1].includes("Kocioł") || row[1].includes("Pompa ciepła"))) {
-    insertIndex = workingTable.findIndex(row => row[1].includes("Kocioł") || row[1].includes("Pompa ciepła")) + 1;
+  // --- POCZĄTEK ZMIANY: Nowa, inteligentna logika wstawiania ---
+  let insertIndex = 1; // Domyślny indeks
+
+  if (isBoiler) {
+    const boilerIndex = workingTable.findIndex(row => row[1].includes("Kocioł"));
+    if (boilerIndex !== -1) {
+        insertIndex = boilerIndex + 1;
+    }
+  } else { // Logika dla pomp ciepła
+    const indoorUnitKeywords = ["Moduł wewnętrzny", "Hydrobox", "Jednostka wewnętrzna"];
+    const indoorUnitIndex = workingTable.findIndex(row => 
+        indoorUnitKeywords.some(keyword => row[1].includes(keyword))
+    );
+
+    if (indoorUnitIndex !== -1) {
+        insertIndex = indoorUnitIndex + 1; // Wstaw po jednostce wewnętrznej
+    } else {
+        // Fallback, gdyby nie znaleziono j. wew. - wstaw po jednostce zewnętrznej
+        const outdoorUnitIndex = workingTable.findIndex(row => row[1].includes("Pompa ciepła"));
+        if (outdoorUnitIndex !== -1) {
+            insertIndex = outdoorUnitIndex + 1;
+        }
+    }
   }
-  
+
   if (tankRow) {
       workingTable.splice(insertIndex, 0, tankRow);
       insertIndex++;
@@ -128,6 +135,7 @@ export function getTableData(deviceType, model, tankCapacity, bufferCapacity, sy
   if (bufferRow) {
     workingTable.splice(insertIndex, 0, bufferRow);
   }
+  // --- KONIEC ZMIANY ---
 
   const finalTable = workingTable.map((row, index) => {
     const newRow = [...row];
