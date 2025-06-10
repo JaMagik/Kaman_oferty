@@ -311,7 +311,6 @@ export default function UnifiedOfferForm() {
           <option value="140L">140 L</option>
           <option value="200L">200 L</option>
           <option value="none">Zasobnik CWU nie wymagany/ Zintegrowany</option>
-          <option value="integrated">Zasobnik CWU zintegrowany</option>
           <option value="300L">300 L</option>
           <option value="400L">400 L</option>
           <option value="200 L STAL NIERDZEWNA">200 L STAL NIERDZEWNA</option>
@@ -326,13 +325,14 @@ export default function UnifiedOfferForm() {
       </select>
 
       {isBoiler && (
-        <div className="input-group" style={{marginTop: '10px'}}>
-            <label htmlFor="systemType">Typ układu hydraulicznego:</label>
-            <select id="systemType" value={systemType} onChange={(e) => setSystemType(e.target.value)}>
-                <option value="zamkniety">Układ zamknięty</option>
-                <option value="otwarty">Układ otwarty</option>
-            </select>
-        </div>
+      <div className="input-group" style={{marginTop: '10px'}}>
+    <label htmlFor="systemType">Typ układu hydraulicznego:</label>
+    <select id="systemType" value={systemType} onChange={(e) => setSystemType(e.target.value)}>
+        <option value="zamkniety">Układ zamknięty</option>
+        <option value="otwarty">Układ otwarty</option>
+        <option value="brak">Brak (tylko grupa bezp. bez naczynia)</option>
+    </select>
+</div>
       )}
 
       <button type="submit">Generuj PDF</button>

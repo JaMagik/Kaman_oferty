@@ -194,7 +194,6 @@ export const pdfTemplateSets = {
   ],
   'ATLANTIC-M-DUO': [ // Atlantic M-Duo
     '/pdf_templates/atlantic/s-duo/1_okladka.pdf',
-     '/pdf_templates/mitsubishi/ecoinverter-hydrobox/2_opcje_dodatkowe.pdf',
     '/pdf_templates/atlantic/s-duo/3.1_atlantic_s_duo.pdf',
     '/pdf_templates/atlantic/s-duo/3.2_atlantic_s_duo.pdf',
      oNas,
@@ -204,7 +203,6 @@ export const pdfTemplateSets = {
   ],
   'ATLANTIC-S': [ // Atlantic M-Duo
     '/pdf_templates/atlantic/s-duo/1_okladka.pdf',
-     '/pdf_templates/mitsubishi/ecoinverter-hydrobox/2_opcje_dodatkowe.pdf',
     '/pdf_templates/atlantic/s-tri-duo/3.1_atlantic_s_duo.pdf',
     '/pdf_templates/atlantic/s-tri-duo/3.2_atlantic_s_duo.pdf',
         oNas,

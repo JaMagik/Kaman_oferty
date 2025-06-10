@@ -63,6 +63,8 @@ function getBufferRowData(bufferCapacity) {
   if (!data) return null;
   return [' ', data.name, 'szt.', '1', data.description, 'common'];
 }
+// ścieżka: src/data/tables/index.js
+
 export function getTableData(deviceType, model, tankCapacity, bufferCapacity, systemType) {
   const boilerDeviceTypes = ["LAZAR", "Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid"];
   const isBoiler = boilerDeviceTypes.includes(deviceType);
@@ -76,28 +78,37 @@ export function getTableData(deviceType, model, tankCapacity, bufferCapacity, sy
 
   let baseTableData = JSON.parse(JSON.stringify(allDeviceTables[deviceType][model]));
   
-  // --- POCZĄTEK NOWEJ LOGIKI ---
   if (isBoiler) {
-    // Sprawdzamy, czy POKAZAĆ pompę ochrony powrotu
-    const showReturnPump = returnPumpBoilers.includes(deviceType) && // 1. Czy to kocioł Kotłospaw lub QMPELL?
-                             bufferCapacity !== 'none' &&               // 2. Czy wybrano jakikolwiek bufor/sprzęgło?
-                             bufferCapacity !== 'zawor-4d';             // 3. Czy NIE wybrano zaworu 4-drogowego?
+    const showReturnPump = returnPumpBoilers.includes(deviceType) && 
+                             bufferCapacity !== 'none' &&              
+                             bufferCapacity !== 'zawor-4d';            
 
     if (!showReturnPump) {
-      // Jeśli warunki nie są spełnione, filtrujemy (usuwamy) pompę z tablicy
       baseTableData = baseTableData.filter(row => !row[1].includes('Pompa ochrony powrotu'));
     }
   }
-  // --- KONIEC NOWEJ LOGIKI ---
   
   let workingTable;
 
+  // --- POCZĄTEK ZMIANY: NOWA LOGIKA DLA TYPÓW UKŁADU ---
   if (isBoiler) {
     const safeSystemType = systemType || 'zamkniety';
-    workingTable = baseTableData.filter(row => {
-      const rowType = row[5];
-      return rowType === 'common' || rowType === safeSystemType;
-    });
+
+    // Logika filtrowania w zależności od typu układu
+    if (safeSystemType === 'otwarty' || safeSystemType === 'brak') {
+        // Dla "otwarty" i "brak" bierzemy na start wszystkie komponenty otwarte
+        workingTable = baseTableData.filter(row => row[5] === 'common' || row[5] === 'otwarty');
+    } else {
+        // Dla "zamknięty" (i jako domyślny)
+        workingTable = baseTableData.filter(row => row[5] === 'common' || row[5] === 'zamkniety');
+    }
+
+    // Jeśli wybrano opcję "Brak", dodatkowo usuwamy pozycję z naczyniem wzbiorczym
+    if (safeSystemType === 'brak') {
+        workingTable = workingTable.filter(row => !row[1].includes('Naczynie wzbiorcze otwarte'));
+    }
+    // --- KONIEC ZMIANY ---
+
   } else {
     workingTable = baseTableData;
   }
@@ -105,10 +116,9 @@ export function getTableData(deviceType, model, tankCapacity, bufferCapacity, sy
   const tankRow = getTankRowData(tankCapacity);
   const bufferRow = getBufferRowData(bufferCapacity);
   
-  // Wstawianie wierszy dla zasobnika i bufora/zaworu
   let insertIndex = 1;
-  if(workingTable.some(row => row[1].includes("Kocioł"))){
-    insertIndex = workingTable.findIndex(row => row[1].includes("Kocioł")) + 1;
+  if(workingTable.some(row => row[1].includes("Kocioł") || row[1].includes("Pompa ciepła"))) {
+    insertIndex = workingTable.findIndex(row => row[1].includes("Kocioł") || row[1].includes("Pompa ciepła")) + 1;
   }
   
   if (tankRow) {
@@ -119,7 +129,6 @@ export function getTableData(deviceType, model, tankCapacity, bufferCapacity, sy
     workingTable.splice(insertIndex, 0, bufferRow);
   }
 
-  // Finalna, poprawna renumeracja po wszystkich operacjach
   const finalTable = workingTable.map((row, index) => {
     const newRow = [...row];
     newRow[0] = String(index + 1);

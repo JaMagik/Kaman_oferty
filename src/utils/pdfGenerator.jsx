@@ -3,6 +3,9 @@ import fontkit from '@pdf-lib/fontkit';
 import { getTableData } from '../data/tables';
 import { getTemplatePathsForDevice } from '../data/tables/pdfTemplateSets';
 import { opcjeDlaPompCiepla, opcjeDlaKotlow } from '../data/tables/opcjeDodatkowe.js';
+// Import nowych danych
+import { opcjeKotlospawProducent, opcjeLazarProducent } from '../data/tables/opcjeProducenta.js';
+
 
 const wrapText = (text, textFont, textSize, maxWidth) => {
     if (typeof text !== 'string') { text = String(text); }
@@ -132,125 +135,130 @@ function drawTable(pdfDoc, initialPage, fonts, tableData, startY) {
 
     return currentY;
 }
+// ścieżka: src/utils/pdfGenerator.jsx
+
+// ścieżka: src/utils/pdfGenerator.jsx
+
+// ścieżka: src/utils/pdfGenerator.jsx
+
 function drawOptionalExtrasTable(page, regularFont, boldFont, data) {
     const { width: pageWidth, height: pageHeight } = page.getSize();
-    let currentY = pageHeight - 40;
-    const tableX = 50;
-    const kamanRed = rgb(0.815, 0.008, 0.106);
+    const maroonColor = rgb(0.6, 0, 0.15);
+    const whiteColor = rgb(1, 1, 1);
+    const textColor = rgb(0.1, 0.1, 0.1);
+    const evenRowBgColor = rgb(0.98, 0.96, 0.96);
+    const lineColor = rgb(0.85, 0.85, 0.85);
 
+    // --- Konfiguracja elementów strony ---
     const title = 'WYPOSAŻENIE UZUPEŁNIAJĄCE (OPCJONALNIE)';
     const titleFontSize = 14;
-    const titleBannerHeight = 40;
+    const topBannerHeight = 40;
 
-    page.drawRectangle({
-        x: 0,
-        y: currentY - titleBannerHeight,
-        width: pageWidth,
-        height: titleBannerHeight,
-        color: kamanRed,
-    });
-    const titleWidth = boldFont.widthOfTextAtSize(title, titleFontSize);
-    page.drawText(title, {
-        x: (pageWidth - titleWidth) / 2,
-        y: currentY - titleBannerHeight + (titleBannerHeight - titleFontSize) / 2,
-        font: boldFont,
-        size: titleFontSize,
-        color: rgb(1, 1, 1),
-    });
-    currentY -= titleBannerHeight + 25;
-
-    const tableStartY = currentY;
-
-    const table = {
-        x: tableX,
+    const tableConfig = {
         columnWidths: [30, 170, 220, 40, 50],
         headerHeight: 22,
         padding: { top: 6, bottom: 6, left: 5, right: 5 },
+        headerFontSize: 9.5,
+        contentFontSize: 8.5,
+        descriptionFontSize: 7.8,
     };
-    
-    const headerFontSize = 9.5;
-    const contentFontSize = 8.5;
-    const descriptionFontSize = 7.8;
-    const contentLineHeight = contentFontSize * 1.3;
-    const descriptionLineHeight = descriptionFontSize * 1.3;
-    const textColor = rgb(0.1, 0.1, 0.1);
-    const headerColor = rgb(1, 1, 1);
-    const headerBgColor = rgb(0.6, 0, 0.15);
-    const evenRowBgColor = rgb(0.98, 0.96, 0.96);
-    const lineColor = rgb(0.85, 0.85, 0.85);
-    const tableWidth = table.columnWidths.reduce((a, b) => a + b, 0);
-    const columnPositions = [table.x];
-    for (let i = 0; i < table.columnWidths.length; i++) {
-        columnPositions.push(columnPositions[i] + table.columnWidths[i]);
-    }
+    const tableWidth = tableConfig.columnWidths.reduce((a, b) => a + b, 0);
 
-    const headerY = currentY - table.headerHeight;
-    const headerTextY = headerY + (table.headerHeight - headerFontSize) / 2 + 1;
-    page.drawRectangle({ x: table.x, y: headerY, width: tableWidth, height: table.headerHeight, color: headerBgColor });
-    const headers = ['Lp.', 'Nazwa towaru', 'Opis', 'J.m.', 'Cena'];
-    let currentHeaderX = table.x;
-    headers.forEach((header, i) => {
-        const textWidth = boldFont.widthOfTextAtSize(header, headerFontSize);
-        page.drawText(header, { x: currentHeaderX + (table.columnWidths[i] - textWidth) / 2, y: headerTextY, size: headerFontSize, font: boldFont, color: headerColor });
-        currentHeaderX += table.columnWidths[i];
-    });
-    currentY = headerY;
-
-    data.forEach((row, rowIndex) => {
-        const [lp, name, description, unit, price] = row;
-        const nameLines = wrapText(name, regularFont, contentFontSize, table.columnWidths[1] - 10);
-        const descLines = wrapText(description, regularFont, descriptionFontSize, table.columnWidths[2] - 10);
-        const rowLineCount = Math.max(nameLines.length, descLines.length, 1);
-        const dynamicRowHeight = (rowLineCount * Math.max(contentLineHeight, descriptionLineHeight)) + table.padding.top + table.padding.bottom;
-        
-        currentY -= dynamicRowHeight;
-
-        if (rowIndex % 2 === 0) {
-            page.drawRectangle({ x: table.x, y: currentY, width: tableWidth, height: dynamicRowHeight, color: evenRowBgColor });
-        }
-        
-        const textStartY = currentY + dynamicRowHeight - table.padding.top - contentFontSize;
-        const descTextStartY = currentY + dynamicRowHeight - table.padding.top - descriptionFontSize;
-
-        page.drawText(lp, { x: columnPositions[0] + (table.columnWidths[0] - regularFont.widthOfTextAtSize(lp, contentFontSize)) / 2, y: textStartY, size: contentFontSize, font: regularFont, color: textColor });
-        let nameY = textStartY;
-        nameLines.forEach(line => {
-            page.drawText(line, { x: columnPositions[1] + 5, y: nameY, size: contentFontSize, font: regularFont, color: textColor, lineHeight: contentLineHeight });
-            nameY -= contentLineHeight;
-        });
-        let descY = descTextStartY;
-        descLines.forEach(line => {
-            page.drawText(line, { x: columnPositions[2] + 5, y: descY, size: descriptionFontSize, font: regularFont, color: textColor, lineHeight: descriptionLineHeight });
-            descY -= descriptionLineHeight;
-        });
-        page.drawText(unit, { x: columnPositions[3] + (table.columnWidths[3] - regularFont.widthOfTextAtSize(unit, contentFontSize)) / 2, y: textStartY, size: contentFontSize, font: regularFont, color: textColor });
-        page.drawText(price, { x: columnPositions[4] + (table.columnWidths[4] - regularFont.widthOfTextAtSize(price, contentFontSize)) / 2, y: textStartY, size: contentFontSize, font: regularFont, color: textColor });
-        
-        page.drawLine({ start: { x: table.x, y: currentY }, end: { x: table.x + tableWidth, y: currentY }, thickness: 0.5, color: lineColor });
-    });
-
-    for(let i=0; i <= table.columnWidths.length; i++) {
-        page.drawLine({ start: { x: columnPositions[i], y: currentY }, end: { x: columnPositions[i], y: tableStartY }, thickness: 0.5, color: lineColor });
-    }
-
+    // --- Konfiguracja dolnego banera (większa czcionka, więcej miejsca) ---
     const footerText = "UWAGI: OPCJE DODATKOWE NIE SĄ WYMAGANE PRZEZ PRODUCENTÓW* DO PRACY INSTALACJI I O ICH ZASADNOŚCI KAŻDORAZOWO NALEŻY KONSULTOWAĆ SIĘ Z OPIEKUNEM HANDLOWYM LUB DORADCĄ TECHNICZNYM";
-    const footerFontSize = 8.5;
-    const footerLines = wrapText(footerText, boldFont, footerFontSize, tableWidth - 40);
-    let footerY = currentY - 35;
+    const footerFontSize = 9; // Zwiększona czcionka
+    const footerLines = wrapText(footerText, boldFont, footerFontSize, pageWidth - 80);
+    const bottomBannerHeight = (footerLines.length * footerFontSize * 1.5) + 30; // Wyższy baner
+
+    // --- 1. Rysuj GÓRNY baner na stałej pozycji ---
+    page.drawRectangle({ x: 0, y: pageHeight - topBannerHeight, width: pageWidth, height: topBannerHeight, color: maroonColor });
+    const titleWidth = boldFont.widthOfTextAtSize(title, titleFontSize);
+    page.drawText(title, {
+        x: (pageWidth - titleWidth) / 2,
+        y: pageHeight - topBannerHeight + (topBannerHeight - titleFontSize) / 2,
+        font: boldFont, size: titleFontSize, color: whiteColor,
+    });
+
+    // --- 2. Rysuj DOLNY baner na stałej pozycji ---
+    page.drawRectangle({ x: 0, y: 0, width: pageWidth, height: bottomBannerHeight, color: maroonColor });
+    let footerTextY = bottomBannerHeight - 18;
     footerLines.forEach(line => {
         const lineWidth = boldFont.widthOfTextAtSize(line, footerFontSize);
         page.drawText(line, {
-            x: tableX + (tableWidth - lineWidth) / 2, y: footerY, font: boldFont, size: footerFontSize, color: rgb(0.3, 0.3, 0.3), lineHeight: footerFontSize * 1.3,
+            x: (pageWidth - lineWidth) / 2, y: footerTextY, font: boldFont, size: footerFontSize, color: whiteColor,
         });
-        footerY -= footerFontSize * 1.3;
+        footerTextY -= footerFontSize * 1.5;
     });
 
-    const bottomBannerHeight = 10;
-    page.drawRectangle({
-        x: 0, y: 0, width: pageWidth, height: bottomBannerHeight, color: kamanRed,
+    // --- 3. Oblicz wysokość tabeli i wyśrodkuj ją w pozostałej przestrzeni ---
+    let calculatedTableHeight = tableConfig.headerHeight;
+    data.forEach(row => {
+        const nameLines = wrapText(row[1], regularFont, tableConfig.contentFontSize, tableConfig.columnWidths[1] - 10);
+        const descLines = wrapText(row[2], regularFont, tableConfig.descriptionFontSize, tableConfig.columnWidths[2] - 10);
+        calculatedTableHeight += Math.max(nameLines.length * tableConfig.contentFontSize * 1.3, descLines.length * tableConfig.descriptionFontSize * 1.3) + tableConfig.padding.top + tableConfig.padding.bottom;
     });
+
+    const freeSpace = pageHeight - topBannerHeight - bottomBannerHeight;
+    const tableStartY = bottomBannerHeight + (freeSpace + calculatedTableHeight) / 2;
+    let currentY = tableStartY;
+
+    // --- 4. Rysuj TABELĘ na obliczonej, wyśrodkowanej pozycji ---
+    const tableX = (pageWidth - tableWidth) / 2;
+    const columnPositions = [tableX];
+    for (let i = 0; i < tableConfig.columnWidths.length; i++) {
+        columnPositions.push(columnPositions[i] + tableConfig.columnWidths[i]);
+    }
+
+    // Nagłówek tabeli
+    const headerY = currentY - tableConfig.headerHeight;
+    page.drawRectangle({ x: tableX, y: headerY, width: tableWidth, height: tableConfig.headerHeight, color: maroonColor });
+    const headers = ['Lp.', 'Nazwa towaru', 'Opis', 'J.m.', 'Cena'];
+    const headerTextY = headerY + (tableConfig.headerHeight - tableConfig.headerFontSize) / 2;
+    headers.forEach((header, i) => {
+        const textWidth = boldFont.widthOfTextAtSize(header, tableConfig.headerFontSize);
+        page.drawText(header, { x: columnPositions[i] + (tableConfig.columnWidths[i] - textWidth) / 2, y: headerTextY, size: tableConfig.headerFontSize, font: boldFont, color: whiteColor });
+    });
+    currentY = headerY;
+
+    // Wiersze tabeli
+    data.forEach((row, rowIndex) => {
+        const [lp, name, description, unit, price] = row;
+        const nameLines = wrapText(name, regularFont, tableConfig.contentFontSize, tableConfig.columnWidths[1] - 10);
+        const descLines = wrapText(description, regularFont, tableConfig.descriptionFontSize, tableConfig.columnWidths[2] - 10);
+        const rowLineCount = Math.max(nameLines.length, descLines.length, 1);
+        const dynamicRowHeight = (rowLineCount * Math.max(tableConfig.contentFontSize * 1.3, tableConfig.descriptionFontSize * 1.3)) + tableConfig.padding.top + tableConfig.padding.bottom;
+        currentY -= dynamicRowHeight;
+
+        if (rowIndex % 2 === 0) {
+            page.drawRectangle({ x: tableX, y: currentY, width: tableWidth, height: dynamicRowHeight, color: evenRowBgColor });
+        }
+
+        const textStartY = currentY + dynamicRowHeight - tableConfig.padding.top - tableConfig.contentFontSize;
+        const descTextStartY = currentY + dynamicRowHeight - tableConfig.padding.top - tableConfig.descriptionFontSize;
+
+        page.drawText(lp, { x: columnPositions[0] + (tableConfig.columnWidths[0] - regularFont.widthOfTextAtSize(lp, tableConfig.contentFontSize)) / 2, y: textStartY, size: tableConfig.contentFontSize, font: regularFont, color: textColor });
+        let nameY = textStartY;
+        nameLines.forEach(line => {
+            page.drawText(line, { x: columnPositions[1] + 5, y: nameY, size: tableConfig.contentFontSize, font: regularFont, color: textColor, lineHeight: tableConfig.contentFontSize * 1.3 });
+            nameY -= tableConfig.contentFontSize * 1.3;
+        });
+        let descY = descTextStartY;
+        descLines.forEach(line => {
+            page.drawText(line, { x: columnPositions[2] + 5, y: descY, size: tableConfig.descriptionFontSize, font: regularFont, color: textColor, lineHeight: tableConfig.descriptionFontSize * 1.3 });
+            descY -= tableConfig.descriptionFontSize * 1.3;
+        });
+        page.drawText(unit, { x: columnPositions[3] + (tableConfig.columnWidths[3] - regularFont.widthOfTextAtSize(unit, tableConfig.contentFontSize)) / 2, y: textStartY, size: tableConfig.contentFontSize, font: regularFont, color: textColor });
+        page.drawText(price, { x: columnPositions[4] + (tableConfig.columnWidths[4] - regularFont.widthOfTextAtSize(price, tableConfig.contentFontSize)) / 2, y: textStartY, size: tableConfig.contentFontSize, font: regularFont, color: textColor });
+        page.drawLine({ start: { x: tableX, y: currentY }, end: { x: tableX + tableWidth, y: currentY }, thickness: 0.5, color: lineColor });
+    });
+
+    // Linie pionowe tabeli
+    for (let i = 0; i <= tableConfig.columnWidths.length; i++) {
+        page.drawLine({ start: { x: columnPositions[i], y: currentY }, end: { x: columnPositions[i], y: tableStartY }, thickness: 0.5, color: lineColor });
+    }
 }
 
+// ścieżka: src/utils/pdfGenerator.jsx
 
 export async function generateOfferPDF(
   cena,
@@ -299,32 +307,30 @@ export async function generateOfferPDF(
         const { width: pageWidth, height: pageHeight } = dynamicPage.getSize();
         const tableData = getTableData(deviceType, model, tankCapacity, bufferCapacity, systemType);
         
-        // Zaczynamy rysowanie od samej góry
         let currentY = pageHeight;
         
-        // --- POCZĄTEK: Logika czerwonego banera przesunięta na górę ---
         const introLines = [
             "Dziękujemy za zainteresowanie ofertą firmy KAMAN.",
             "Każde urządzenie dobierane jest indywidualnie po szczegółowych ustaleniach technicznych."
         ];
         const introFontSize = 9.5;
         const introLineHeight = introFontSize * 1.4;
-        const bannerHeight = 45; // Zmniejszona wysokość banera, aby był bardziej kompaktowy
+        const bannerHeight = 45;
         const bannerY = currentY - bannerHeight;
 
-        dynamicPage.drawRectangle({ x: 0, y: bannerY, width: pageWidth, height: bannerHeight, color: rgb(0.815, 0.008, 0.106) });
+        // --- POCZĄTEK ZMIANY: Zmiana koloru baneru na bordowy ---
+        dynamicPage.drawRectangle({ x: 0, y: bannerY, width: pageWidth, height: bannerHeight, color: rgb(0.6, 0, 0.15) });
+        // --- KONIEC ZMIANY ---
 
-        let introTextY = bannerY + bannerHeight - 15; // Dostosowanie pozycji tekstu w banerze
+        let introTextY = bannerY + bannerHeight - 15;
         introLines.forEach(line => {
             const textWidth = boldFont.widthOfTextAtSize(line, introFontSize);
             dynamicPage.drawText(line, { x: (pageWidth - textWidth) / 2, y: introTextY, font: boldFont, size: introFontSize, color: rgb(1, 1, 1) });
             introTextY -= introLineHeight;
         });
         
-        // Ustawienie nowej pozycji startowej dla reszty treści
         currentY = bannerY - 20;
-        // --- KONIEC: Logika czerwonego banera ---
-
+        
         const userNameText = `Oferta dla: ${userName}`;
         const userNameFontSize = 22;
         const userNameTextWidth = boldFont.widthOfTextAtSize(userNameText, userNameFontSize);
