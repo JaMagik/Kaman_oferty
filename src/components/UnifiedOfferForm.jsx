@@ -39,30 +39,23 @@ const boilerDeviceTypes = [
 ];
 
 const heatPumpBufferOptions = [
-  { value: "40-100L", label: "Bufor 40-100 L + osprzęt" },
   { value: "sprzeglo", label: "Sprzęgło hydrauliczne z osprzętem" },
   { value: "none", label: "Bufor niewymagany" },
+  { value: "40-100L", label: "Bufor 40-100 L + osprzęt" },
   { value: "200L", label: "Bufor 200 L + osprzęt" },
   { value: "300L", label: "Bufor 300 L + osprzęt" },
 ];
 
 const boilerBufferOptions = [
-   { value: "zawor-4d", label: "Zawór czterodrożny z siłownikiem" },
    { value: "sprzeglo", label: "Sprzęgło hydrauliczne z osprzętem" },
   { value: "none", label: "Bufor niewymagany" },
+  { value: "zawor-4d", label: "Zawór czterodrożny z siłownikiem" },
   { value: "100L", label: "Bufor 100 L + osprzęt" },
   { value: "120L", label: "Bufor 120 L + osprzęt" },
   { value: "140L", label: "Bufor 140 L + osprzęt" },
   { value: "200L", label: "Bufor 200 L + osprzęt" },
 ];
 
-const isDeviceHeatPump = (deviceType) => {
-    if (!deviceType) return false;
-    const lowerCaseDevice = deviceType.toLowerCase();
-    const isBoiler = boilerDeviceTypes.some(boiler => lowerCaseDevice.includes(boiler.toLowerCase()));
-    const isAc = lowerCaseDevice.includes('klimatyzator');
-    return !isBoiler && !isAc;
-};
 
 export default function UnifiedOfferForm() {
   const [userName, setUserName] = useState("");
@@ -70,14 +63,13 @@ export default function UnifiedOfferForm() {
   const [deviceType, setDeviceType] = useState("Mitsubishi-cylinder-PUZ");
   const [model, setModel] = useState("12 kW");
   const [availableModels, setAvailableModels] = useState([]);
-  
-  // Stany z wartościami domyślnymi ustawianymi w useEffect
-  const [tank, setTank] = useState("300L");
-  const [buffer, setBuffer] = useState("40-100L");
+  const [tank, setTank] = useState("200 L STAL NIERDZEWNA");
+  const [buffer, setBuffer] = useState("Sprzęgło hydrauliczne z osprzętem");
   const [currentBufferOptions, setCurrentBufferOptions] = useState(heatPumpBufferOptions);
   
-  const [dismantleBoiler, setDismantleBoiler] = useState(true);
-  const [buildFoundation, setBuildFoundation] = useState(true);
+  // Stany dla nowych pól wyboru
+  const [includeDemontaz, setIncludeDemontaz] = useState(true);
+  const [includePodbudowa, setIncludePodbudowa] = useState(true);
 
   const [trelloCardId, setTrelloCardId] = useState(null);
   const [trelloUserToken, setTrelloUserToken] = useState(null);
@@ -86,11 +78,12 @@ export default function UnifiedOfferForm() {
   
   const [systemType, setSystemType] = useState('zamkniety');
 
+  const isBoiler = boilerDeviceTypes.includes(deviceType);
+
   const formatPriceForDisplay = (value) => {
     if (!value) return '';
     const [integer, decimal] = String(value).split('.');
     const formattedInteger = Number(integer).toLocaleString('pl-PL');
-    
     if (decimal !== undefined) {
       return `${formattedInteger},${decimal}`;
     }
@@ -101,10 +94,8 @@ export default function UnifiedOfferForm() {
   };
 
   const handlePriceChange = (e) => {
-    const rawValue = e.target.value;
-    let cleanedValue = rawValue.replace(/[^0-9,.]/g, '').replace(/\s/g, '');
+    let cleanedValue = e.target.value.replace(/[^0-9,.]/g, '').replace(/\s/g, '');
     cleanedValue = cleanedValue.replace(',', '.');
-
     const parts = cleanedValue.split('.');
     if (parts.length > 2) {
         cleanedValue = parts[0] + '.' + parts.slice(1).join('');
@@ -119,64 +110,34 @@ export default function UnifiedOfferForm() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const cardIdFromUrl = urlParams.get('trelloCardId');
-    if (cardIdFromUrl) {
-      setTrelloCardId(cardIdFromUrl);
-    }
-
+    if (cardIdFromUrl) setTrelloCardId(cardIdFromUrl);
     if (window.location.hash.includes("#token=")) {
       const token = window.location.hash.substring(window.location.hash.indexOf('=') + 1);
       setTrelloUserToken(token);
-      localStorage.setItem('trello_token', token);
       window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
-    } else {
-        const storedToken = localStorage.getItem('trello_token');
-        if(storedToken) setTrelloUserToken(storedToken);
     }
   }, []);
 
   useEffect(() => {
-    const modelsForDevice = allDevicesData[deviceType]
-      ? Object.keys(allDevicesData[deviceType])
-      : [];
+    const modelsForDevice = allDevicesData[deviceType] ? Object.keys(allDevicesData[deviceType]) : [];
     setAvailableModels(modelsForDevice);
     if (modelsForDevice.length > 0 && !modelsForDevice.includes(model)) {
       setModel(modelsForDevice[0]);
     } else if (modelsForDevice.length === 0) {
       setModel("");
     }
-    
-    const isBoiler = boilerDeviceTypes.includes(deviceType);
     setCurrentBufferOptions(isBoiler ? boilerBufferOptions : heatPumpBufferOptions);
-
-    // --- LOGIKA USTAWIANIA DOMYŚLNYCH WARTOŚCI ---
-    if (isBoiler) {
-        setBuffer("zawor-4d");
-        setTank("200L");
-        setSystemType('zamkniety');
-    } else { // Pompa ciepła lub inne
-        setBuffer("40-100L");
-        setTank("300L");
-    }
-  }, [deviceType]);
+    if (!isBoiler) setSystemType('zamkniety');
+  }, [deviceType, model, isBoiler]);
 
   const handleGenerateAndSetPdf = async (e) => {
-    if (e) e.preventDefault();
-    const isHeatPump = isDeviceHeatPump(deviceType);
+    e.preventDefault();
     const pdfData = await generateOfferPDF(
-        price, 
-        userName, 
-        deviceType, 
-        model, 
-        tank, 
-        buffer, 
-        dismantleBoiler,
-        buildFoundation,
-        systemType,
-        isHeatPump // Przekazanie flagi
+        price, userName, deviceType, model, tank, buffer, systemType, 
+        { demontaz: includeDemontaz, podbudowa: includePodbudowa }
     );
     if (pdfData) {
       setGeneratedPdfData(pdfData);
-      console.log("PDF wygenerowany i zapisany w stanie.");
     }
   };
 
@@ -194,93 +155,7 @@ export default function UnifiedOfferForm() {
       alert("Najpierw wygeneruj PDF!");
     }
   };
-
-  const handleTrelloAuth = () => {
-    const returnUrl = window.location.href.split('#')[0];
-    const authUrl = `https://trello.com/1/authorize?expiration=1day&name=${encodeURIComponent(TRELLO_APP_NAME)}&scope=read,write&response_type=token&key=${TRELLO_API_KEY}&return_url=${encodeURIComponent(returnUrl)}`;
-    window.location.href = authUrl;
-  };
-
-  const handleSaveToTrello = async () => {
-    if (!generatedPdfData) {
-      alert("Najpierw wygeneruj PDF!");
-      return;
-    }
-    if (!trelloCardId) {
-      alert("Brak ID karty Trello. Otwórz aplikację z Power-Upa.");
-      return;
-    }
-    if (!trelloUserToken) {
-      alert("Brak autoryzacji Trello. Kliknij 'Autoryzuj Trello'.");
-      return;
-    }
-
-    setIsSavingToTrello(true);
-    const reader = new FileReader();
-    reader.readAsDataURL(generatedPdfData);
-    reader.onloadend = async () => {
-      const base64Pdf = reader.result;
-      try {
-        const response = await fetch('/api/saveToTrello', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            cardId: trelloCardId,
-            token: trelloUserToken,
-            fileDataUrl: base64Pdf,
-            fileName: `Oferta_KAMAN_${userName.replace(/ /g, '_')}.pdf`
-          })
-        });
-
-        if (response.ok) {
-          alert("Sukces! Oferta została zapisana na karcie Trello.");
-        } else {
-          const error = await response.json();
-          alert("Błąd zapisu do Trello: " + (error.message || response.statusText));
-        }
-      } catch (err) {
-        console.error("Błąd sieciowy przy zapisie do Trello:", err);
-        alert("Wystąpił błąd sieciowy podczas zapisu do Trello.");
-      } finally {
-        setIsSavingToTrello(false);
-      }
-    };
-    reader.onerror = () => {
-      console.error("Błąd odczytu pliku PDF");
-      alert("Błąd odczytu pliku PDF.");
-      setIsSavingToTrello(false);
-    };
-  };
   
-  const isBoiler = boilerDeviceTypes.includes(deviceType);
-  const isHeatPump = isDeviceHeatPump(deviceType);
-
-  const checkboxDivStyle = {
-    display: 'flex',
-    alignItems: 'center',
-    marginTop: '10px',
-    padding: '10px',
-    border: '1.2px solid #e2e2e2',
-    borderRadius: '7px',
-    background: '#f6f6f6',
-  };
-
-  const inputCheckboxStyle = {
-    width: 'auto',
-    height: '20px',
-    margin: '0 10px 0 5px',
-    flexShrink: 0,
-    cursor: 'pointer'
-  };
-
-  const labelCheckboxStyle = {
-      margin: 0,
-      cursor: 'pointer',
-      color: '#000000',
-      fontSize: '1.0rem',
-      fontWeight: 500
-  };
-
   return (
     <form className="form-container" onSubmit={handleGenerateAndSetPdf}>
       <h2>Generator Ofert KAMAN</h2>
@@ -288,15 +163,7 @@ export default function UnifiedOfferForm() {
       <input id="userName" type="text" value={userName} onChange={(e) => setUserName(e.target.value)} placeholder="Podaj imię i nazwisko" required />
 
       <label htmlFor="price">Cena Końcowa (PLN):</label>
-      <input
-        id="price"
-        type="text"
-        inputMode="decimal"
-        value={formatPriceForDisplay(price)}
-        onChange={handlePriceChange}
-        placeholder="Podaj cenę"
-        required
-      />
+      <input id="price" type="text" inputMode="decimal" value={formatPriceForDisplay(price)} onChange={handlePriceChange} placeholder="Podaj cenę" required />
 
       <label htmlFor="deviceType">Typ Urządzenia/Oferty:</label>
       <select id="deviceType" value={deviceType} onChange={(e) => setDeviceType(e.target.value)}>
@@ -309,7 +176,7 @@ export default function UnifiedOfferForm() {
           <option value="Mitsubishi-ecoinverter">Mitsubishi Ecoinverter (Cylinder)</option>
           <option value="Mitsubishi-ecoinverter-hydrobox">Mitsubishi Ecoinverter (Hydrobox)</option>
         </optgroup>
-        <optgroup label="Toshiba (Pompy Ciepła)">
+        <optgroup label="Toshiba ( Pompy Ciepła)">
           <option value="Toshiba 1F">Toshiba (1-fazowe)</option>
         </optgroup>
         <optgroup label="Atlantic (Pompy Ciepła)">
@@ -329,7 +196,7 @@ export default function UnifiedOfferForm() {
         <optgroup label="Viessmann (Pompy Ciepła)">
             <option value="VIESSMANN">Viessmann Vitocal 150-A</option>
         </optgroup>
-        <optgroup label="Kaisai (Pompy Ciepła)">
+        <optgroup label="Kaisai ( Pompy Ciepła)">
             <option value="Kaisai">Kaisai</option>
         </optgroup>
         <optgroup label="Mitsubishi (Klimatyzatory)">
@@ -340,18 +207,16 @@ export default function UnifiedOfferForm() {
       <label htmlFor="model">Model (Moc):</label>
       <select id="model" value={model} onChange={(e) => setModel(e.target.value)} disabled={availableModels.length === 0}>
         {availableModels.length > 0 ? (
-          availableModels.map((modelName) => (
-            <option key={modelName} value={modelName}>{modelName}</option>
-          ))
+          availableModels.map((modelName) => <option key={modelName} value={modelName}>{modelName}</option>)
         ) : (
           <option value="">Brak dostępnych modeli</option>
         )}
       </select>
       <label htmlFor="tank">Pojemność zasobnika CWU:</label>
       <select id="tank" value={tank} onChange={(e) => setTank(e.target.value)}>
-          <option value="none">Zasobnik CWU nie wymagany/ Zintegrowany</option>
           <option value="140L">140 L</option>
           <option value="200L">200 L</option>
+          <option value="none">Zasobnik CWU nie wymagany/ Zintegrowany</option>
           <option value="300L">300 L</option>
           <option value="400L">400 L</option>
           <option value="200 L STAL NIERDZEWNA">200 L STAL NIERDZEWNA</option>
@@ -360,50 +225,41 @@ export default function UnifiedOfferForm() {
       </select>
       <label htmlFor="buffer">Bufor/Sprzęgło:</label>
       <select id="buffer" value={buffer} onChange={(e) => setBuffer(e.target.value)}>
-        {currentBufferOptions.map(option => (
-          <option key={option.value} value={option.value}>{option.label}</option>
-        ))}
+        {currentBufferOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
       </select>
-
-      {isBoiler && (
-      <div className="input-group" style={{marginTop: '10px'}}>
-        <label htmlFor="systemType">Typ układu hydraulicznego:</label>
-        <select id="systemType" value={systemType} onChange={(e) => setSystemType(e.target.value)}>
-            <option value="zamkniety">Układ zamknięty</option>
-            <option value="otwarty">Układ otwarty</option>
-            <option value="brak">Brak (tylko grupa bezp. bez naczynia)</option>
-        </select>
+      
+      <div className="input-group" style={{ flexDirection: 'row', alignItems: 'center', marginTop: '15px', gap: '10px' }}>
+        <input type="checkbox" id="includeDemontaz" checked={includeDemontaz} onChange={(e) => setIncludeDemontaz(e.target.checked)} style={{ width: 'auto' }} />
+        <label htmlFor="includeDemontaz" style={{ marginBottom: 0, fontWeight: 'normal' }}>
+          Uwzględnij demontaż starego źródła ciepła w ofercie
+        </label>
       </div>
+      
+      {!isBoiler && (
+        <div className="input-group" style={{ flexDirection: 'row', alignItems: 'center', marginTop: '5px', gap: '10px' }}>
+          <input type="checkbox" id="includePodbudowa" checked={includePodbudowa} onChange={(e) => setIncludePodbudowa(e.target.checked)} style={{ width: 'auto' }} />
+          <label htmlFor="includePodbudowa" style={{ marginBottom: 0, fontWeight: 'normal' }}>
+            Uwzględnij podbudowę pod pompę ciepła w ofercie
+          </label>
+        </div>
       )}
 
-        <div style={{marginTop: '20px'}}>
-            <div style={checkboxDivStyle}>
-                <input type="checkbox" id="dismantleBoiler" checked={dismantleBoiler} onChange={(e) => setDismantleBoiler(e.target.checked)} style={inputCheckboxStyle}/>
-                <label htmlFor="dismantleBoiler" style={labelCheckboxStyle}>Demontaż starego źródła ciepła</label>
-            </div>
-            {isHeatPump && (
-                 <div style={checkboxDivStyle}>
-                    <input type="checkbox" id="buildFoundation" checked={buildFoundation} onChange={(e) => setBuildFoundation(e.target.checked)} style={inputCheckboxStyle}/>
-                    <label htmlFor="buildFoundation" style={labelCheckboxStyle}>Wykonanie podbudowy pod pompę ciepła</label>
-                </div>
-            )}
+      {isBoiler && (
+        <div className="input-group" style={{marginTop: '10px'}}>
+          <label htmlFor="systemType">Typ układu hydraulicznego:</label>
+          <select id="systemType" value={systemType} onChange={(e) => setSystemType(e.target.value)}>
+              <option value="zamkniety">Układ zamknięty</option>
+              <option value="otwarty">Układ otwarty</option>
+              <option value="brak">Brak (tylko grupa bezp. bez naczynia)</option>
+          </select>
         </div>
+      )}
 
       <button type="submit">Generuj PDF</button>
 
       {generatedPdfData && (
         <button type="button" onClick={handleDownloadPdf} style={{ marginTop: '10px', background: '#555' }}>
           Pobierz wygenerowany PDF
-        </button>
-      )}
-      {trelloCardId && !trelloUserToken && (
-        <button type="button" onClick={handleTrelloAuth} style={{ marginTop: '20px', background: '#0079BF' }}>
-          Autoryzuj Trello
-        </button>
-      )}
-      {trelloCardId && trelloUserToken && generatedPdfData && (
-        <button type="button" onClick={handleSaveToTrello} disabled={isSavingToTrello} style={{ marginTop: '10px', background: isSavingToTrello ? '#ccc' : '#0079BF' }}>
-          {isSavingToTrello ? "Zapisywanie..." : "Zapisz ofertę w Trello"}
         </button>
       )}
     </form>

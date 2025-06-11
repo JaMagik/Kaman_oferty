@@ -5,6 +5,7 @@ import { getTemplatePathsForDevice } from '../data/tables/pdfTemplateSets';
 import { opcjeDlaPompCiepla, opcjeDlaKotlow } from '../data/tables/opcjeDodatkowe.js';
 import { opcjeKotlospawProducent, opcjeLazarProducent } from '../data/tables/opcjeProducenta.js';
 
+// ---- Ta funkcja pozostaje bez zmian ----
 const wrapText = (text, textFont, textSize, maxWidth) => {
     if (typeof text !== 'string') { text = String(text); }
     const words = text.split(' ');
@@ -24,9 +25,7 @@ const wrapText = (text, textFont, textSize, maxWidth) => {
     return lines;
 };
 
-// --- POCZĄTEK POPRAWKI: Zmieniono sygnaturę i logikę dodawania strony ---
-// Wklej w miejsce istniejącej funkcji w pliku: src/utils/pdfGenerator.jsx
-
+// ---- Ta funkcja pozostaje bez zmian ----
 function drawTable(pdfDoc, initialPage, fonts, tableData, startY) {
     let currentPage = initialPage;
     let currentY = startY;
@@ -104,7 +103,7 @@ function drawTable(pdfDoc, initialPage, fonts, tableData, startY) {
 
             lines.forEach(line => {
                 const textWidth = font.widthOfTextAtSize(line, fontSize);
-                let textX = cellBounds.x + 5; // Domyślnie do lewej
+                let textX = cellBounds.x + 5; 
                 if (cellBounds.isCentered) {
                     textX = cellBounds.x + (cellBounds.width - textWidth) / 2;
                 }
@@ -126,8 +125,8 @@ function drawTable(pdfDoc, initialPage, fonts, tableData, startY) {
     for (let i = 0; i <= tableConfig.columnWidths.length; i++) { currentPage.drawLine({ start: { x: columnPositions[i], y: currentY }, end: { x: columnPositions[i], y: startY }, thickness: 0.5, color: tableConfig.lineColor }); }
     return currentY;
 }
-// --- KONIEC POPRAWKI ---
 
+// ---- Ta funkcja pozostaje bez zmian ----
 function drawExtrasPage(page, fonts, data, title, logoImage = null) {
     const { width: pageWidth, height: pageHeight } = page.getSize();
     const { regular: regularFont, bold: boldFont } = fonts;
@@ -235,6 +234,52 @@ function drawExtrasPage(page, fonts, data, title, logoImage = null) {
     });
 }
 
+function prepareTableData(deviceType, model, tankCapacity, bufferCapacity, systemType, offerOptions, isKotel) {
+    let mainTableData = getTableData(deviceType, model, tankCapacity, bufferCapacity, systemType);
+    let extrasTableData = isKotel ? [...opcjeDlaKotlow] : [...opcjeDlaPompCiepla];
+
+    const movableItems = [
+        {
+            key: 'demontaz',
+            name: 'Demontaż starego źródła ciepła',
+            applicable: () => true
+        },
+        {
+            key: 'podbudowa',
+            name: 'Wykonanie podbudowy pod jednostkę zewnętrzną',
+            applicable: () => !isKotel
+        }
+    ];
+
+    movableItems.forEach(item => {
+        if (offerOptions[item.key] && item.applicable()) {
+            const itemIndexInExtras = extrasTableData.findIndex(row => row[1] && row[1].includes(item.name));
+            
+            if (itemIndexInExtras > -1) {
+                const [itemRow] = extrasTableData.splice(itemIndexInExtras, 1);
+                
+                const itemRowForMainTable = ['', itemRow[1], itemRow[3], '1', itemRow[2], 'common'];
+                
+                const insertionKeywords = ["Montaż systemu grzewczego", "Podłączenie do istniejącej instalacji"];
+                let insertAtIndex = mainTableData.findIndex(row => insertionKeywords.some(keyword => row[1] && row[1].includes(keyword)));
+                
+                if (insertAtIndex === -1) {
+                    const fallbackIndex = mainTableData.findIndex(row => row[1] && row[1].includes("Dokumentacja powykonawcza"));
+                    insertAtIndex = fallbackIndex > -1 ? fallbackIndex : mainTableData.length - 2;
+                }
+                
+                mainTableData.splice(insertAtIndex, 0, itemRowForMainTable);
+            }
+        }
+    });
+
+    mainTableData = mainTableData.map((row, index) => {
+        row[0] = String(index + 1);
+        return row;
+    });
+
+    return { mainTableData, extrasTableData };
+}
 
 export async function generateOfferPDF(
   cena,
@@ -243,14 +288,15 @@ export async function generateOfferPDF(
   model,
   tankCapacity,
   bufferCapacity,
-  systemType
+  systemType,
+  offerOptions
 ) {
     if (!userName?.trim() || !String(cena).trim()) {
         alert('Uzupełnij wszystkie wymagane pola: Imię i nazwisko oraz cena!');
         return null;
     }
 
-    const kotlyDeviceTypes = ["LAZAR", "Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "QMPELL", "Kotlospaw drewko hybrid", "Kotlospaw drewko plus"];
+    const kotlyDeviceTypes = ["LAZAR", "Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid"];
     const isKotel = kotlyDeviceTypes.includes(deviceType);
     const kotlospawDeviceTypes = ["Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid"];
 
@@ -271,7 +317,7 @@ export async function generateOfferPDF(
         
         let kamanLogoImage = null;
         try { if (kamanLogoBytes) kamanLogoImage = await finalPdfDoc.embedPng(kamanLogoBytes); } 
-        catch (e) { console.error("Błąd ładowania logo KAMAN. Upewnij się, że plik /logos/kaman_logo.png jest poprawnym plikiem PNG.", e); }
+        catch (e) { console.error("Błąd ładowania logo KAMAN.", e); }
 
         if (templatePdfBuffers[0]) {
             const okladkaDoc = await PDFDocument.load(templatePdfBuffers[0]);
@@ -281,12 +327,15 @@ export async function generateOfferPDF(
 
         const dynamicPage = finalPdfDoc.addPage();
         const { width: pageWidth, height: pageHeight } = dynamicPage.getSize();
-        const tableData = getTableData(deviceType, model, tankCapacity, bufferCapacity, systemType);
+        
+        const { mainTableData, extrasTableData } = prepareTableData(
+            deviceType, model, tankCapacity, bufferCapacity, systemType, offerOptions, isKotel
+        );
         
         let currentY = pageHeight - 35;
         
         if (kamanLogoImage) {
-            const logoDims = kamanLogoImage.scale(0.08); 
+            const logoDims = kamanLogoImage.scale(0.04); 
             dynamicPage.drawImage(kamanLogoImage, { x: (pageWidth - logoDims.width) / 2, y: currentY - logoDims.height, width: logoDims.width, height: logoDims.height });
             currentY -= (logoDims.height + 25);
         }
@@ -297,8 +346,7 @@ export async function generateOfferPDF(
         dynamicPage.drawText(userNameText, { x: (pageWidth - userNameTextWidth) / 2, y: currentY, size: userNameFontSize, font: boldFont, color: rgb(0.7, 0, 0.16) });
         currentY -= (userNameFontSize + 20);
         
-        const pageBottomMargin = 40;
-        let lastYPosAfterTable = drawTable(finalPdfDoc, dynamicPage, { regular: regularFont, bold: boldFont }, tableData, currentY);
+        let lastYPosAfterTable = drawTable(finalPdfDoc, dynamicPage, { regular: regularFont, bold: boldFont }, mainTableData, currentY);
 
         const priceString = `Cena końcowa: ${cena} PLN brutto`;
         const priceFontSize = 15;
@@ -307,14 +355,14 @@ export async function generateOfferPDF(
         let pageForPrice = finalPdfDoc.getPage(finalPdfDoc.getPageCount() - 1);
         let priceYPosition = lastYPosAfterTable - 40;
 
-        if (priceYPosition < pageBottomMargin) {
+        if (priceYPosition < 40) {
              pageForPrice = finalPdfDoc.addPage();
-             priceYPosition = pageForPrice.getHeight() - pageBottomMargin - 20;
+             priceYPosition = pageForPrice.getHeight() - 60;
         }
         
         pageForPrice.drawText(priceString, { x: (pageForPrice.getWidth() - priceTextWidth) / 2, y: priceYPosition, size: priceFontSize, font: boldFont, color: rgb(0.7, 0, 0.16) });
         
-        let combinedExtrasData = isKotel ? [...opcjeDlaKotlow] : [...opcjeDlaPompCiepla];
+        let finalExtrasData = [...extrasTableData];
         let producerOptions = null;
         if (kotlospawDeviceTypes.includes(deviceType)) {
             producerOptions = opcjeKotlospawProducent;
@@ -322,21 +370,23 @@ export async function generateOfferPDF(
             producerOptions = opcjeLazarProducent;
         }
 
-        if (producerOptions) {
-            combinedExtrasData.push({ type: 'separator', title: 'WYPOSAŻENIE UZUPEŁNIAJĄCE (OPCJONALNIE) OD PRODUCENTA' });
-            combinedExtrasData.push(...producerOptions);
+        if (producerOptions && producerOptions.length > 0) {
+            finalExtrasData.push({ type: 'separator', title: 'WYPOSAŻENIE UZUPEŁNIAJĄCE (OPCJONALNIE) OD PRODUCENTA' });
+            finalExtrasData.push(...producerOptions);
         }
         
-        let lpCounter = 1;
-        const finalExtrasData = combinedExtrasData.map(row => {
-            if (row.type === 'separator') return row;
-            const newRow = [...row];
-            newRow[0] = String(lpCounter++);
-            return newRow;
-        });
-        
-        const extrasPage = finalPdfDoc.addPage();
-        drawExtrasPage(extrasPage, {regular: regularFont, bold: boldFont}, finalExtrasData, 'WYPOSAŻENIE UZUPEŁNIAJĄCE (OPCJONALNIE)');
+        if (finalExtrasData.some(row => row.type !== 'separator')) {
+            let lpCounter = 1;
+            const numberedExtrasData = finalExtrasData.map(row => {
+                if (row.type === 'separator') return row;
+                const newRow = [...row];
+                newRow[0] = String(lpCounter++);
+                return newRow;
+            });
+            
+            const extrasPage = finalPdfDoc.addPage();
+            drawExtrasPage(extrasPage, {regular: regularFont, bold: boldFont}, numberedExtrasData, 'WYPOSAŻENIE UZUPEŁNIAJĄCE (OPCJONALNIE)');
+        }
 
         for (let i = 1; i < templatePdfBuffers.length; i++) {
             if (templatePdfBuffers[i] && templatePdfBuffers[i].byteLength > 0) {

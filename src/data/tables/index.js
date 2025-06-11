@@ -11,6 +11,7 @@ import { qmpellBaseTables } from "./qmpellEvoTables";
 import { kotlospawDrewkoPlusBaseTables } from "./kotlospawDrewkoPlusTable";
 import { kotlospawDrewkoHybridBaseTables } from "./kotlospawDrewkoHybridTable";
 import { kaisaiHydroboxBaseTables } from './kaisaiTable';
+import { opcjeDlaPompCiepla, opcjeDlaKotlow } from './opcjeDodatkowe.js';
 
 const allDeviceTables = {
     ...mitsubishiBaseTables, ...atlanticBaseTables, ...lazarBaseTables,
@@ -61,7 +62,7 @@ function getBufferRowData(bufferCapacity) {
 }
 
 // --- ZMODYFIKOWANA FUNKCJA ---
-export function getTableData(deviceType, model, tankCapacity, bufferCapacity, systemType) {
+export function getTableData(deviceType, model, tankCapacity, bufferCapacity, systemType, includeDemontaz) {
   const boilerDeviceTypes = ["LAZAR", "Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid"];
   const isBoiler = boilerDeviceTypes.includes(deviceType);
   
@@ -102,25 +103,23 @@ export function getTableData(deviceType, model, tankCapacity, bufferCapacity, sy
   
   const tankRow = getTankRowData(tankCapacity);
   const bufferRow = getBufferRowData(bufferCapacity);
-  
-  // --- POCZĄTEK ZMIANY: Nowa, inteligentna logika wstawiania ---
-  let insertIndex = 1; // Domyślny indeks
+
+  let insertIndex = 1;
 
   if (isBoiler) {
     const boilerIndex = workingTable.findIndex(row => row[1].includes("Kocioł"));
     if (boilerIndex !== -1) {
         insertIndex = boilerIndex + 1;
     }
-  } else { // Logika dla pomp ciepła
+  } else { 
     const indoorUnitKeywords = ["Moduł wewnętrzny", "Hydrobox", "Jednostka wewnętrzna"];
     const indoorUnitIndex = workingTable.findIndex(row => 
         indoorUnitKeywords.some(keyword => row[1].includes(keyword))
     );
 
     if (indoorUnitIndex !== -1) {
-        insertIndex = indoorUnitIndex + 1; // Wstaw po jednostce wewnętrznej
+        insertIndex = indoorUnitIndex + 1;
     } else {
-        // Fallback, gdyby nie znaleziono j. wew. - wstaw po jednostce zewnętrznej
         const outdoorUnitIndex = workingTable.findIndex(row => row[1].includes("Pompa ciepła"));
         if (outdoorUnitIndex !== -1) {
             insertIndex = outdoorUnitIndex + 1;
@@ -134,8 +133,36 @@ export function getTableData(deviceType, model, tankCapacity, bufferCapacity, sy
   }
   if (bufferRow) {
     workingTable.splice(insertIndex, 0, bufferRow);
+    insertIndex++;
   }
-  // --- KONIEC ZMIANY ---
+
+  if (includeDemontaz) {
+    const optionsSource = isBoiler ? opcjeDlaKotlow : opcjeDlaPompCiepla;
+    const demontazIdentifier = 'Demontaż starego źródła ciepła';
+    const demontazRowData = optionsSource.find(row => row[1] && row[1].includes(demontazIdentifier));
+
+    if (demontazRowData) {
+      const demontazRowForMainTable = [
+        '', // lp
+        demontazRowData[1], // name
+        demontazRowData[3], // unit (jm)
+        '1',                // quantity
+        demontazRowData[2], // description
+        'common'            // type
+      ];
+      
+      const insertionKeywords = ["Montaż systemu grzewczego", "Podłączenie do istniejącej instalacji"];
+      let insertAtIndex = workingTable.findIndex(row => 
+        insertionKeywords.some(keyword => row[1] && row[1].includes(keyword))
+      );
+      
+      if (insertAtIndex === -1) {
+          insertAtIndex = workingTable.length - 4; 
+      }
+      
+      workingTable.splice(insertAtIndex, 0, demontazRowForMainTable);
+    }
+  }
 
   const finalTable = workingTable.map((row, index) => {
     const newRow = [...row];
