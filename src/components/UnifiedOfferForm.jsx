@@ -29,7 +29,6 @@ const allDevicesData = {
 const TRELLO_API_KEY = '0f932c28c8d97d03741c8863c2ff4afb';
 const TRELLO_APP_NAME = 'KamanOfertyPowerUp';
 
-// Definicja typów urządzeń będących kotłami
 const boilerDeviceTypes = [
     "LAZAR", 
     "Kotlospaw Slimko Plus", 
@@ -39,26 +38,31 @@ const boilerDeviceTypes = [
     "Kotlospaw drewko hybrid"
 ];
 
-// Opcje buforów dla pomp ciepła
 const heatPumpBufferOptions = [
+  { value: "40-100L", label: "Bufor 40-100 L + osprzęt" },
   { value: "sprzeglo", label: "Sprzęgło hydrauliczne z osprzętem" },
   { value: "none", label: "Bufor niewymagany" },
-  { value: "40-100L", label: "Bufor 40-100 L + osprzęt" },
   { value: "200L", label: "Bufor 200 L + osprzęt" },
   { value: "300L", label: "Bufor 300 L + osprzęt" },
 ];
 
-// Opcje buforów dla kotłów ("pieców")
 const boilerBufferOptions = [
+   { value: "zawor-4d", label: "Zawór czterodrożny z siłownikiem" },
    { value: "sprzeglo", label: "Sprzęgło hydrauliczne z osprzętem" },
   { value: "none", label: "Bufor niewymagany" },
-  { value: "zawor-4d", label: "Zawór czterodrożny z siłownikiem" },
   { value: "100L", label: "Bufor 100 L + osprzęt" },
   { value: "120L", label: "Bufor 120 L + osprzęt" },
   { value: "140L", label: "Bufor 140 L + osprzęt" },
   { value: "200L", label: "Bufor 200 L + osprzęt" },
 ];
 
+const isDeviceHeatPump = (deviceType) => {
+    if (!deviceType) return false;
+    const lowerCaseDevice = deviceType.toLowerCase();
+    const isBoiler = boilerDeviceTypes.some(boiler => lowerCaseDevice.includes(boiler.toLowerCase()));
+    const isAc = lowerCaseDevice.includes('klimatyzator');
+    return !isBoiler && !isAc;
+};
 
 export default function UnifiedOfferForm() {
   const [userName, setUserName] = useState("");
@@ -66,9 +70,14 @@ export default function UnifiedOfferForm() {
   const [deviceType, setDeviceType] = useState("Mitsubishi-cylinder-PUZ");
   const [model, setModel] = useState("12 kW");
   const [availableModels, setAvailableModels] = useState([]);
-  const [tank, setTank] = useState("200 L STAL NIERDZEWNA");
-  const [buffer, setBuffer] = useState("Sprzęgło hydrauliczne z osprzętem");
+  
+  // Stany z wartościami domyślnymi ustawianymi w useEffect
+  const [tank, setTank] = useState("300L");
+  const [buffer, setBuffer] = useState("40-100L");
   const [currentBufferOptions, setCurrentBufferOptions] = useState(heatPumpBufferOptions);
+  
+  const [dismantleBoiler, setDismantleBoiler] = useState(true);
+  const [buildFoundation, setBuildFoundation] = useState(true);
 
   const [trelloCardId, setTrelloCardId] = useState(null);
   const [trelloUserToken, setTrelloUserToken] = useState(null);
@@ -77,48 +86,33 @@ export default function UnifiedOfferForm() {
   
   const [systemType, setSystemType] = useState('zamkniety');
 
-  // Funkcja do formatowania ceny do wyświetlenia w polu input
   const formatPriceForDisplay = (value) => {
     if (!value) return '';
     const [integer, decimal] = String(value).split('.');
-    
-    // Używamy toLocaleString do automatycznego dodania separatorów tysięcy
     const formattedInteger = Number(integer).toLocaleString('pl-PL');
     
-    // Jeśli jest część dziesiętna, dołączamy ją z przecinkiem
     if (decimal !== undefined) {
       return `${formattedInteger},${decimal}`;
     }
-    // Jeśli użytkownik właśnie wpisał przecinek/kropkę, zostawiamy ją
     if(String(value).slice(-1) === '.') {
       return `${formattedInteger},`;
     }
-
     return formattedInteger;
   };
 
-  // Funkcja obsługująca zmiany w polu ceny
   const handlePriceChange = (e) => {
     const rawValue = e.target.value;
-    
-    // 1. Usuwamy spacje i wszystko, co nie jest cyfrą, kropką lub przecinkiem
     let cleanedValue = rawValue.replace(/[^0-9,.]/g, '').replace(/\s/g, '');
-    
-    // 2. Zamieniamy przecinek na kropkę
     cleanedValue = cleanedValue.replace(',', '.');
 
-    // 3. Zapewniamy, że jest tylko jedna kropka
     const parts = cleanedValue.split('.');
     if (parts.length > 2) {
         cleanedValue = parts[0] + '.' + parts.slice(1).join('');
     }
-
-    // 4. Ograniczamy do dwóch miejsc po przecinku
     if (parts[1] && parts[1].length > 2) {
       parts[1] = parts[1].substring(0, 2);
       cleanedValue = parts.join('.');
     }
-
     setPrice(cleanedValue);
   };
 
@@ -127,14 +121,16 @@ export default function UnifiedOfferForm() {
     const cardIdFromUrl = urlParams.get('trelloCardId');
     if (cardIdFromUrl) {
       setTrelloCardId(cardIdFromUrl);
-      console.log("Odczytano trelloCardId z URL:", cardIdFromUrl);
     }
 
     if (window.location.hash.includes("#token=")) {
       const token = window.location.hash.substring(window.location.hash.indexOf('=') + 1);
       setTrelloUserToken(token);
-      console.log("Odczytano token Trello z URL hash:", token);
+      localStorage.setItem('trello_token', token);
       window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+    } else {
+        const storedToken = localStorage.getItem('trello_token');
+        if(storedToken) setTrelloUserToken(storedToken);
     }
   }, []);
 
@@ -148,18 +144,36 @@ export default function UnifiedOfferForm() {
     } else if (modelsForDevice.length === 0) {
       setModel("");
     }
+    
     const isBoiler = boilerDeviceTypes.includes(deviceType);
     setCurrentBufferOptions(isBoiler ? boilerBufferOptions : heatPumpBufferOptions);
 
-    if (!isBoiler) {
-        setSystemType('zamkniety'); // Reset dla pomp ciepła
+    // --- LOGIKA USTAWIANIA DOMYŚLNYCH WARTOŚCI ---
+    if (isBoiler) {
+        setBuffer("zawor-4d");
+        setTank("200L");
+        setSystemType('zamkniety');
+    } else { // Pompa ciepła lub inne
+        setBuffer("40-100L");
+        setTank("300L");
     }
-
-  }, [deviceType, model]);
+  }, [deviceType]);
 
   const handleGenerateAndSetPdf = async (e) => {
     if (e) e.preventDefault();
-    const pdfData = await generateOfferPDF(price, userName, deviceType, model, tank, buffer, systemType);
+    const isHeatPump = isDeviceHeatPump(deviceType);
+    const pdfData = await generateOfferPDF(
+        price, 
+        userName, 
+        deviceType, 
+        model, 
+        tank, 
+        buffer, 
+        dismantleBoiler,
+        buildFoundation,
+        systemType,
+        isHeatPump // Przekazanie flagi
+    );
     if (pdfData) {
       setGeneratedPdfData(pdfData);
       console.log("PDF wygenerowany i zapisany w stanie.");
@@ -239,6 +253,33 @@ export default function UnifiedOfferForm() {
   };
   
   const isBoiler = boilerDeviceTypes.includes(deviceType);
+  const isHeatPump = isDeviceHeatPump(deviceType);
+
+  const checkboxDivStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    marginTop: '10px',
+    padding: '10px',
+    border: '1.2px solid #e2e2e2',
+    borderRadius: '7px',
+    background: '#f6f6f6',
+  };
+
+  const inputCheckboxStyle = {
+    width: 'auto',
+    height: '20px',
+    margin: '0 10px 0 5px',
+    flexShrink: 0,
+    cursor: 'pointer'
+  };
+
+  const labelCheckboxStyle = {
+      margin: 0,
+      cursor: 'pointer',
+      color: '#000000',
+      fontSize: '1.0rem',
+      fontWeight: 500
+  };
 
   return (
     <form className="form-container" onSubmit={handleGenerateAndSetPdf}>
@@ -268,7 +309,7 @@ export default function UnifiedOfferForm() {
           <option value="Mitsubishi-ecoinverter">Mitsubishi Ecoinverter (Cylinder)</option>
           <option value="Mitsubishi-ecoinverter-hydrobox">Mitsubishi Ecoinverter (Hydrobox)</option>
         </optgroup>
-        <optgroup label="Toshiba ( Pompy Ciepła)">
+        <optgroup label="Toshiba (Pompy Ciepła)">
           <option value="Toshiba 1F">Toshiba (1-fazowe)</option>
         </optgroup>
         <optgroup label="Atlantic (Pompy Ciepła)">
@@ -288,7 +329,7 @@ export default function UnifiedOfferForm() {
         <optgroup label="Viessmann (Pompy Ciepła)">
             <option value="VIESSMANN">Viessmann Vitocal 150-A</option>
         </optgroup>
-        <optgroup label="Kaisai ( Pompy Ciepła)">
+        <optgroup label="Kaisai (Pompy Ciepła)">
             <option value="Kaisai">Kaisai</option>
         </optgroup>
         <optgroup label="Mitsubishi (Klimatyzatory)">
@@ -308,9 +349,9 @@ export default function UnifiedOfferForm() {
       </select>
       <label htmlFor="tank">Pojemność zasobnika CWU:</label>
       <select id="tank" value={tank} onChange={(e) => setTank(e.target.value)}>
+          <option value="none">Zasobnik CWU nie wymagany/ Zintegrowany</option>
           <option value="140L">140 L</option>
           <option value="200L">200 L</option>
-          <option value="none">Zasobnik CWU nie wymagany/ Zintegrowany</option>
           <option value="300L">300 L</option>
           <option value="400L">400 L</option>
           <option value="200 L STAL NIERDZEWNA">200 L STAL NIERDZEWNA</option>
@@ -326,14 +367,27 @@ export default function UnifiedOfferForm() {
 
       {isBoiler && (
       <div className="input-group" style={{marginTop: '10px'}}>
-    <label htmlFor="systemType">Typ układu hydraulicznego:</label>
-    <select id="systemType" value={systemType} onChange={(e) => setSystemType(e.target.value)}>
-        <option value="zamkniety">Układ zamknięty</option>
-        <option value="otwarty">Układ otwarty</option>
-        <option value="brak">Brak (tylko grupa bezp. bez naczynia)</option>
-    </select>
-</div>
+        <label htmlFor="systemType">Typ układu hydraulicznego:</label>
+        <select id="systemType" value={systemType} onChange={(e) => setSystemType(e.target.value)}>
+            <option value="zamkniety">Układ zamknięty</option>
+            <option value="otwarty">Układ otwarty</option>
+            <option value="brak">Brak (tylko grupa bezp. bez naczynia)</option>
+        </select>
+      </div>
       )}
+
+        <div style={{marginTop: '20px'}}>
+            <div style={checkboxDivStyle}>
+                <input type="checkbox" id="dismantleBoiler" checked={dismantleBoiler} onChange={(e) => setDismantleBoiler(e.target.checked)} style={inputCheckboxStyle}/>
+                <label htmlFor="dismantleBoiler" style={labelCheckboxStyle}>Demontaż starego źródła ciepła</label>
+            </div>
+            {isHeatPump && (
+                 <div style={checkboxDivStyle}>
+                    <input type="checkbox" id="buildFoundation" checked={buildFoundation} onChange={(e) => setBuildFoundation(e.target.checked)} style={inputCheckboxStyle}/>
+                    <label htmlFor="buildFoundation" style={labelCheckboxStyle}>Wykonanie podbudowy pod pompę ciepła</label>
+                </div>
+            )}
+        </div>
 
       <button type="submit">Generuj PDF</button>
 

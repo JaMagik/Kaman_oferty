@@ -7,11 +7,10 @@ export const opcjeDlaPompCiepla = [
     ['4', 'Zbiornik z stali nierdzewnej', 'Odporny na korozję, przeznaczony do CWU.', 'szt.', '1 250zł'],
     ['5', 'Dodatkowy sterownik do zarządzania do drugą strefą', 'Umożliwia niezależne zarządzanie drugą strefą (np. piętro lub łazienka).', 'szt.', '450zł'],
     ['6', 'Kabel grzewczy z termostatem do odpływu skroplin', 'Zapobiega zamarzaniu odpływu wody z jednostki zewnętrznej.', 'kpl.', '500zł'],
-    ['7', 'Wykonanie podbudowy pod jednostkę zewnętrzną (fundament)', 'Stabilna podstawa z krawężników przemysłowych na podsypce betonowej B20.', 'kpl.', '300zł'],
+    // ['7', 'Wykonanie podbudowy pod jednostkę zewnętrzną (fundament)', 'Stabilna podstawa z krawężników przemysłowych na podsypce betonowej B20.', 'kpl.', '300zł'],
     ['8', 'Doprowadzenie kabla siłowego (powyżej 10 mb)', 'Odpowiedni przekrój przewodu zasilającego jednostkę zewnętrzną.', 'mb.', '55zł'],
-    ['9', 'Demontaż starego źródła ciepła', 'Odłączenie i odsunięcie starego źródła ciepła umożliwiające odpowiednie dojście ekipy montującej', 'szt.', '500zł'],
-    ['10', 'Bufor (sprzęgło hydrauliczne) 40 - 140 l z osprzętem', 'Stabilizuje pracę instalacji, umożliwia współpracę wielu źródeł ciepła.', 'kpl.', '1400 - 1950 zł'],
-    ['11', 'Wykonanie studni chłonnej na skropliny (60 - 100 cm) głębokości', 'Rura karbowana, wzmacniana z deklem; rozwiązanie do odprowadzenia skroplin.', 'kpl.', '800 - 1600 zł'],
+    ['9', 'Bufor (sprzęgło hydrauliczne) 40 - 140 l z osprzętem', 'Stabilizuje pracę instalacji, umożliwia współpracę wielu źródeł ciepła.', 'kpl.', '1400 - 1950 zł'],
+    ['10', 'Wykonanie studni chłonnej na skropliny (60 - 100 cm) głębokości', 'Rura karbowana, wzmacniana z deklem; rozwiązanie do odprowadzenia skroplin.', 'kpl.', '800 - 1600 zł'],
 ];
 
 export const opcjeDlaKotlow = [
@@ -21,10 +20,9 @@ export const opcjeDlaKotlow = [
     ['4', 'Zasobnik ze stali nierdzewnej', 'Trwałe rozwiązanie odporne na korozję dla CWU.', 'szt.', '2 200zł'],
     ['5', 'Zbiornik buforowy 200 L', 'Magazynowanie ciepła, stabilizacja temperatury w instalacji.', 'szt.', '2000zł'],
     ['5', 'Zbiornik buforowy 300 L', 'Magazynowanie ciepła, stabilizacja temperatury w instalacji.', 'szt.', '2500zł'],
-    ['6', 'Demontaż starego źródła ciepła', 'Odłączenie i odsunięcie starego źródła ciepła umożliwiające odpowiednie dojście ekipy montującej', 'szt.', '500zł'],
-    ['7', 'Regulator pokojowy', 'Pozwala na sterowanie dodatkową strefą grzewczą z poziomu pomieszczenia.', 'szt.', '450zł'],
-    ['8', 'Pompa do cyrkulacji CWU z regulatorem czasowym', 'Zapewnia natychmiastowy dostęp do ciepłej wody w punktach poboru.', 'szt.', '650zł'],
-    ['9', 'Reduktor ciśnienia wody użytkowej', 'Zabezpiecza instalację wodną przed zbyt wysokim ciśnieniem.', 'kpl.', '500zł'],
-    ['10', 'Pompa obiegowa do instalacji C.O (IBO PRO) z osprzętem', 'Stosowana jako dodatkowa pompa w przypadku, gdy w budynku występuje więcej niż jeden obieg grzewczy (np. podłogówka i grzejniki); zapewnia niezależną cyrkulację w danym obiegu i poprawia efektywność działania instalacji.', 'szt.', '650zł'],
+    ['6', 'Regulator pokojowy', 'Pozwala na sterowanie dodatkową strefą grzewczą z poziomu pomieszczenia.', 'szt.', '450zł'],
+    ['7', 'Pompa do cyrkulacji CWU z regulatorem czasowym', 'Zapewnia natychmiastowy dostęp do ciepłej wody w punktach poboru.', 'szt.', '650zł'],
+    ['8', 'Reduktor ciśnienia wody użytkowej', 'Zabezpiecza instalację wodną przed zbyt wysokim ciśnieniem.', 'kpl.', '500zł'],
+    ['9', 'Pompa obiegowa do instalacji C.O (IBO PRO) z osprzętem', 'Stosowana jako dodatkowa pompa w przypadku, gdy w budynku występuje więcej niż jeden obieg grzewczy (np. podłogówka i grzejniki); zapewnia niezależną cyrkulację w danym obiegu i poprawia efektywność działania instalacji.', 'szt.', '650zł'],
 
 ];

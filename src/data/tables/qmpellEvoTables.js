@@ -7,7 +7,7 @@ const qmpell_8kW_base = [
   ['5', 'Regulator pokojowy bezprzewodowy', 'szt.', '1', 'Umożliwia wygodne sterowanie temperaturą w pomieszczeniu bez prowadzenia przewodów.', 'common'],
   ['6', 'Podłączenie kominowe', 'kpl.', '1', 'Komplet elementów do odprowadzenia spalin: kolana, rury, czyszczak – zgodnie z wytycznymi producenta.', 'common'],
   ['7', 'Elementy hydrauliczne i elektryczne', 'kpl.', '1', 'Zawory, filtry, przewody i zabezpieczenia niezbędne do wykonania poprawnego podłączenia.', 'common'],
-  ['8', 'Rury montażowe + izolacja', 'kpl.', '1', 'Rury (PEX, stal, Cu) oraz otuliny techniczne, ograniczające straty ciepła.', 'common'],
+  ['8', 'Rury montażowe + izolacja', 'kpl.', '1', 'Rury (PEX, stal, Cu, PP) oraz otuliny techniczne, ograniczające straty ciepła.', 'common'],
   ['9', 'Montaż systemu grzewczego', 'kpl.', '1', 'Kompletny montaż kotła, zasobnika, pomp i wszystkich podłączeń instalacyjnych.', 'common'],
   ['10', 'Transport materiałów i urządzeń', 'kpl.', '1', 'Dostawa wszystkich elementów instalacji na miejsce montażu.', 'common'],
   ['11', 'Uruchomienie instalacji i regulacja parametrów', 'kpl.', '1', 'Napełnienie układu, odpowietrzenie, próba szczelności oraz ustawienie parametrów pracy.', 'common'],
