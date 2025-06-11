@@ -5,7 +5,6 @@ import { getTemplatePathsForDevice } from '../data/tables/pdfTemplateSets';
 import { opcjeDlaPompCiepla, opcjeDlaKotlow } from '../data/tables/opcjeDodatkowe.js';
 import { opcjeKotlospawProducent, opcjeLazarProducent } from '../data/tables/opcjeProducenta.js';
 
-// ---- Ta funkcja pozostaje bez zmian ----
 const wrapText = (text, textFont, textSize, maxWidth) => {
     if (typeof text !== 'string') { text = String(text); }
     const words = text.split(' ');
@@ -25,7 +24,6 @@ const wrapText = (text, textFont, textSize, maxWidth) => {
     return lines;
 };
 
-// ---- Ta funkcja pozostaje bez zmian ----
 function drawTable(pdfDoc, initialPage, fonts, tableData, startY) {
     let currentPage = initialPage;
     let currentY = startY;
@@ -126,7 +124,6 @@ function drawTable(pdfDoc, initialPage, fonts, tableData, startY) {
     return currentY;
 }
 
-// ---- Ta funkcja pozostaje bez zmian ----
 function drawExtrasPage(page, fonts, data, title, logoImage = null) {
     const { width: pageWidth, height: pageHeight } = page.getSize();
     const { regular: regularFont, bold: boldFont } = fonts;
@@ -140,7 +137,8 @@ function drawExtrasPage(page, fonts, data, title, logoImage = null) {
     const topBannerHeight = 40;
 
     const tableConfig = {
-        columnWidths: [30, 220, 170, 40, 50],
+        // ---- ZMIANA TUTAJ: Poszerzona kolumna "Cena", zwężona "Opis" ----
+        columnWidths: [30, 220, 140, 40, 80],
         headerHeight: 22,
         padding: { top: 6, bottom: 6, left: 5, right: 5 },
         headerFontSize: 9.5,
@@ -211,13 +209,13 @@ function drawExtrasPage(page, fonts, data, title, logoImage = null) {
         const textStartY = currentY + dynamicRowHeight - tableConfig.padding.top - tableConfig.contentFontSize;
         const descTextStartY = currentY + dynamicRowHeight - tableConfig.padding.top - tableConfig.descriptionFontSize;
 
-        page.drawText(lp, { x: columnPositions[0] + (tableConfig.columnWidths[0] - regularFont.widthOfTextAtSize(lp, tableConfig.contentFontSize)) / 2, y: textStartY, size: tableConfig.contentFontSize, font: regularFont, color: textColor });
+        page.drawText(String(lp), { x: columnPositions[0] + (tableConfig.columnWidths[0] - regularFont.widthOfTextAtSize(String(lp), tableConfig.contentFontSize)) / 2, y: textStartY, size: tableConfig.contentFontSize, font: regularFont, color: textColor });
         let nameY = textStartY;
         nameLines.forEach(line => { page.drawText(line, { x: columnPositions[1] + 5, y: nameY, size: tableConfig.contentFontSize, font: regularFont, color: textColor, lineHeight: tableConfig.contentFontSize * 1.3 }); nameY -= tableConfig.contentFontSize * 1.3; });
         let descY = descTextStartY;
         descLines.forEach(line => { page.drawText(line, { x: columnPositions[2] + 5, y: descY, size: tableConfig.descriptionFontSize, font: regularFont, color: textColor, lineHeight: tableConfig.descriptionFontSize * 1.3 }); descY -= tableConfig.descriptionFontSize * 1.3; });
         page.drawText(unit, { x: columnPositions[3] + (tableConfig.columnWidths[3] - regularFont.widthOfTextAtSize(unit, tableConfig.contentFontSize)) / 2, y: textStartY, size: tableConfig.contentFontSize, font: regularFont, color: textColor });
-        page.drawText(price, { x: columnPositions[4] + (tableConfig.columnWidths[4] - regularFont.widthOfTextAtSize(price, tableConfig.contentFontSize)) / 2, y: textStartY, size: tableConfig.contentFontSize, font: regularFont, color: textColor });
+        page.drawText(String(price), { x: columnPositions[4] + (tableConfig.columnWidths[4] - regularFont.widthOfTextAtSize(String(price), tableConfig.contentFontSize)) / 2, y: textStartY, size: tableConfig.contentFontSize, font: regularFont, color: textColor });
         page.drawLine({ start: { x: tableX, y: currentY }, end: { x: tableX + tableWidth, y: currentY }, thickness: 0.5, color: lineColor });
     });
 
@@ -335,7 +333,7 @@ export async function generateOfferPDF(
         let currentY = pageHeight - 35;
         
         if (kamanLogoImage) {
-            const logoDims = kamanLogoImage.scale(0.04); 
+            const logoDims = kamanLogoImage.scale(0.05); 
             dynamicPage.drawImage(kamanLogoImage, { x: (pageWidth - logoDims.width) / 2, y: currentY - logoDims.height, width: logoDims.width, height: logoDims.height });
             currentY -= (logoDims.height + 25);
         }

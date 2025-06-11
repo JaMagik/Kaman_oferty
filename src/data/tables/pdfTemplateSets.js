@@ -274,7 +274,6 @@ export const pdfTemplateSets = {
     '/pdf_templates/kotly-pellet/qmpell-evo/1_okladka.pdf',
     
     '/pdf_templates/kotly-pellet/qmpell-evo/karta_katalogowa_qmpell1.pdf',
-        '/pdf_templates/kotly-pellet/qmpell-evo/karta_katalogowa_qmpell2.pdf',
      oNas,
       groupPage,
     groupPage2,
