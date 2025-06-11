@@ -3,7 +3,7 @@
 // --- VIESSMANN Vitocal 150-A (Monoblok) ---
 
 const viessmannVitocal150A_10kW_base = [
-  ['1', 'Pompa ciepła – monoblok 10kW (Vitocal 150-A A10)', 'szt.', '1', 'Viessmann Vitocal 150-A | Monoblok | 10,0kW, 230V | A10. Pompa ciepła powietrze-woda, wysoka efektywność, zintegrowany moduł hydrauliczny, praca na czynniki R32, do ogrzewania i przygotowania CWU.'],
+  ['1', 'Pompa ciepła – monoblok 10kW (Vitocal 150-A A10)', 'szt.', '1', 'Viessmann Vitocal 150-A | Monoblok | 10,0kW, 230V | A10. Pompa ciepła powietrze-woda, wysoka efektywność, zintegrowany zbiornik CWU o pojemności 200L, praca na czynniki R32, do ogrzewania i przygotowania CWU.'],
   ['3', 'Pompa obiegowa CO IBO PRO', 'szt.', '1', 'Zapewnia prawidłowy obieg czynnika grzewczego w instalacji.'],
 
  ['4', 'Komplet elementów hydraulicznych', 'kpl.', '1', 'W tym: zawory kulowe, zawory zwrotne, odpowietrzniki automatyczne, filtry, trójniki, kształtki, nyple, redukcje i pozostała armatura niezbędna do wykonania instalacji wodnej.'],
@@ -22,7 +22,7 @@ const viessmannVitocal150A_10kW_base = [
 
 const viessmannVitocal150A_13kW_base = viessmannVitocal150A_10kW_base.map(row =>
   row[0] === '1'
-    ? ['1', 'Pompa ciepła – monoblok 13kW (Vitocal 150-A A13)', 'szt.', '1', 'Viessmann Vitocal 150-A | Monoblok | 13,0kW, 230V | A13. Pompa ciepła powietrze-woda, wysoka efektywność, zintegrowany moduł hydrauliczny, praca na czynniki R32, do ogrzewania i przygotowania CWU.']
+    ? ['1', 'Pompa ciepła – monoblok 13kW (Vitocal 150-A A13)', 'szt.', '1', 'Viessmann Vitocal 150-A | Monoblok | 13,0kW, 230V | A13. Pompa ciepła powietrze-woda, wysoka efektywność, zintegrowany zbiornik CWU o pojemności 200L, praca na czynniki R32, do ogrzewania i przygotowania CWU.']
     : [...row]
 );
 
