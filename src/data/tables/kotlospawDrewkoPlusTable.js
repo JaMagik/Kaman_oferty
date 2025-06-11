@@ -1,6 +1,6 @@
 // --- Kotłospaw Drewko Plus 12 kW ---
 const drewkoPlus_12kW_base = [
-  ['1', 'Kocioł na pellet Kotłospaw Drewko Plus 12 kW', 'szt.', '1', 'Automatyczny kocioł 5 klasy z palnikiem EASY ROT i zasobnikiem pelletu montowanym na górze.', 'common'],
+  ['1', 'Kocioł na pellet Kotłospaw Drewko Plus 12 kW', 'szt.', '1', 'Automatyczny kocioł 5 klasy z palnikiem EASY ROT i zasobnikiem pelletu wolnostojącym.', 'common'],
   ['2', 'Pompa obiegowa CO IBO PRO', 'szt.', '1', 'Zapewnia prawidłowy obieg czynnika grzewczego w instalacji.', 'common'],
   ['3', 'Pompa obiegowa CWU IBO PRO', 'szt.', '1', 'Obsługuje wężownicę zasobnika CWU i umożliwia sterowanie pracą w trybie lato/zima.', 'common'],
   ['4', 'Pompa ochrony powrotu z zaworem termostatycznym (55°C)', 'szt.', '1', 'Chroni kocioł przed zbyt niską temperaturą powrotu, co wpływa na jego trwałość.', 'common'],
@@ -28,14 +28,14 @@ const drewkoPlus_12kW_base = [
 // --- Kotłospaw Drewko Plus 18 kW ---
 const drewkoPlus_18kW_base = drewkoPlus_12kW_base.map(row =>
   row[0] === '1'
-    ?['1', 'Kocioł na pellet Kotłospaw Drewko Plus 18 kW', 'szt.', '1', 'Automatyczny kocioł 5 klasy z palnikiem EASY ROT i zasobnikiem pelletu montowanym na górze.', 'common']
+    ?['1', 'Kocioł na pellet Kotłospaw Drewko Plus 18 kW', 'szt.', '1', 'Automatyczny kocioł 5 klasy z palnikiem EASY ROT i zasobnikiem pelletu wolnostojącym.', 'common']
     : [...row]
 );
 
 // --- Kotłospaw Drewko Plus 24 kW ---
 const drewkoPlus_24kW_base = drewkoPlus_12kW_base.map(row =>
   row[0] === '1'
-    ? ['1', 'Kocioł na pellet Kotłospaw Drewko Plus 24 kW', 'szt.', '1', 'Automatyczny kocioł 5 klasy z palnikiem EASY ROT i zasobnikiem pelletu montowanym na górze.', 'common']
+    ? ['1', 'Kocioł na pellet Kotłospaw Drewko Plus 24 kW', 'szt.', '1', 'Automatyczny kocioł 5 klasy z palnikiem EASY ROT i zasobnikiem pelletu wolnostojącym.', 'common']
     : [...row]
 );
 

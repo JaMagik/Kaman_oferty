@@ -25,11 +25,12 @@ const wrapText = (text, textFont, textSize, maxWidth) => {
 };
 
 // --- POCZĄTEK POPRAWKI: Zmieniono sygnaturę i logikę dodawania strony ---
+// Wklej w miejsce istniejącej funkcji w pliku: src/utils/pdfGenerator.jsx
+
 function drawTable(pdfDoc, initialPage, fonts, tableData, startY) {
     let currentPage = initialPage;
     let currentY = startY;
     const { regular: regularFont, bold: boldFont } = fonts;
-
     const tableConfig = {
         columnWidths: [30, 150, 240, 40, 50],
         headerHeight: 22,
@@ -87,7 +88,7 @@ function drawTable(pdfDoc, initialPage, fonts, tableData, startY) {
 
         if (currentY - rowHeight < tableConfig.pageMargins.bottom) {
              for (let i = 0; i <= tableConfig.columnWidths.length; i++) { currentPage.drawLine({ start: { x: columnPositions[i], y: currentY }, end: { x: columnPositions[i], y: tableSegmentTopY }, thickness: 0.5, color: tableConfig.lineColor }); }
-            currentPage = pdfDoc.addPage(); // POPRAWKA: Używamy pdfDoc do dodania strony
+            currentPage = pdfDoc.addPage();
             currentY = currentPage.getHeight() - tableConfig.pageMargins.top;
             tableSegmentTopY = currentY;
             currentY = drawHeader(currentPage, currentY);
@@ -96,18 +97,27 @@ function drawTable(pdfDoc, initialPage, fonts, tableData, startY) {
         const rowY = currentY - rowHeight;
         if (rowIndex % 2 === 1) { currentPage.drawRectangle({ x: tableStartX, y: rowY, width: tableWidth, height: rowHeight, color: tableConfig.evenRowBgColor }); }
         
-        const textBaseY = currentY - tableConfig.padding.top;
-        const vCenterOffset = (rowHeight - (Math.max(nameLines.length, descLines.length) * (tableConfig.contentFontSize * 1.2))) / 2 - tableConfig.padding.bottom;
-        const centeredY = textBaseY - vCenterOffset - tableConfig.contentFontSize;
-        const centeredDescY = textBaseY - vCenterOffset - tableConfig.descriptionFontSize;
+        const drawCenteredCellText = (lines, font, fontSize, cellBounds) => {
+            const lineHeight = fontSize * 1.3;
+            const textBlockHeight = lines.length * lineHeight - (lineHeight - fontSize);
+            let textY = cellBounds.y + (cellBounds.height - textBlockHeight) / 2 + textBlockHeight - fontSize;
 
-        currentPage.drawText(String(lp), { x: columnPositions[0] + (tableConfig.columnWidths[0] - regularFont.widthOfTextAtSize(String(lp), tableConfig.contentFontSize)) / 2, y: centeredY, font: regularFont, size: tableConfig.contentFontSize, color: tableConfig.rowFontColor });
-        let nameY = centeredY + (nameLines.length > 1 ? (tableConfig.contentFontSize * 1.3 * (nameLines.length - 1)) / 2 : 0);
-        nameLines.forEach(line => { currentPage.drawText(line, { x: columnPositions[1] + 5, y: nameY, font: regularFont, size: tableConfig.contentFontSize, lineHeight: tableConfig.contentFontSize * 1.3, color: tableConfig.rowFontColor }); nameY -= tableConfig.contentFontSize * 1.3; });
-        let descY = centeredDescY + (descLines.length > 1 ? (tableConfig.descriptionFontSize * 1.3 * (descLines.length - 1)) / 2 : 0);
-        descLines.forEach(line => { currentPage.drawText(line, { x: columnPositions[2] + 5, y: descY, font: regularFont, size: tableConfig.descriptionFontSize, lineHeight: tableConfig.descriptionFontSize * 1.3, color: tableConfig.rowFontColor }); descY -= tableConfig.descriptionFontSize * 1.3; });
-        currentPage.drawText(String(unit), { x: columnPositions[3] + (tableConfig.columnWidths[3] - regularFont.widthOfTextAtSize(String(unit), tableConfig.contentFontSize)) / 2, y: centeredY, font: regularFont, size: tableConfig.contentFontSize, color: tableConfig.rowFontColor });
-        currentPage.drawText(String(quantity), { x: columnPositions[4] + (tableConfig.columnWidths[4] - regularFont.widthOfTextAtSize(String(quantity), tableConfig.contentFontSize)) / 2, y: centeredY, font: regularFont, size: tableConfig.contentFontSize, color: tableConfig.rowFontColor });
+            lines.forEach(line => {
+                const textWidth = font.widthOfTextAtSize(line, fontSize);
+                let textX = cellBounds.x + 5; // Domyślnie do lewej
+                if (cellBounds.isCentered) {
+                    textX = cellBounds.x + (cellBounds.width - textWidth) / 2;
+                }
+                currentPage.drawText(line, { x: textX, y: textY, font, size: fontSize, color: tableConfig.rowFontColor });
+                textY -= lineHeight;
+            });
+        };
+
+        drawCenteredCellText([String(lp)], regularFont, tableConfig.contentFontSize, { x: columnPositions[0], y: rowY, width: tableConfig.columnWidths[0], height: rowHeight, isCentered: true });
+        drawCenteredCellText(nameLines, regularFont, tableConfig.contentFontSize, { x: columnPositions[1], y: rowY, width: tableConfig.columnWidths[1], height: rowHeight });
+        drawCenteredCellText(descLines, regularFont, tableConfig.descriptionFontSize, { x: columnPositions[2], y: rowY, width: tableConfig.columnWidths[2], height: rowHeight });
+        drawCenteredCellText([String(unit)], regularFont, tableConfig.contentFontSize, { x: columnPositions[3], y: rowY, width: tableConfig.columnWidths[3], height: rowHeight, isCentered: true });
+        drawCenteredCellText([String(quantity)], regularFont, tableConfig.contentFontSize, { x: columnPositions[4], y: rowY, width: tableConfig.columnWidths[4], height: rowHeight, isCentered: true });
         
         currentY = rowY;
         currentPage.drawLine({ start: { x: tableStartX, y: currentY }, end: { x: tableStartX + tableWidth, y: currentY }, thickness: 0.5, color: tableConfig.lineColor });
