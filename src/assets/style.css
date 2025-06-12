@@ -116,7 +116,7 @@ button[type="submit"]:hover,
 button[type="submit"]:active,
 .form-container button[type="button"]:active {
   transform: translateY(0px);
-  box-shadow: 0 2px 8px rgba(255, 253, 254, 0.2);
+  box-shadow: 0 2px 8px rgba(168, 0, 25, 0.2);
   color:white;
 }
 
@@ -251,42 +251,43 @@ button[type="submit"]:active,
   font-weight: 500;
 }
 
-/* === NOWY, MINIMALISTYCZNY STYL PRZEŁĄCZNIKA OFERTY === */
+/* === POPRAWIONY STYL PRZEŁĄCZNIKA OFERTY W FORMULARZU FOTOWOLTAIKI === */
 .form-mode-switcher {
-  display: flex;
-  width: 100%;
-  border-bottom: 1px solid #e9ecef; /* Cienka linia bazowa */
-  margin-bottom: 25px;
-  /* Resetowanie stylów z poprzednich prób */
-  background-color: transparent;
-  padding: 0;
-  border-radius: 0;
+    display: flex;
+    background-color: #f0f2f5; /* Jasnoszare tło dla całej "kapsułki" */
+    border-radius: 10px;      /* Zaokrąglenie całej kontrolki */
+    padding: 4px;
+    margin-bottom: 25px;
+    border: none;
 }
 
 .form-mode-switcher button {
-  flex: 0 1 auto; /* Guziki nie rozciągają się, mają swoją naturalną szerokość */
-  padding: 8px 12px; /* Zmniejszony padding */
-  border: none;
-  background-color: transparent;
-  color: #999; /* Subtelny szary dla nieaktywnego */
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  font-size: 0.8rem; /* Mała, subtelna czcionka */
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  border-bottom: 2px solid transparent; /* Cieńsze podkreślenie */
-  margin-bottom: -1px; /* Aby podkreślenie nachodziło na linię bazową */
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 7px; /* Zaokrąglenie wewnętrznego przycisku */
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    
+    /* Domyślny, nieaktywny stan */
+    background-color: transparent;
+    color: #34495e; /* Ciemnoszary tekst dla dobrego kontrastu na jasnym tle */
+    box-shadow: none;
 }
 
 .form-mode-switcher button.active {
-  color: var(--kaman-red); /* Aktywny tekst w kolorze marki */
-  border-bottom-color: var(--kaman-red); /* Aktywne podkreślenie */
-  font-weight: 700;
+    /* Aktywny stan */
+    background-color: var(--kaman-red); /* Tło w kolorze marki */
+    color: #ffffff;                     /* Biały tekst dla maksymalnego kontrastu */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15); /* Subtelny cień dla głębi */
 }
 
-.form-mode-switcher button:hover:not(.active) {
-  color: #333; /* Ciemniejszy tekst po najechaniu */
+.form-mode-switcher button:not(.active):hover {
+    background-color: rgba(0, 0, 0, 0.05); /* Delikatne podświetlenie przy najechaniu */
 }
 
 

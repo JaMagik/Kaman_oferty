@@ -5,6 +5,154 @@
   flex-direction: column;
   min-height: 100vh;
   width: 100%;
+  /* Domyślne tło, jeśli obraz nie zostanie załadowany lub jako fallback */
+  background-color: var(--light-gray-bg);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: background-image 0.5s ease-in-out; /* Płynne przejście tła */
+}
+
+/* Style dla dynamicznych teł */
+.app-container.bg-heating {
+  background-image: url('./assets/backgrounds/heating-background.jpg');
+}
+
+.app-container.bg-pv {
+  background-image: url('./assets/backgrounds/pv-background.jpg');
+}
+
+.app-container.bg-okna {
+  background-image: url('./assets/backgrounds/okna-background.jpg');
+}
+
+.app-header {
+  /* Nowy, bardziej elegancki gradient dla nagłówka */
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); /* Ciemny grafitowo-niebieski */
+  padding: 15px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Wyraźniejszy, ale nadal subtelny cień */
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  color: var(--text-color-light);
+}
+
+.app-logo {
+  height: 48px; /* Lekko dostosowana wysokość */
+  width: auto;
+  /* Można dodać filtr dla lepszego dopasowania do ciemnego tła, np. jeśli logo jest ciemne:
+     filter: brightness(0) invert(1); (zrobi białe logo z czarnego)
+     Lub jeśli logo ma już jasne elementy, to może być OK.
+  */
+}
+
+.form-switcher {
+  display: flex;
+  gap: 0; /* Usunięto odstęp, aby przyciski były bliżej siebie w grupie */
+  background-color: rgba(255, 255, 255, 0.08); /* Bardzo subtelne tło dla grupy */
+  border-radius: 8px; /* Zaokrąglenie dla całej grupy przycisków */
+  padding: 5px; /* Wewnętrzny padding grupy, aby przyciski nie dotykały krawędzi */
+  border: 1px solid rgba(255, 255, 255, 0.15); /* Delikatna ramka dla grupy */
+}
+
+.switcher-button {
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: none; /* Usunięcie indywidualnych ramek przycisków */
+  border-radius: 6px; /* Zaokrąglenie dla poszczególnych przycisków */
+  background-color: transparent;
+  color: rgba(255, 255, 255, 0.75); /* Lekko przygaszony biały dla nieaktywnych */
+  cursor: pointer;
+  transition: all 0.25s ease;
+  outline: none;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.switcher-button:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  color: var(--text-color-light); /* Pełna biel przy najechaniu */
+}
+
+.switcher-button.active {
+  background-color: var(--kaman-red);
+  color: var(--text-color-light);
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2),
+              inset 0 1px 1px rgba(255,255,255,0.1);
+  /* Można przywrócić złoty akcent, jeśli zdefiniujesz --gold-accent w :root w index.css
+     border-bottom: 3px solid var(--gold-accent);
+  */
+}
+
+.form-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* Zaczynamy od góry */
+  align-items: center;
+  padding: 40px 20px 50px 20px; /* Dodatkowy padding na dole */
+  width: 100%;
+  box-sizing: border-box;
+  overflow-y: auto; /* Umożliwia przewijanie, jeśli zawartość jest dłuższa niż ekran */
+}
+
+/*
+  Upewnij się, że formularz (.form-container) ma własne, nieprzezroczyste tło
+  (np. background: #ffffff; w src/assets/style.css),
+  aby tło aplikacji nie prześwitywało przez sam formularz,
+  a jedynie było widoczne wokół niego.
+*/
+
+
+@media (max-width: 768px) {
+  .app-header {
+    flex-direction: column;
+    gap: 15px;
+    padding: 15px;
+  }
+  .form-switcher {
+    width: 100%;
+    max-width: 400px; /* Ograniczenie szerokości na mobilnych */
+    margin: 0 auto;
+    justify-content: center;
+  }
+  .form-content {
+    padding: 25px 15px; /* Mniejszy padding na mniejszych ekranach */
+  }
+  .app-logo {
+    height: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .switcher-button {
+    font-size: 0.8rem; /* Mniejsza czcionka na bardzo małych ekranach */
+    padding: 9px 10px; /* Mniejszy padding dla małych ekranów */
+    flex-basis: 0; /* Pozwól przyciskom się zmniejszać, jeśli jest mało miejsca */
+    flex-grow: 1; /* Pozwól przyciskom rosnąć, aby wypełnić dostępną przestrzeń */
+    text-align: center;
+  }
+  .form-switcher {
+    gap: 5px; /* Mały odstęp między przyciskami, jeśli są w jednej linii i się zawijają */
+  }
+  /* Style dla h2 w .form-container są w src/assets/style.css,
+     ale można by je tu dostosować dla mobilnych, np.:
+  .form-container h2 {
+    font-size: 1.5rem;
+  }
+  */
+}
+/* src/App.css */
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
   background-color: var(--light-gray-bg);
   background-size: cover;
   background-position: center;
@@ -15,11 +163,9 @@
 .app-container.bg-heating {
   background-image: url('./assets/backgrounds/heating-background.jpg');
 }
-
-.app-container.bg-pv, .app-container.bg-custom {
+.app-container.bg-pv, .app-container.bg-custom { /* Tło PV dla standard i custom */
   background-image: url('./assets/backgrounds/pv-background.jpg');
 }
-
 .app-container.bg-okna {
   background-image: url('./assets/backgrounds/okna-background.jpg');
 }
@@ -42,47 +188,41 @@
   width: auto;
 }
 
-/* === NOWE, MINIMALISTYCZNE STYLE PRZEŁĄCZNIKA === */
-
 .form-switcher {
   display: flex;
-  gap: 10px; /* Odstęp między przyciskami */
-  background-color: transparent;
-  border-radius: 0;
-  padding: 0;
-  border: none;
+  gap: 0;
+  background-color: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .switcher-button {
-  padding: 6px 14px; /* Zmniejszony padding -> "mini" */
-  font-size: 0.8rem; /* Zmniejszona czcionka -> "mini" */
+  padding: 10px 20px;
+  font-size: 0.9rem;
   font-weight: 600;
-  border: 1px solid rgba(255, 255, 255, 0.3); /* Subtelna ramka dla wszystkich */
+  border: none;
   border-radius: 6px;
-  background-color: transparent; /* Brak tła dla nieaktywnych */
-  color: #ffffff; /* Biały tekst ZAWSZE, jak prosiłeś */
+  background-color: transparent;
+  color: rgba(255, 255, 255, 0.75);
   cursor: pointer;
   transition: all 0.25s ease;
   outline: none;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  opacity: 0.7; /* Lekko stonowany nieaktywny przycisk */
+  letter-spacing: 0.6px;
+}
+
+.switcher-button:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  color: var(--text-color-light);
 }
 
 .switcher-button.active {
-  background-color: var(--kaman-red); /* Aktywny przycisk ma tło */
-  border-color: var(--kaman-red); /* Ramka w tym samym kolorze co tło */
-  opacity: 1; /* Pełna widoczność dla aktywnego */
-  font-weight: 700;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); /* Delikatny cień */
+  background-color: var(--kaman-red);
+  color: var(--text-color-light);
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2),
+              inset 0 1px 1px rgba(255,255,255,0.1);
 }
-
-.switcher-button:not(.active):hover {
-  background-color: rgba(255, 255, 255, 0.1); /* Reakcja na najechanie */
-  opacity: 1;
-}
-
-/* ---------------------------------------------------- */
 
 .form-content {
   flex-grow: 1;
@@ -96,33 +236,36 @@
   overflow-y: auto;
 }
 
-/* Przełącznik wewnątrz formularza pozostaje bez zmian (styl zakładek) */
+/* ZMIANA: Style dla nowego, mniejszego przełącznika w formularzu */
 .form-mode-switcher {
   display: flex;
-  width: 100%;
-  border-bottom: 1px solid #e0e0e0;
   margin-bottom: 25px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #f4f7f6;
+  padding: 4px;
+  width: 100%;
 }
 
 .form-mode-switcher button {
-  flex: 0 1 auto;
-  padding: 8px 16px;
+  flex: 1;
+  padding: 8px 10px; /* Mniejszy padding */
   border: none;
   background-color: transparent;
-  color: #888;
+  color: #ffffff;
   font-weight: 600;
+  border-radius: 6px;
   cursor: pointer;
-  transition: all 0.25s ease-in-out;
-  font-size: 0.8rem;
+  transition: all 0.2s ease-in-out;
+  font-size: 0.8rem; /* Mniejsza czcionka */
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-bottom: 3px solid transparent;
-  margin-bottom: -1px;
 }
 
 .form-mode-switcher button.active {
-  color: var(--kaman-red);
-  border-bottom: 3px solid var(--kaman-red);
+  background-color: rgb(3, 153, 50);
+  color: rgb(255, 255, 255);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+
 }
 
 
@@ -137,7 +280,6 @@
     max-width: 400px;
     margin: 0 auto;
     justify-content: center;
-    flex-wrap: wrap;
   }
   .form-content {
     padding: 25px 15px;
@@ -149,12 +291,11 @@
 
 @media (max-width: 480px) {
   .switcher-button {
-    font-size: 0.75rem;
-    padding: 5px 10px; /* Jeszcze mniejszy padding na małych ekranach */
-  }
-  .form-mode-switcher button {
-    font-size: 0.75rem;
-    padding: 8px 8px;
+    font-size: 0.8rem;
+    padding: 9px 10px;
+    flex-basis: 0;
+    flex-grow: 1;
+    text-align: center;
   }
   .form-switcher {
     gap: 5px;
