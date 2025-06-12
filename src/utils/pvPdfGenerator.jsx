@@ -2,6 +2,8 @@ import { PDFDocument, rgb } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 import { inverterTypesData, pvOfferCommons, pvRoofMountScope, pvGroundMountScope, pvStorageScope } from '../data/tables/photovoltaicsData';
 
+// --- FUNKCJE POMOCNICZE ---
+
 const wrapText = (text, textFont, textSize, maxWidth) => {
     if (typeof text !== 'string') text = String(text);
     const words = text.split(' ');
@@ -117,7 +119,6 @@ async function drawTable(pdfDoc, page, fonts, tableData, startY, title) {
     return {finalY: currentY, finalPage: currentPage};
 }
 
-
 export async function generatePhotovoltaicsOfferPDF(formData) {
   const { userName, price, installationType, panelDetails, inverterDetails, storageDetails, storageModules } = formData;
 
@@ -141,16 +142,14 @@ export async function generatePhotovoltaicsOfferPDF(formData) {
     ].filter(Boolean);
 
     const loadedTemplatePDFs = [];
-    // --- NOWA, BARDZIEJ ODPORNA NA BŁĘDY PĘTLA ŁADOWANIA ---
     for (const path of pdfOrder) {
         try {
             const response = await fetch(path);
             if (!response.ok) {
                 console.error(`Nie udało się pobrać pliku: ${path} (status: ${response.status}). Plik zostanie pominięty.`);
-                continue; // Pomiń ten plik i przejdź do następnego
+                continue;
             }
             const pdfBytes = await response.arrayBuffer();
-            
             try {
                 const loadedPdf = await PDFDocument.load(pdfBytes);
                 loadedTemplatePDFs.push(loadedPdf);
@@ -167,7 +166,6 @@ export async function generatePhotovoltaicsOfferPDF(formData) {
       pdfDoc.addPage(copiedCoverPage);
     }
 
-    // ... reszta funkcji pozostaje bez zmian ...
     const offerPage = pdfDoc.addPage();
     const { width, height } = offerPage.getSize();
     let currentY = height - 60;
@@ -187,26 +185,26 @@ export async function generatePhotovoltaicsOfferPDF(formData) {
     if (panelDetails) { currentY = drawDetailRow(offerPage, currentY, 'Moc instalacji:', `${panelDetails.totalPower.toFixed(2)} kWp`); }
     currentY = drawDetailRow(offerPage, currentY, 'Typ instalacji:', `${installationType === 'dach' ? 'Dachowa' : installationType === 'grunt' ? 'Gruntowa' : 'Tylko magazyn energii'}`);
     
-    let mainComponentsData = [];
-    if (panelDetails) { mainComponentsData.push(['', panelDetails.name, panelDetails.description, 'szt.', panelDetails.count]); }
-    if (inverterDetails) { mainComponentsData.push(['', inverterDetails.name, inverterDetails.description, 'szt.', '1']); }
+    let mainTableData = [];
+    if (panelDetails) { mainTableData.push(['', panelDetails.name, panelDetails.description, 'szt.', panelDetails.count]); }
+    if (inverterDetails) { mainTableData.push(['', inverterDetails.name, inverterDetails.description, 'szt.', '1']); }
     if (storageDetails) {
         const totalCapacity = (storageDetails.capacity * storageModules).toFixed(2);
         const nameWithCapacity = `${storageDetails.name} ${totalCapacity} kWh`;
         const descriptionWithModules = `${storageDetails.description} Zestaw składa się z ${storageModules} modułu/ów.`;
-        mainComponentsData.push(['', nameWithCapacity, descriptionWithModules, 'kpl.', '1']);
+        mainTableData.push(['', nameWithCapacity, descriptionWithModules, 'kpl.', '1']);
     }
     
     if (installationType !== 'only-storage') {
         const scopeData = installationType === 'grunt' ? pvGroundMountScope : pvRoofMountScope;
-        mainComponentsData.push(...scopeData);
+        mainTableData.push(...scopeData);
     }
     
-    mainComponentsData = mainComponentsData.map((row, index) => { row[0] = String(index + 1); return row; });
+    mainTableData = mainTableData.map((row, index) => { row[0] = String(index + 1); return row; });
     
     currentY -= 10;
-    await drawTable(pdfDoc, offerPage, { regular: regularFont, bold: boldFont }, mainComponentsData, currentY, "Komponenty i zakres prac");
-
+    await drawTable(pdfDoc, offerPage, { regular: regularFont, bold: boldFont }, mainTableData, currentY, "Komponenty i zakres prac");
+    
     if (storageDetails) {
         const storageScopePage = pdfDoc.addPage();
         let scopeY = height - 60;
