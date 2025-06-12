@@ -39,7 +39,10 @@ export const inverterTypesData = {
     type: 'AC Charger',
     isHybrid: false,
     description: 'Inteligentna ładowarka AC do integracji magazynu energii z istniejącą instalacją fotowoltaiczną dowolnego producenta.',
-    datasheets: [] // Uzupełnij ścieżki
+    datasheets: [
+      '/pdf_templates/photovoltaics/inverters/foxess/FOXESS_R_G3_DS1.pdf',
+      '/pdf_templates/photovoltaics/inverters/foxess/FOXESS_R_G3_DS2.pdf',
+    ] // Uzupełnij ścieżki
   },
   // Zwykłe falowniki PV
   'FOXESS_T_G3': {
@@ -57,10 +60,14 @@ export const inverterTypesData = {
 export const storageTypesData = {
   'DEYE_STORAGE_LV': {
     name: 'Magazyn energii DEYE LV Series',
+    capacity: 5.11,
     brand: 'DEYE',
     description: 'Niskonapięciowy (48V) system magazynowania energii oparty na bezpiecznej technologii LiFePO₄.',
     datasheets: [
       '/pdf_templates/photovoltaics/storage/deye/DEYE_STORAGE_LV_DS1.pdf',
+      '/pdf_templates/photovoltaics/storage/deye/DEYE_STORAGE_LV_DS2.pdf',
+            '/pdf_templates/photovoltaics/storage/deye/DEYE_STORAGE_LV_DS3.pdf',
+
     ]
   },
 };
@@ -109,17 +116,17 @@ export const pvGroundMountScope = [
     ['', 'Wsparcie w procesie pozyskania dofinansowania', 'Pomoc w przygotowaniu wniosku, np. w ramach programu „Mój Prąd”, przekazanie dokumentacji i zdjęć.', 'szt.', '1'],
 ];
 
-// NOWA TABELA: Zakres prac dla magazynu energii
+// Zaktualizowana tabela dla magazynu energii
 export const pvStorageScope = [
     ['', 'Weryfikacja możliwości podłączenia magazynu energii', 'Określenie trybu integracji systemu bateryjnego – bezpośrednio do falownika hybrydowego lub poprzez ładowarkę retrofit.', 'szt.', '1'],
-    ['', 'Zestaw magazynowania energii (system 48V)', 'Instalacja modułowego systemu akumulatorowego w technologii LiFePO₄, o pojemności dostosowanej do potrzeb.', 'kpl.', '1'],
+    ['', 'Zestaw magazynowania energii DEYE SE-G5.1 Pro-B 5,11 kWh', 'Instalacja modułowego systemu akumulatorowego w technologii LiFePO₄.', 'szt.', '1'], // Ilość będzie dynamicznie podmieniana
     ['', 'System zarządzania baterią (BMS)', 'Układ BMS zapewniający kontrolę, balans i ochronę ogniw przed przeciążeniem, zwarciem i głębokim rozładowaniem.', 'kpl.', '1'],
     ['', 'Weryfikacja warunków montażowych', 'Ocena miejsca montażu pod kątem przestrzeni, wentylacji, nośności i bezpieczeństwa.', 'szt.', '1'],
     ['', 'Transport i posadowienie systemu bateryjnego', 'Dostarczenie i ustawienie zestawu akumulatorowego w miejscu montażu zgodnie z wymogami.', 'szt.', '1'],
     ['', 'Montaż modułów i szafy bateryjnej', 'Instalacja modułów oraz połączeń energetycznych i komunikacyjnych zgodnie z zaleceniami producenta.', 'kpl.', '1'],
     ['', 'Podłączenie szyny komunikacyjnej', 'Zestawienie magistrali RS485 lub CAN między systemem bateryjnym a falownikiem/ładowarką.', 'szt.', '1'],
     ['', 'Podłączenie przewodów energetycznych (DC)', 'Podłączenie przewodów plus i minus do punktów przyłączeniowych z zachowaniem norm.', 'kpl.', '1'],
-    ['', 'Montaż zabezpieczeń po stronie bateryjnej', 'Zastosowanie zabezpieczeń nadprądowych, rozłączników izolacyjnych i ograniczników przepięć w układzie DC.', 'kpl.', '1'],
+    ['', 'Montaż zabezpieczeń po stronie bateryjnej', 'Zastosowanie zabezpieczeń nadprądowych, rozłączników izolacyjnych i – jeśli wymagane – ograniczników przepięć w układzie DC.', 'kpl.', '1'],
     ['', 'Weryfikacja uziemienia układu bateryjnego', 'Sprawdzenie połączeń ochronnych i pomiar ciągłości przewodów PE.', 'szt.', '1'],
     ['', 'Konfiguracja parametrów systemu', 'Wprowadzenie ustawień dot. pojemności, limitów ładowania/rozładowania i trybów pracy.', 'szt.', '1'],
     ['', 'Test komunikacji i autodiagnostyki systemu', 'Sprawdzenie poprawności przesyłu danych między urządzeniami (SoC, napięcia, alarmy).', 'szt.', '1'],
