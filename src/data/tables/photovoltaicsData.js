@@ -62,16 +62,14 @@ export const storageTypesData = {
     name: 'Magazyn energii DEYE LV Series',
     capacity: 5.11,
     brand: 'DEYE',
-    description: 'Niskonapięciowy (48V) system magazynowania energii oparty na bezpiecznej technologii LiFePO₄.',
+    description: 'Niskonapięciowy (48V) system magazynowania energii oparty na technologii LiFePO₄.',
     datasheets: [
-      '/pdf_templates/photovoltaics/storage/deye/DEYE_STORAGE_LV_DS1.pdf',
-      '/pdf_templates/photovoltaics/storage/deye/DEYE_STORAGE_LV_DS2.pdf',
-            '/pdf_templates/photovoltaics/storage/deye/DEYE_STORAGE_LV_DS3.pdf',
-
+      'pdf_templates/photovoltaics/storage/deye/DEYE_STORAGE_LV_DS1.pdf',
+      'pdf_templates/photovoltaics/storage/deye/DEYE_STORAGE_LV_DS2.pdf',
+      'pdf_templates/photovoltaics/storage/deye/DEYE_STORAGE_LV_DS3.pdf',
     ]
   },
 };
-
 export const pvRoofMountScope = [
     ['', 'Weryfikacja warunków lokalnych', 'Ocena stanu i nośności dachu, nasłonecznienia, zacienienia oraz możliwości prowadzenia tras kablowych.', 'szt.', '1'],
     ['', 'Dostarczenie systemu montażowego', 'Kompletny, certyfikowany zestaw konstrukcyjny przeznaczony do montażu na dachu danego typu.', 'kpl.', '1'],
@@ -119,8 +117,7 @@ export const pvGroundMountScope = [
 // Zaktualizowana tabela dla magazynu energii
 export const pvStorageScope = [
     ['', 'Weryfikacja możliwości podłączenia magazynu energii', 'Określenie trybu integracji systemu bateryjnego – bezpośrednio do falownika hybrydowego lub poprzez ładowarkę retrofit.', 'szt.', '1'],
-    ['', 'Zestaw magazynowania energii DEYE SE-G5.1 Pro-B 5,11 kWh', 'Instalacja modułowego systemu akumulatorowego w technologii LiFePO₄.', 'szt.', '1'], // Ilość będzie dynamicznie podmieniana
-    ['', 'System zarządzania baterią (BMS)', 'Układ BMS zapewniający kontrolę, balans i ochronę ogniw przed przeciążeniem, zwarciem i głębokim rozładowaniem.', 'kpl.', '1'],
+    ['', 'Zestaw magazynowania energii DEYE SE-G5.1 Pro-B 5,11 kWh', 'Instalacja modułowego systemu akumulatorowego w technologii LiFePO₄. wraz z układem BMS zapewniający kontrolę, balans i ochronę ogniw przed przeciążeniem, zwarciem i głębokim rozładowaniem.', 'szt.', '1'], // Ilość będzie dynamicznie podmieniana
     ['', 'Weryfikacja warunków montażowych', 'Ocena miejsca montażu pod kątem przestrzeni, wentylacji, nośności i bezpieczeństwa.', 'szt.', '1'],
     ['', 'Transport i posadowienie systemu bateryjnego', 'Dostarczenie i ustawienie zestawu akumulatorowego w miejscu montażu zgodnie z wymogami.', 'szt.', '1'],
     ['', 'Montaż modułów i szafy bateryjnej', 'Instalacja modułów oraz połączeń energetycznych i komunikacyjnych zgodnie z zaleceniami producenta.', 'kpl.', '1'],
