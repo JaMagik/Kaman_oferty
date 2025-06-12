@@ -2,9 +2,29 @@ import { PDFDocument, rgb } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 import { inverterTypesData, pvOfferCommons, pvRoofMountScope, pvGroundMountScope, pvStorageScope } from '../data/tables/photovoltaicsData';
 
-// Skopiowana i dostosowana funkcja do rysowania tabeli
-async function drawStyledTable(pdfDoc, initialPage, fonts, tableData, startY) {
-    let currentPage = initialPage;
+// --- FUNKCJE POMOCNICZE ---
+
+const wrapText = (text, textFont, textSize, maxWidth) => {
+    if (typeof text !== 'string') text = String(text);
+    const words = text.split(' ');
+    let lines = [];
+    let currentLine = words[0] || '';
+    for (let i = 1; i < words.length; i++) {
+        const word = words[i];
+        const width = textFont.widthOfTextAtSize(`${currentLine} ${word}`, textSize);
+        if (width < maxWidth) {
+            currentLine += ` ${word}`;
+        } else {
+            lines.push(currentLine);
+            currentLine = word;
+        }
+    }
+    lines.push(currentLine);
+    return lines;
+};
+
+async function drawStyledTable(pdfDoc, page, fonts, tableData, startY, title) {
+    let currentPage = page;
     let currentY = startY;
     const { regular: regularFont, bold: boldFont } = fonts;
     
@@ -24,14 +44,21 @@ async function drawStyledTable(pdfDoc, initialPage, fonts, tableData, startY) {
     };
     
     const tableWidth = tableConfig.columnWidths.reduce((a, b) => a + b, 0);
-    const tableStartX = (currentPage.getWidth() - tableWidth) / 2;
+    const tableStartX = (currentPage.getSize().width - tableWidth) / 2;
 
     const columnPositions = [tableStartX];
     for (let i = 0; i < tableConfig.columnWidths.length; i++) {
         columnPositions.push(columnPositions[i] + tableConfig.columnWidths[i]);
     }
     
-    let tableSegmentTopY = startY;
+    if (title) {
+        currentY -= 5;
+        const titleWidth = boldFont.widthOfTextAtSize(title, 12);
+        currentPage.drawText(title, { x: tableStartX, y: currentY, font: boldFont, size: 12, color: rgb(0.1, 0.1, 0.25) });
+        currentY -= (12 + 8);
+    }
+
+    let tableSegmentTopY = currentY;
 
     const drawHeader = (page, y) => {
         const headerY = y - tableConfig.headerHeight;
@@ -58,6 +85,11 @@ async function drawStyledTable(pdfDoc, initialPage, fonts, tableData, startY) {
             for (let i = 0; i <= tableConfig.columnWidths.length; i++) { currentPage.drawLine({ start: { x: columnPositions[i], y: currentY }, end: { x: columnPositions[i], y: tableSegmentTopY }, thickness: 0.5, color: tableConfig.lineColor }); }
             currentPage = pdfDoc.addPage();
             currentY = currentPage.getHeight() - tableConfig.pageMargins.top;
+            if (title) {
+                const titleWidth = boldFont.widthOfTextAtSize(`${title} (c.d.)`, 12);
+                currentPage.drawText(`${title} (c.d.)`, { x: tableStartX, y: currentY, font: boldFont, size: 12, color: rgb(0.1, 0.1, 0.25) });
+                currentY -= (12 + 8);
+            }
             tableSegmentTopY = currentY;
             currentY = drawHeader(currentPage, currentY);
         }
@@ -70,9 +102,7 @@ async function drawStyledTable(pdfDoc, initialPage, fonts, tableData, startY) {
             lines.forEach(line => {
                 const textWidth = font.widthOfTextAtSize(line, fontSize);
                 let textX = cellBounds.x + 5;
-                if (cellBounds.isCentered) {
-                    textX = cellBounds.x + (cellBounds.width - textWidth) / 2;
-                }
+                if (cellBounds.isCentered) { textX = cellBounds.x + (cellBounds.width - textWidth) / 2; }
                 currentPage.drawText(line, { x: textX, y: textY, font, size: fontSize, color: tableConfig.rowFontColor, lineHeight: fontSize * 1.3 });
                 textY -= fontSize * 1.3;
             });
@@ -92,24 +122,6 @@ async function drawStyledTable(pdfDoc, initialPage, fonts, tableData, startY) {
     return currentY;
 }
 
-const wrapText = (text, textFont, textSize, maxWidth) => {
-    if (typeof text !== 'string') text = String(text);
-    const words = text.split(' ');
-    let lines = [];
-    let currentLine = words[0] || '';
-    for (let i = 1; i < words.length; i++) {
-        const word = words[i];
-        const width = textFont.widthOfTextAtSize(`${currentLine} ${word}`, textSize);
-        if (width < maxWidth) {
-            currentLine += ` ${word}`;
-        } else {
-            lines.push(currentLine);
-            currentLine = word;
-        }
-    }
-    lines.push(currentLine);
-    return lines;
-};
 
 export async function generatePhotovoltaicsOfferPDF(formData) {
   const { userName, price, installationType, panelDetails, inverterDetails, storageDetails } = formData;
@@ -121,6 +133,9 @@ export async function generatePhotovoltaicsOfferPDF(formData) {
     const boldFontBytes = await fetch('/fonts/OpenSans-Bold.ttf').then(res => res.arrayBuffer());
     const regularFont = await pdfDoc.embedFont(regularFontBytes);
     const boldFont = await pdfDoc.embedFont(boldFontBytes);
+    const kamanLogoBytes = await fetch('/logos/kaman_logo.png').then(res => res.ok ? res.arrayBuffer() : null).catch(() => null);
+    let kamanLogoImage = null;
+    if (kamanLogoBytes) kamanLogoImage = await pdfDoc.embedPng(kamanLogoBytes);
 
     const pdfOrder = [
         pvOfferCommons.coverPage,
@@ -133,10 +148,7 @@ export async function generatePhotovoltaicsOfferPDF(formData) {
     const loadedTemplatePDFs = [];
     for (const path of pdfOrder) {
         try {
-            const pdfBytes = await fetch(path).then(res => {
-                if (!res.ok) throw new Error(`Nie udało się wczytać szablonu PV: ${path}`);
-                return res.arrayBuffer();
-            });
+            const pdfBytes = await fetch(path).then(res => { if (!res.ok) throw new Error(`Nie udało się wczytać szablonu PV: ${path}`); return res.arrayBuffer(); });
             loadedTemplatePDFs.push(await PDFDocument.load(pdfBytes));
         } catch (error) { console.error(`Błąd ładowania szablonu ${path}:`, error); }
     }
@@ -146,6 +158,7 @@ export async function generatePhotovoltaicsOfferPDF(formData) {
       pdfDoc.addPage(copiedCoverPage);
     }
 
+    // --- STRONA 2: GŁÓWNA STRONA OFERTY ---
     const offerPage = pdfDoc.addPage();
     const { width, height } = offerPage.getSize();
     let currentY = height - 60;
@@ -154,75 +167,63 @@ export async function generatePhotovoltaicsOfferPDF(formData) {
     offerPage.drawText(mainTitle, { x: 50, y: currentY, font: boldFont, size: 17, color: rgb(0.6, 0, 0.15) });
     currentY -= 35;
     
-    const detailsX = 50;
-    const detailsFontSize = 9.5;
-    const detailsLineHeight = 16;
-    const labelWidth = 100;
-
-    const drawDetailRow = (y, label, value) => {
-        offerPage.drawText(label, { x: detailsX, y, font: boldFont, size: detailsFontSize, color: rgb(0.6, 0, 0.15) });
-        offerPage.drawText(value, { x: detailsX + labelWidth, y, font: regularFont, size: detailsFontSize, color: rgb(0.1, 0.1, 0.1) });
+    const detailsX = 50, detailsFontSize = 9.5, detailsLineHeight = 16, labelWidth = 110;
+    const drawDetailRow = (page, y, label, value) => {
+        page.drawText(label, { x: detailsX, y, font: boldFont, size: detailsFontSize, color: rgb(0.6, 0, 0.15) });
+        page.drawText(value, { x: detailsX + labelWidth, y, font: regularFont, size: detailsFontSize, color: rgb(0.1, 0.1, 0.1) });
         return y - detailsLineHeight;
     };
     
-    currentY = drawDetailRow(currentY, 'Klient:', userName.toUpperCase());
-    if (panelDetails) {
-        currentY = drawDetailRow(currentY, 'Moc instalacji:', `${panelDetails.totalPower.toFixed(2)} kWp`);
-    }
-    currentY = drawDetailRow(currentY, 'Typ instalacji:', `${installationType === 'dach' ? 'Dachowa' : installationType === 'grunt' ? 'Gruntowa' : 'Tylko magazyn energii'}`);
-    if (panelDetails) {
-        currentY = drawDetailRow(currentY, 'Panele:', panelDetails.name);
-    }
-    if (inverterDetails) {
-        currentY = drawDetailRow(currentY, 'Falownik / Ładowarka:', inverterDetails.name);
-    }
-    if (storageDetails) {
-        currentY = drawDetailRow(currentY, 'Magazyn energii:', storageDetails.name);
-    }
-    currentY -= 20;
+    currentY = drawDetailRow(offerPage, currentY, 'Klient:', userName.toUpperCase());
+    if (panelDetails) { currentY = drawDetailRow(offerPage, currentY, 'Moc instalacji:', `${panelDetails.totalPower.toFixed(2)} kWp`); }
+    currentY = drawDetailRow(offerPage, currentY, 'Typ instalacji:', `${installationType === 'dach' ? 'Dachowa' : installationType === 'grunt' ? 'Gruntowa' : 'Tylko magazyn energii'}`);
     
-    let tableData = [];
+    // Budowa tabeli głównych komponentów
+    let mainComponentsData = [];
+    if (panelDetails) { mainComponentsData.push(['1', panelDetails.name, panelDetails.description, 'szt.', panelDetails.count]); }
+    if (inverterDetails) { mainComponentsData.push(['', inverterDetails.name, inverterDetails.description, 'szt.', '1']); }
+    if (storageDetails) { mainComponentsData.push(['', storageDetails.name, storageDetails.description, 'szt.', '1']); }
+    mainComponentsData = mainComponentsData.map((row, index) => { row[0] = String(index + 1); return row; });
+    
+    currentY -= 10;
+    await drawStyledTable(pdfDoc, offerPage, { regular: regularFont, bold: boldFont }, mainComponentsData, currentY, "Główne komponenty systemu");
+
+    const priceText = `CENA KOŃCOWA: ${price} PLN brutto (VAT 8%)`;
+    const priceTextWidth = boldFont.widthOfTextAtSize(priceText, 14);
+    offerPage.drawText(priceText, { x: width - priceTextWidth - 50, y: 50, font: boldFont, size: 14, color: rgb(0.6, 0, 0.15) });
+    offerPage.drawText(`Oferta ważna 14 dni.`, { x: 50, y: 50, font: regularFont, size: 9, color: rgb(0.4, 0.4, 0.4) });
+
+    // --- STRONA 3: NOWA, WARUNKOWA STRONA Z ZAKRESEM PRAC ---
+    const scopePage = pdfDoc.addPage();
+    let scopeY = height - 60;
+    if(kamanLogoImage) {
+        const logoDims = kamanLogoImage.scale(0.05);
+        scopePage.drawImage(kamanLogoImage, { x: (width - logoDims.width) / 2, y: scopeY - logoDims.height, width: logoDims.width, height: logoDims.height });
+        scopeY -= (logoDims.height + 25);
+    }
+    
+    let scopeTableData = [];
+    let scopeTitle = "Zakres prac instalacyjnych";
 
     if (storageDetails) {
-        // --- LOGIKA DLA OFERTY Z MAGAZYNEM ---
-        tableData = JSON.parse(JSON.stringify(pvStorageScope)); // Głęboka kopia
-        
-        // Dynamiczna modyfikacja pierwszych punktów
-        let deviceName = inverterDetails.name;
-        let connectionType = inverterDetails.type === 'Hybrid Inverter' 
-            ? 'bezpośrednio do falownika hybrydowego' 
-            : 'poprzez dedykowaną ładowarkę bateryjną typu retrofit';
-        tableData[0][2] = `Określenie trybu integracji systemu bateryjnego – ${connectionType}.`;
-        tableData[1][1] = storageDetails.name;
-        tableData[1][2] = storageDetails.description;
-
+        scopeTitle = "Zakres prac – instalacja magazynu energii";
+        scopeTableData = JSON.parse(JSON.stringify(pvStorageScope));
+        const connectionType = inverterDetails.type === 'Hybrid Inverter' ? 'bezpośrednio do falownika hybrydowego' : 'poprzez dedykowaną ładowarkę typu retrofit';
+        scopeTableData[0][2] = `Określenie trybu integracji systemu bateryjnego – ${connectionType}.`;
+        scopeTableData[1][1] = `Zestaw magazynowania energii ${storageDetails.name}`;
     } else {
-        // --- LOGIKA DLA OFERTY BEZ MAGAZYNU ---
-        if (panelDetails) {
-            tableData.push(['', 'Zestaw modułów fotowoltaicznych', panelDetails.description, 'kpl.', '1']);
-        }
-        if (inverterDetails) {
-            tableData.push(['', 'Urządzenie przekształcające energię – falownik', inverterDetails.description, 'kpl.', '1']);
-        }
-        if (installationType === 'grunt') {
-            tableData.push(...pvGroundMountScope);
-        } else if (installationType === 'dach') {
-            tableData.push(...pvRoofMountScope); 
-        }
+        scopeTitle = "Zakres prac – instalacja fotowoltaiczna";
+        scopeTableData = installationType === 'grunt' ? pvGroundMountScope : pvRoofMountScope;
     }
-
-    tableData = tableData.map((row, index) => {
+    
+    scopeTableData = scopeTableData.map((row, index) => {
         row[0] = String(index + 1);
         return row;
     });
 
-    let lastYPosAfterTable = await drawStyledTable(pdfDoc, offerPage, { regular: regularFont, bold: boldFont }, tableData, currentY);
+    await drawStyledTable(pdfDoc, scopePage, { regular: regularFont, bold: boldFont }, scopeTableData, scopeY, scopeTitle);
 
-    const priceText = `CENA KOŃCOWA: ${price} PLN brutto (VAT 8%)`;
-    const priceTextWidth = boldFont.widthOfTextAtSize(priceText, 14);
-    offerPage.drawText(priceText, { x: width - priceTextWidth - 50, y: lastYPosAfterTable - 40, font: boldFont, size: 14, color: rgb(0.6, 0, 0.15) });
-    offerPage.drawText(`Oferta ważna 14 dni.`, { x: 50, y: lastYPosAfterTable - 40, font: regularFont, size: 9, color: rgb(0.4, 0.4, 0.4) });
-
+    // Dołącz resztę stron (karty katalogowe, strona kontaktowa)
     for (const templateDoc of loadedTemplatePDFs) {
       const pageIndices = templateDoc.getPageIndices();
       for (const pageIndex of pageIndices) {

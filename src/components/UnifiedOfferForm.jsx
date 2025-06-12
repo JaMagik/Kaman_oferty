@@ -190,6 +190,8 @@ export default function UnifiedOfferForm() {
         <optgroup label="Atlantic (Pompy Ciepła)">
           <option value="ATLANTIC-M-DUO">Atlantic S-TRI hydrobox</option>
           <option value="ATLANTIC-S">Atlantic S-TRI-Duo cylinder</option>
+          <option value="ATLANTIC-EXCELIA">Atlantic EXCELIA AI TRI hydrobox</option>
+
         </optgroup>
         <optgroup label="Kotły na Pellet">
           <option value="LAZAR">Lazar</option>

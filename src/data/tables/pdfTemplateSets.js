@@ -200,6 +200,16 @@ export const pdfTemplateSets = {
     groupPage2,
     commonContactPage,
   ],
+  'ATLANTIC-EXCELIA': [ // Atlantic M-Duo
+    
+    '/pdf_templates/atlantic/excelia-tri/1_okladka.pdf',
+    '/pdf_templates/atlantic/excelia-tri/3.1_atlantic_excelia_tri.pdf',
+    '/pdf_templates/atlantic/excelia-tri/3.2_atlantic_excelia_tri.pdf',
+     oNas,
+     groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
   'ATLANTIC-S': [ // Atlantic M-Duo
    '/pdf_templates/atlantic/s-duo/1_okladka.pdf',
     '/pdf_templates/atlantic/s-tri-duo/3.1_atlantic_s_duo.pdf',
