@@ -87,7 +87,6 @@ const atlanticMDuo_14kW_base = [
 const atlanticExcelia_15kW_base = [
   ['1', 'ATLANTIC Excelia 15 KW', 'szt.', '1', 'ATLANTIC Excelia 15 KW -  jednostka typu split, zasilanie 400V, wysoka efektywność, cichy tryb pracy, czynnik chłodniczy R32.'],
   ['2', 'Jednostka wewnętrzna (moduł hydrauliczny)', 'szt.', '1', 'Moduł hydrauliczny z wbudowanym buforem 16L i grzałką 3 kW (możliwość rozszerzenia do 6 kW), odpowiada za obsługę obiegów grzewczych i przygotowanie CWU.'],    ['3', 'Pompa obiegowa CO IBO PRO', 'szt.', '1', 'Zapewnia prawidłowy obieg czynnika grzewczego w instalacji.'],
-    ['3', 'Pompa obiegowa CO IBO PRO', 'szt.', '1', 'Zapewnia prawidłowy obieg czynnika grzewczego w instalacji.'],
   ['5', 'Komplet elementów hydraulicznych', 'kpl.', '1', 'Zawory, kształtki, filtry, odpowietrzniki i inna armatura niezbędna do kompletnej instalacji wodnej.'],
   ['6', 'Komplet elementów elektrycznych', 'kpl.', '1', 'Okablowanie, bezpieczniki, zabezpieczenia nadprądowe i różnicowoprądowe, rozdzielnia – całość zgodna z wymaganiami producenta.'],
   ['7', 'Grupa bezpieczeństwa C.O.', 'kpl.', '1', 'Zawór bezpieczeństwa, odpowietrznik automatyczny, manometr – ochrona obiegu grzewczego.'],

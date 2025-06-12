@@ -340,7 +340,7 @@ export async function generateOfferPDF(
         let currentY = pageHeight - 35;
         
         if (kamanLogoImage) {
-            const logoDims = kamanLogoImage.scale(0.05); 
+            const logoDims = kamanLogoImage.scale(0.03); 
             dynamicPage.drawImage(kamanLogoImage, { x: (pageWidth - logoDims.width) / 2, y: currentY - logoDims.height, width: logoDims.width, height: logoDims.height });
             currentY -= (logoDims.height + 25);
         }
