@@ -1,8 +1,9 @@
 // ścieżka: src/utils/pvPdfGenerator.jsx
 
-import { PDFDocument, rgb, PDFFont } from 'pdf-lib';
+import { PDFDocument, rgb } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
-import { panelTypesData, inverterTypesData, storageTypesData, pvOfferCommons } from '../data/tables/photovoltaicsData';
+// ZMIANA: Dodajemy import 'photovoltaicsBaseItems'
+import { panelTypesData, inverterTypesData, storageTypesData, pvOfferCommons, photovoltaicsBaseItems } from '../data/tables/photovoltaicsData';
 
 const wrapText = (text, textFont, textSize, maxWidth) => {
     if (typeof text !== 'string') text = String(text);
@@ -55,13 +56,13 @@ async function drawStyledPhotovoltaicsTable(page, font, data, startY) {
   page.drawText('Ilość', { x: columnPositions[2] + (tableColumnWidths[2] - font.widthOfTextAtSize('Ilość', headerFontSize)) / 2, y: headerTextY, font, size: headerFontSize, color: rgb(1, 1, 1) });
   page.drawText('J.m.', { x: columnPositions[3] + (tableColumnWidths[3] - font.widthOfTextAtSize('J.m.', headerFontSize)) / 2, y: headerTextY, font, size: headerFontSize, color: rgb(1, 1, 1) });
 
+  // ZMIANA: Budowanie listy komponentów z użyciem importowanych danych
   const components = [];
   if (installationType !== 'only-storage' && panelDetails) {
     components.push({ name: panelDetails.name, quantity: panelDetails.count, unit: 'szt.' });
     if (inverterDetails) components.push({ name: inverterDetails.name, quantity: 1, unit: 'szt.' });
-    components.push({ name: 'Konstrukcja montażowa CORAB (lub równoważna)', quantity: 1, unit: 'kpl.' });
-    components.push({ name: 'Okablowanie AC/DC, zabezpieczenia, uziemienie', quantity: 1, unit: 'kpl.' });
-    components.push({ name: 'Montaż, uruchomienie, dokumentacja, zgłoszenie do OSD', quantity: 1, unit: 'kpl.' });
+    // Używamy gotowej listy, zamiast wpisywać ręcznie
+    components.push(...photovoltaicsBaseItems);
   }
   if (storageDetails) {
     components.push({ name: storageDetails.name, quantity: 1, unit: 'szt.' });

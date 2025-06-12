@@ -24,7 +24,7 @@ const wrapText = (text, textFont, textSize, maxWidth) => {
     return lines;
 };
 
-function drawTable(pdfDoc, initialPage, fonts, tableData, startY) {
+export function drawTable(pdfDoc, initialPage, fonts, tableData, startY) {
     let currentPage = initialPage;
     let currentY = startY;
     const { regular: regularFont, bold: boldFont } = fonts;
@@ -287,7 +287,8 @@ export async function generateOfferPDF(
   tankCapacity,
   bufferCapacity,
   systemType,
-  offerOptions
+  offerOptions,
+  isNettoPrice // <-- NOWY PARAMETR
 ) {
     if (!userName?.trim() || !String(cena).trim()) {
         alert('Uzupełnij wszystkie wymagane pola: Imię i nazwisko oraz cena!');
@@ -346,7 +347,9 @@ export async function generateOfferPDF(
         
         let lastYPosAfterTable = drawTable(finalPdfDoc, dynamicPage, { regular: regularFont, bold: boldFont }, mainTableData, currentY);
 
-        const priceString = `Cena końcowa: ${cena} PLN brutto`;
+        // --- ZMIANA TUTAJ: Warunkowe ustawienie tekstu ceny ---
+        const priceSuffix = isNettoPrice ? 'PLN netto' : 'PLN brutto';
+        const priceString = `Cena końcowa: ${cena} ${priceSuffix}`;
         const priceFontSize = 15;
         const priceTextWidth = boldFont.widthOfTextAtSize(priceString, priceFontSize);
 

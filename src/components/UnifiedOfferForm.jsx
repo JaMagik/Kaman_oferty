@@ -67,9 +67,9 @@ export default function UnifiedOfferForm() {
   const [buffer, setBuffer] = useState("Sprzęgło hydrauliczne z osprzętem");
   const [currentBufferOptions, setCurrentBufferOptions] = useState(heatPumpBufferOptions);
   
-  // Stany dla nowych pól wyboru
   const [includeDemontaz, setIncludeDemontaz] = useState(true);
   const [includePodbudowa, setIncludePodbudowa] = useState(true);
+  const [isNettoPrice, setIsNettoPrice] = useState(false); // <-- NOWY STAN
 
   const [trelloCardId, setTrelloCardId] = useState(null);
   const [trelloUserToken, setTrelloUserToken] = useState(null);
@@ -134,7 +134,8 @@ export default function UnifiedOfferForm() {
     e.preventDefault();
     const pdfData = await generateOfferPDF(
         price, userName, deviceType, model, tank, buffer, systemType, 
-        { demontaz: includeDemontaz, podbudowa: includePodbudowa }
+        { demontaz: includeDemontaz, podbudowa: includePodbudowa },
+        isNettoPrice // Przekazanie nowej wartości
     );
     if (pdfData) {
       setGeneratedPdfData(pdfData);
@@ -164,6 +165,17 @@ export default function UnifiedOfferForm() {
 
       <label htmlFor="price">Cena Końcowa (PLN):</label>
       <input id="price" type="text" inputMode="decimal" value={formatPriceForDisplay(price)} onChange={handlePriceChange} placeholder="Podaj cenę" required />
+      
+      {/* NOWE POLE WYBORU NETTO/BRUTTO */}
+      <div className="input-group-inline">
+        <input 
+          type="checkbox" 
+          id="isNettoPrice" 
+          checked={isNettoPrice} 
+          onChange={(e) => setIsNettoPrice(e.target.checked)}
+        />
+        <label htmlFor="isNettoPrice">Pokaż cenę jako netto</label>
+      </div>
 
       <label htmlFor="deviceType">Typ Urządzenia/Oferty:</label>
       <select id="deviceType" value={deviceType} onChange={(e) => setDeviceType(e.target.value)}>
@@ -227,22 +239,24 @@ export default function UnifiedOfferForm() {
       <select id="buffer" value={buffer} onChange={(e) => setBuffer(e.target.value)}>
         {currentBufferOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
       </select>
-      
-      <div className="input-group" style={{ flexDirection: 'row', alignItems: 'center', marginTop: '15px', gap: '10px' }}>
-        <input type="checkbox" id="includeDemontaz" checked={includeDemontaz} onChange={(e) => setIncludeDemontaz(e.target.checked)} style={{ width: 'auto' }} />
-        <label htmlFor="includeDemontaz" style={{ marginBottom: 0, fontWeight: 'normal' }}>
-          Uwzględnij demontaż starego źródła ciepła w ofercie
-        </label>
-      </div>
-      
-      {!isBoiler && (
-        <div className="input-group" style={{ flexDirection: 'row', alignItems: 'center', marginTop: '5px', gap: '10px' }}>
-          <input type="checkbox" id="includePodbudowa" checked={includePodbudowa} onChange={(e) => setIncludePodbudowa(e.target.checked)} style={{ width: 'auto' }} />
-          <label htmlFor="includePodbudowa" style={{ marginBottom: 0, fontWeight: 'normal' }}>
-            Uwzględnij podbudowę pod pompę ciepła w ofercie
+
+      <div className="options-box">
+        <div className="option-row">
+          <input type="checkbox" id="includeDemontaz" checked={includeDemontaz} onChange={(e) => setIncludeDemontaz(e.target.checked)} />
+          <label htmlFor="includeDemontaz">
+            Uwzględnij demontaż starego źródła ciepła w ofercie
           </label>
         </div>
-      )}
+        
+        {!isBoiler && (
+          <div className="option-row">
+            <input type="checkbox" id="includePodbudowa" checked={includePodbudowa} onChange={(e) => setIncludePodbudowa(e.target.checked)} />
+            <label htmlFor="includePodbudowa">
+              Uwzględnij podbudowę pod pompę ciepła w ofercie
+            </label>
+          </div>
+        )}
+      </div>
 
       {isBoiler && (
         <div className="input-group" style={{marginTop: '10px'}}>
