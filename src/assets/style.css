@@ -4,20 +4,20 @@
   background: #ffffff;
   border-radius: 16px; 
   box-shadow: 0 8px 30px var(--shadow-color-medium), 0 2px 8px var(--shadow-color-light); 
-  padding: 40px 35px; 
+  padding: 30px 35px;
   width: 100%;
   max-width: 700px; 
   margin: 20px auto; 
   display: flex;
   flex-direction: column;
-  gap: 22px; 
+  gap: 20px;
   border: 1px solid transparent; 
 }
 
 .form-container h2 {
   color: var(--kaman-red);
-  font-size: 2rem; 
-  margin-bottom: 20px; 
+  font-size: 1.8rem;
+  margin-bottom: 15px; 
   font-weight: 700; 
   text-align: center;
   letter-spacing: 0.5px;
@@ -38,18 +38,38 @@
 
 input[type="text"],
 input[type="number"],
+input[type="file"],
 select {
   width: 100%;
   font-size: 1rem;
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  padding: 14px 18px; 
+  padding: 12px 16px;
   background: var(--input-bg);
   box-sizing: border-box;
   transition: border-color 0.25s ease-in-out, box-shadow 0.25s ease-in-out;
   color: var(--text-color);
   appearance: none;
 }
+
+input[type="file"] {
+  padding: 10px 14px;
+  background-color: #f9fafb;
+}
+input[type="file"]::file-selector-button {
+  margin-right: 12px;
+  border: 1px solid var(--border-color);
+  padding: 6px 12px;
+  border-radius: 6px;
+  background-color: #f1f3f5;
+  color: #34495e;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+input[type="file"]::file-selector-button:hover {
+  background-color: #e9ecef;
+}
+
 
 select {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='20' height='20' fill='%237f8c8d'%3E%3Cpath d='M7 10l5 5 5-5H7z'/%3E%3C/svg%3E"); 
@@ -60,6 +80,7 @@ select {
 
 input[type="text"]:focus,
 input[type="number"]:focus,
+input[type="file"]:focus,
 select:focus {
   outline: none;
   border-color: var(--input-focus-border);
@@ -68,18 +89,17 @@ select:focus {
 
 button[type="submit"], 
 .form-container button[type="button"] {
-  margin-top: 30px;
+  margin-top: 20px;
   width: 100%;
-  color:white;
+  color: white;
   background: linear-gradient(145deg, var(--kaman-red) 0%, var(--kaman-dark-red) 100%); 
-  color: var(--button-text-color);
-  font-size: 1.15rem;
+  font-size: 1rem;
   font-weight: 600;
-  padding: 15px 0;
+  padding: 12px 20px;
   border: none;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(168, 0, 25, 0.25); 
-  letter-spacing: 0.8px;
+  letter-spacing: 0.5px;
   cursor: pointer;
   transition: all 0.25s ease;
   text-transform: uppercase;
@@ -96,7 +116,7 @@ button[type="submit"]:hover,
 button[type="submit"]:active,
 .form-container button[type="button"]:active {
   transform: translateY(0px);
-  box-shadow: 0 2px 8px rgba(168, 0, 25, 0.2);
+  box-shadow: 0 2px 8px rgba(255, 253, 254, 0.2);
   color:white;
 }
 
@@ -121,7 +141,6 @@ button[type="submit"]:active,
   box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
 
-/* --- NOWE STYLE DLA CHECKBOXÓW --- */
 .options-box {
   background-color: #fdfdfd;
   border: 1px solid #f0f0f0;
@@ -191,14 +210,13 @@ button[type="submit"]:active,
   outline: none;
   box-shadow: 0 0 0 3px rgba(168, 0, 25, 0.2);
 }
-/* Dodaj na końcu pliku src/assets/style.css */
 
 .input-group-inline {
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 8px;
-  margin-top: -12px; /* Przybliża do pola ceny */
+  margin-top: -12px; 
   margin-bottom: 8px;
 }
 
@@ -216,7 +234,6 @@ button[type="submit"]:active,
   color: #555;
   cursor: pointer;
 }
-/* Style dla bloku z niestandardową ilością */
 .custom-quantity-inputs {
   display: flex;
   flex-direction: row;
@@ -232,4 +249,96 @@ button[type="submit"]:active,
 .custom-quantity-inputs label {
   font-size: 0.85rem;
   font-weight: 500;
+}
+
+/* === NOWY, MINIMALISTYCZNY STYL PRZEŁĄCZNIKA OFERTY === */
+.form-mode-switcher {
+  display: flex;
+  width: 100%;
+  border-bottom: 1px solid #e9ecef; /* Cienka linia bazowa */
+  margin-bottom: 25px;
+  /* Resetowanie stylów z poprzednich prób */
+  background-color: transparent;
+  padding: 0;
+  border-radius: 0;
+}
+
+.form-mode-switcher button {
+  flex: 0 1 auto; /* Guziki nie rozciągają się, mają swoją naturalną szerokość */
+  padding: 8px 12px; /* Zmniejszony padding */
+  border: none;
+  background-color: transparent;
+  color: #999; /* Subtelny szary dla nieaktywnego */
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  font-size: 0.8rem; /* Mała, subtelna czcionka */
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  border-bottom: 2px solid transparent; /* Cieńsze podkreślenie */
+  margin-bottom: -1px; /* Aby podkreślenie nachodziło na linię bazową */
+}
+
+.form-mode-switcher button.active {
+  color: var(--kaman-red); /* Aktywny tekst w kolorze marki */
+  border-bottom-color: var(--kaman-red); /* Aktywne podkreślenie */
+  font-weight: 700;
+}
+
+.form-mode-switcher button:hover:not(.active) {
+  color: #333; /* Ciemniejszy tekst po najechaniu */
+}
+
+
+/* STYLE DLA FORMULARZA NIESTANDARDOWEGO */
+.component-fieldset {
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 20px;
+  background-color: #f8f9fa;
+  transition: background-color 0.3s;
+}
+
+.component-fieldset:focus-within {
+  background-color: #fff;
+  border-color: #dee2e6;
+}
+
+.component-fieldset legend {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--kaman-red);
+  padding: 0 10px;
+  margin-left: 10px;
+}
+
+.component-fieldset label {
+  font-size: 0.85rem;
+  color: #495057;
+  margin-bottom: -2px;
+}
+
+.inline-inputs {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  margin-top: 8px;
+  margin-bottom: 15px;
+}
+
+.inline-inputs .input-group {
+  flex: 1;
+}
+
+.component-fieldset.nested {
+  margin-top: 15px;
+  background-color: #ffffff;
+  border-color: #e8e8e8;
+  padding: 15px;
+}
+
+.component-fieldset.nested legend {
+  font-size: 1rem;
+  color: #34495e;
 }

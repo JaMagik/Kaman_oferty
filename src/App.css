@@ -1,150 +1,162 @@
 /* src/App.css */
 
 .app-container {
-display: flex;
-flex-direction: column;
-min-height: 100vh;
-width: 100%;
-background-color: var(--light-gray-bg);
-background-size: cover;
-background-position: center;
-background-repeat: no-repeat;
-transition: background-image 0.5s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  background-color: var(--light-gray-bg);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: background-image 0.5s ease-in-out;
 }
 
 .app-container.bg-heating {
-background-image: url('./assets/backgrounds/heating-background.jpg');
+  background-image: url('./assets/backgrounds/heating-background.jpg');
 }
 
 .app-container.bg-pv, .app-container.bg-custom {
-background-image: url('./assets/backgrounds/pv-background.jpg');
+  background-image: url('./assets/backgrounds/pv-background.jpg');
 }
 
 .app-container.bg-okna {
-background-image: url('./assets/backgrounds/okna-background.jpg');
+  background-image: url('./assets/backgrounds/okna-background.jpg');
 }
 
 .app-header {
-background: linear-gradient(135deg, \#2c3e50 0%, \#34495e 100%);
-padding: 15px 40px;
-display: flex;
-justify-content: space-between;
-align-items: center;
-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-position: sticky;
-top: 0;
-z-index: 1000;
-color: var(--text-color-light);
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  padding: 15px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  color: var(--text-color-light);
 }
 
 .app-logo {
-height: 48px;
-width: auto;
+  height: 48px;
+  width: auto;
 }
 
+/* === NOWE, MINIMALISTYCZNE STYLE PRZEŁĄCZNIKA === */
+
 .form-switcher {
-display: flex;
-gap: 0;
-background-color: rgba(255, 255, 255, 0.08);
-border-radius: 8px;
-padding: 5px;
-border: 1px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  gap: 10px; /* Odstęp między przyciskami */
+  background-color: transparent;
+  border-radius: 0;
+  padding: 0;
+  border: none;
 }
 
 .switcher-button {
-padding: 10px 20px;
-font-size: 0.9rem;
-font-weight: 600;
-border: none;
-border-radius: 6px;
-background-color: transparent;
-color: rgba(255, 255, 255, 0.75);
-cursor: pointer;
-transition: all 0.25s ease;
-outline: none;
-text-transform: uppercase;
-letter-spacing: 0.6px;
-}
-
-.switcher-button:hover {
-background-color: rgba(255, 255, 255, 0.12);
-color: var(--text-color-light);
+  padding: 6px 14px; /* Zmniejszony padding -> "mini" */
+  font-size: 0.8rem; /* Zmniejszona czcionka -> "mini" */
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.3); /* Subtelna ramka dla wszystkich */
+  border-radius: 6px;
+  background-color: transparent; /* Brak tła dla nieaktywnych */
+  color: #ffffff; /* Biały tekst ZAWSZE, jak prosiłeś */
+  cursor: pointer;
+  transition: all 0.25s ease;
+  outline: none;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.7; /* Lekko stonowany nieaktywny przycisk */
 }
 
 .switcher-button.active {
-background-color: var(--kaman-red);
-color: var(--text-color-light);
-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2),
-inset 0 1px 1px rgba(255,255,255,0.1);
+  background-color: var(--kaman-red); /* Aktywny przycisk ma tło */
+  border-color: var(--kaman-red); /* Ramka w tym samym kolorze co tło */
+  opacity: 1; /* Pełna widoczność dla aktywnego */
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); /* Delikatny cień */
 }
+
+.switcher-button:not(.active):hover {
+  background-color: rgba(255, 255, 255, 0.1); /* Reakcja na najechanie */
+  opacity: 1;
+}
+
+/* ---------------------------------------------------- */
 
 .form-content {
-flex-grow: 1;
-display: flex;
-flex-direction: column;
-justify-content: flex-start;
-align-items: center;
-padding: 40px 20px 50px 20px;
-width: 100%;
-box-sizing: border-box;
-overflow-y: auto;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 40px 20px 50px 20px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-y: auto;
 }
 
-/\* ZMIANA: NOWE, MINIMALISTYCZNE STYLE DLA PRZEŁĄCZNIKA W FORMULARZU */
+/* Przełącznik wewnątrz formularza pozostaje bez zmian (styl zakładek) */
 .form-mode-switcher {
-display: flex;
-width: 100%;
-border-bottom: 1px solid \#e0e0e0; /* Cienka linia oddzielająca \*/
-margin-bottom: 25px;
+  display: flex;
+  width: 100%;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 25px;
 }
 
 .form-mode-switcher button {
-flex: 0 1 auto; /\* Guziki zajmują tylko tyle miejsca, ile potrzebują */
-padding: 8px 16px; /* Zmniejszony padding */
-border: none;
-background-color: transparent;
-color: \#888;
-font-weight: 600;
-cursor: pointer;
-transition: all 0.25s ease-in-out;
-font-size: 0.8rem; /* Znacznie mniejsza czcionka */
-text-transform: uppercase;
-letter-spacing: 0.5px;
-border-bottom: 3px solid transparent; /* Przezroczysta ramka na dole */
-margin-bottom: -1px; /* Aby połączyć z dolną krawędzią kontenera \*/
+  flex: 0 1 auto;
+  padding: 8px 16px;
+  border: none;
+  background-color: transparent;
+  color: #888;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease-in-out;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px;
 }
 
 .form-mode-switcher button.active {
-color: var(--kaman-red);
-border-bottom: 3px solid var(--kaman-red); /\* Aktywna zakładka ma kolorową ramkę \*/
+  color: var(--kaman-red);
+  border-bottom: 3px solid var(--kaman-red);
 }
 
+
 @media (max-width: 768px) {
-.app-header {
-flex-direction: column;
-gap: 15px;
-padding: 15px;
-}
-.form-switcher {
-width: 100%;
-max-width: 400px;
-margin: 0 auto;
-justify-content: center;
-flex-wrap: wrap;
-}
-.form-content {
-padding: 25px 15px;
-}
-.app-logo {
-height: 40px;
-}
+  .app-header {
+    flex-direction: column;
+    gap: 15px;
+    padding: 15px;
+  }
+  .form-switcher {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .form-content {
+    padding: 25px 15px;
+  }
+  .app-logo {
+    height: 40px;
+  }
 }
 
 @media (max-width: 480px) {
-.switcher-button, .form-mode-switcher button {
-font-size: 0.75rem;
-padding: 8px 8px;
-}
-.form-switcher {
-gap: 5px;
+  .switcher-button {
+    font-size: 0.75rem;
+    padding: 5px 10px; /* Jeszcze mniejszy padding na małych ekranach */
+  }
+  .form-mode-switcher button {
+    font-size: 0.75rem;
+    padding: 8px 8px;
+  }
+  .form-switcher {
+    gap: 5px;
+  }
 }

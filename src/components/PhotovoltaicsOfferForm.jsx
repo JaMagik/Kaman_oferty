@@ -1,3 +1,5 @@
+// src/components/PhotovoltaicsOfferForm.jsx
+
 import React, { useState, useEffect } from 'react';
 import { generatePhotovoltaicsOfferPDF } from '../utils/pvPdfGenerator'; 
 import { generateCustomOfferPDF } from '../utils/customPdfGenerator';
@@ -206,6 +208,10 @@ export default function PhotovoltaicsOfferForm() {
                             <option value={2}>2 moduły</option>
                             <option value={3}>3 moduły</option>
                             <option value={4}>4 moduły</option>
+                            <option value={5}>5 modułów</option>
+               <option value={6}>6 modułów</option>
+                <option value={7}>7 modułów</option> 
+                <option value={8}>8 modułów</option>
                             </select>
                         </div>
                     )}
