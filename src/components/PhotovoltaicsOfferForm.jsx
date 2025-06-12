@@ -13,9 +13,15 @@ export default function PhotovoltaicsOfferForm() {
   
   const [inverterTypeKey, setInverterTypeKey] = useState(Object.keys(inverterTypesData)[0]);
   
+  // ZMIANA: Dodano stany do obsługi niestandardowej liczby falowników
+  const [isCustomInverterQuantity, setIsCustomInverterQuantity] = useState(false);
+  const [inverterQuantity, setInverterQuantity] = useState(1);
+  
   const [storageTypeKey, setStorageTypeKey] = useState('DEYE_STORAGE_LV');
   const [includeStorage, setIncludeStorage] = useState(false);
   const [storageModules, setStorageModules] = useState(1);
+
+  const [isNettoPrice, setIsNettoPrice] = useState(false);
 
   useEffect(() => {
     const isStorageOnly = installationType === 'only-storage';
@@ -47,9 +53,11 @@ export default function PhotovoltaicsOfferForm() {
     const formData = {
       userName,
       price: pricePV,
+      isNetto: isNettoPrice,
       installationType,
       panelDetails: installationType !== 'only-storage' ? { ...panelTypesData[panelTypeKey], count: numberOfPanels, totalPower: parseFloat(powerInput) } : null,
       inverterDetails: inverterTypesData[inverterTypeKey],
+      inverterQuantity: isCustomInverterQuantity ? inverterQuantity : 1, // ZMIANA: Przekazanie liczby falowników
       storageDetails: includeStorage ? storageTypesData[storageTypeKey] : null,
       storageModules: includeStorage ? storageModules : 0,
     };
@@ -82,6 +90,11 @@ export default function PhotovoltaicsOfferForm() {
         <input type="text" id="pv_pricePV" value={pricePV} onChange={(e) => setPricePV(e.target.value)} placeholder="Podaj cenę" required />
       </div>
 
+      <div className="input-group-inline">
+        <input type="checkbox" id="isNettoPricePV" checked={isNettoPrice} onChange={(e) => setIsNettoPrice(e.target.checked)} />
+        <label htmlFor="isNettoPricePV">Pokaż cenę jako netto</label>
+      </div>
+
       <div className="input-group">
         <label htmlFor="pv_installationType">Typ oferty:</label>
         <select id="pv_installationType" value={installationType} onChange={(e) => setInstallationType(e.target.value)}>
@@ -103,7 +116,7 @@ export default function PhotovoltaicsOfferForm() {
             <label htmlFor="pv_powerInput">Moc instalacji (kWp):</label>
             <input type="number" id="pv_powerInput" value={powerInput} onChange={(e) => setPowerInput(e.target.value)} step="0.001" />
           </div>
-          <div id="pv_panelCountMessage" className="input-group">Sugerowana liczba paneli: {numberOfPanels}</div>
+          <div id="pv_panelCountMessage" className="input-group">Liczba paneli: {numberOfPanels}</div>
         </>
       )}
 
@@ -112,6 +125,22 @@ export default function PhotovoltaicsOfferForm() {
         <select id="pv_inverterType" value={inverterTypeKey} onChange={(e) => setInverterTypeKey(e.target.value)}>
           {Object.keys(inverterTypesData).map(key => (<option key={key} value={key}>{inverterTypesData[key].name}</option>))}
         </select>
+      </div>
+      
+      {/* ZMIANA: Dodano sekcję dla niestandardowej liczby falowników */}
+      <div className="options-box">
+          <div className="option-row">
+            <input type="checkbox" id="isCustomInverterQuantity" checked={isCustomInverterQuantity} onChange={(e) => setIsCustomInverterQuantity(e.target.checked)} />
+            <label htmlFor="isCustomInverterQuantity">Niestandardowa ilość falowników</label>
+          </div>
+          {isCustomInverterQuantity && (
+            <div className="custom-quantity-inputs">
+                <div className="input-group">
+                    <label htmlFor="inverterQty">Ilość falowników:</label>
+                    <input id="inverterQty" type="number" value={inverterQuantity} onChange={e => setInverterQuantity(Number(e.target.value))} min="1" step="1" />
+                </div>
+            </div>
+          )}
       </div>
       
       <div className="options-box">
@@ -127,6 +156,10 @@ export default function PhotovoltaicsOfferForm() {
                 <option value={2}>2 moduły</option>
                 <option value={3}>3 moduły</option>
                 <option value={4}>4 moduły</option>
+                <option value={5}>5 modułów</option>
+               <option value={6}>6 modułów</option>
+                <option value={7}>7 modułów</option> 
+                <option value={8}>8 modułów</option>
                 </select>
             </div>
           )}

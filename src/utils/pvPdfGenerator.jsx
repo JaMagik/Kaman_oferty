@@ -23,7 +23,6 @@ const wrapText = (text, textFont, textSize, maxWidth) => {
     return lines;
 };
 
-// ZMIANA: Zoptymalizowano tabelę pod kątem oszczędności miejsca
 async function drawTable(pdfDoc, page, fonts, tableData, startY, title) {
     let currentPage = page;
     let currentY = startY;
@@ -31,12 +30,12 @@ async function drawTable(pdfDoc, page, fonts, tableData, startY, title) {
     
     const tableConfig = {
         columnWidths: [30, 160, 250, 35, 35],
-        headerHeight: 20, // Zmniejszono
-        padding: { top: 2, bottom: 2, left: 5, right: 5 }, // Zmniejszono
+        headerHeight: 20,
+        padding: { top: 2, bottom: 2, left: 5, right: 5 },
         headerFontSize: 9,
         contentFontSize: 8,
         descriptionFontSize: 7.5,
-        lineHeightMultiplier: 1.25, // Zmniejszono
+        lineHeightMultiplier: 1.25,
         lineColor: rgb(0.85, 0.85, 0.85),
         headerBgColor: rgb(0.6, 0, 0.15),
         headerFontColor: rgb(1, 1, 1),
@@ -121,7 +120,6 @@ async function drawTable(pdfDoc, page, fonts, tableData, startY, title) {
     return {finalY: currentY, finalPage: currentPage};
 }
 
-// ZMIANA: Zoptymalizowano blok nagłówka pod kątem oszczędności miejsca
 function drawHeaderBlock(page, fonts, logoImage, details, yPos) {
     const { width } = page.getSize();
     const { bold: boldFont, regular: regularFont } = fonts;
@@ -166,7 +164,7 @@ function drawHeaderBlock(page, fonts, logoImage, details, yPos) {
 
 
 export async function generatePhotovoltaicsOfferPDF(formData) {
-  const { userName, price, installationType, panelDetails, inverterDetails, storageDetails, storageModules } = formData;
+  const { userName, price, isNetto, installationType, panelDetails, inverterDetails, inverterQuantity, storageDetails, storageModules } = formData;
 
   try {
     const pdfDoc = await PDFDocument.create();
@@ -232,7 +230,7 @@ export async function generatePhotovoltaicsOfferPDF(formData) {
     let mainTableData = [];
     if (!isStorageOnly) {
         mainTableData.push(['', panelDetails.name, panelDetails.description, 'szt.', panelDetails.count]);
-        mainTableData.push(['', inverterDetails.name, inverterDetails.description, 'szt.', '1']);
+        mainTableData.push(['', inverterDetails.name, inverterDetails.description, 'szt.', String(inverterQuantity)]);
         if (storageDetails) {
             const totalCapacity = (storageDetails.capacity * storageModules).toFixed(2);
             mainTableData.push(['', `${storageDetails.name} ${totalCapacity} kWh`, storageDetails.description, 'kpl.', '1']);
@@ -243,7 +241,7 @@ export async function generatePhotovoltaicsOfferPDF(formData) {
         const scopeTitle = "Komponenty i zakres prac";
         mainTableData = JSON.parse(JSON.stringify(pvStorageScope));
         
-        mainTableData.unshift(['', inverterDetails.name, inverterDetails.description, 'szt.', '1']);
+        mainTableData.unshift(['', inverterDetails.name, inverterDetails.description, 'szt.', String(inverterQuantity)]);
         
         const storageRowIndex = mainTableData.findIndex(row => row[1].includes('Zestaw magazynowania energii'));
         if(storageRowIndex > -1) {
@@ -265,10 +263,13 @@ export async function generatePhotovoltaicsOfferPDF(formData) {
         let scopeY = height - 60;
         
         const scopeTitle = "Zakres prac – instalacja magazynu energii";
+        
+        const totalCapacity = (storageDetails.capacity * storageModules).toFixed(2);
+        
         const storageDetailsList = [
             { type: 'title', value: scopeTitle },
             { label: 'Klient:', value: userName.toUpperCase() },
-            { label: 'Pojemność magazynu:', value: `${(storageDetails.capacity * storageModules).toFixed(2)} kWh` },
+            { label: 'Pojemność magazynu:', value: `${totalCapacity} kWh` },
             { label: 'Moc ładowania/rozł.:', value: `${(storageDetails.capacity * storageModules / 2).toFixed(2)} kW` },
         ];
         scopeY = drawHeaderBlock(storageScopePage, { regular: regularFont, bold: boldFont }, kamanLogoImage, storageDetailsList, scopeY);
@@ -286,7 +287,8 @@ export async function generatePhotovoltaicsOfferPDF(formData) {
         lastContentPage = tableResult.finalPage;
     }
     
-    const priceText = `CENA KOŃCOWA: ${price} PLN brutto (VAT 8%)`;
+    const priceSuffix = isNetto ? 'PLN netto' : 'PLN brutto (VAT 8%)';
+    const priceText = `CENA KOŃCOWA: ${price} ${priceSuffix}`;
     const priceTextWidth = boldFont.widthOfTextAtSize(priceText, 14);
     lastContentPage.drawText(priceText, { x: width - priceTextWidth - 50, y: 50, font: boldFont, size: 14, color: rgb(0.6, 0, 0.15) });
     lastContentPage.drawText(`Oferta ważna 14 dni.`, { x: 50, y: 50, font: regularFont, size: 9, color: rgb(0.4, 0.4, 0.4) });
