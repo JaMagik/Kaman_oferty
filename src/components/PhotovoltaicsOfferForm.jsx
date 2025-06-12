@@ -1,30 +1,24 @@
-// src/components/PhotovoltaicsOfferForm.jsx
 import React, { useState, useEffect } from 'react';
-// Załóżmy, że stworzysz ten plik do generowania PDF dla PV
 import { generatePhotovoltaicsOfferPDF } from '../utils/pvPdfGenerator'; 
-// Import danych PV
 import { panelTypesData, inverterTypesData, storageTypesData } from '../data/tables/photovoltaicsData';
 
 export default function PhotovoltaicsOfferForm() {
   const [userName, setUserName] = useState('');
   const [pricePV, setPricePV] = useState('');
-  const [installationType, setInstallationType] = useState('dach'); // 'dach', 'grunt', 'only-storage'
+  const [installationType, setInstallationType] = useState('dach'); 
   
-  // Ustawiamy domyślny panel na Canadian Solar 460W
   const defaultPanelKey = 'CANADIAN_SOLAR_460';
   const [panelTypeKey, setPanelTypeKey] = useState(defaultPanelKey);
   
   const [powerInput, setPowerInput] = useState(
-    panelTypesData[defaultPanelKey] ? (panelTypesData[defaultPanelKey].power * 10).toFixed(3) : '4.600' // Domyślnie np. 10 paneli
+    panelTypesData[defaultPanelKey] ? (panelTypesData[defaultPanelKey].power * 10).toFixed(3) : '4.600'
   );
   const [numberOfPanels, setNumberOfPanels] = useState(10);
   
-  const [inverterTypeKey, setInverterTypeKey] = useState(Object.keys(inverterTypesData)[0]); // Domyślnie pierwszy falownik z listy
+  const [inverterTypeKey, setInverterTypeKey] = useState(Object.keys(inverterTypesData)[0]);
   
-  // Stan dla wyboru magazynu energii - domyślnie Deye, jeśli falownik jest hybrydowy
-  const [storageTypeKey, setStorageTypeKey] = useState(''); // Pusty string oznacza brak wybranego magazynu lub nie jest potrzebny
+  const [storageTypeKey, setStorageTypeKey] = useState('');
   const [includeStorage, setIncludeStorage] = useState(false);
-
 
   useEffect(() => {
     const selectedPanelData = panelTypesData[panelTypeKey];
@@ -37,20 +31,15 @@ export default function PhotovoltaicsOfferForm() {
   }, [powerInput, panelTypeKey]);
 
   useEffect(() => {
-    // Automatyczny wybór magazynu Deye, jeśli falownik jest hybrydowy i wybrano opcję z magazynem
     const currentInverter = inverterTypesData[inverterTypeKey];
-    if (currentInverter?.isHybrid && includeStorage) {
-        // Sprawdź, czy Deye jest dostępny w storageTypesData
+    if ((currentInverter?.isHybrid || currentInverter?.type === 'AC Charger' || installationType === 'only-storage') && includeStorage) {
         if (storageTypesData['DEYE_STORAGE_LV']) {
             setStorageTypeKey('DEYE_STORAGE_LV');
-        } else {
-            console.warn("Domyślny magazyn DEYE_STORAGE_LV nie znaleziony w storageTypesData.");
-            setStorageTypeKey(''); // Wyczyść, jeśli nie ma
         }
     } else if (!includeStorage) {
-      setStorageTypeKey(''); // Wyczyść wybór magazynu, jeśli nie jest zaznaczony
+      setStorageTypeKey('');
     }
-  }, [inverterTypeKey, includeStorage]);
+  }, [inverterTypeKey, includeStorage, installationType]);
 
 
   const handlePanelTypeChange = (e) => {
@@ -58,15 +47,14 @@ export default function PhotovoltaicsOfferForm() {
     setPanelTypeKey(newPanelKey);
     const selectedPanelData = panelTypesData[newPanelKey];
     if (selectedPanelData) {
-      // Możesz zaktualizować powerInput do domyślnej wartości dla nowego panelu, np. dla 10 paneli
       setPowerInput((selectedPanelData.power * 10).toFixed(3));
     }
   };
 
   const handleGeneratePVPDF = async (e) => {
     e.preventDefault();
-    if (!userName.trim() || !pricePV.trim() || (installationType !== 'only-storage' && !powerInput)) {
-      alert('Uzupełnij wszystkie wymagane pola: Imię i nazwisko, Cena oraz Moc instalacji (chyba że to tylko magazyn energii)!');
+    if (!userName.trim() || !pricePV.trim()) {
+      alert('Uzupełnij wszystkie wymagane pola: Imię i nazwisko oraz Cena!');
       return;
     }
 
@@ -87,8 +75,7 @@ export default function PhotovoltaicsOfferForm() {
       storageDetails: selectedStorage,
     };
 
-    console.log("Dane do PDF PV:", formData);
-    const pdfBlob = await generatePhotovoltaicsOfferPDF(formData); // Ta funkcja musi być zdefiniowana w pvPdfGenerator.jsx
+    const pdfBlob = await generatePhotovoltaicsOfferPDF(formData); 
     
     if (pdfBlob) {
       const url = URL.createObjectURL(pdfBlob);
@@ -101,6 +88,9 @@ export default function PhotovoltaicsOfferForm() {
       URL.revokeObjectURL(url);
     }
   };
+  
+  const currentDevice = inverterTypesData[inverterTypeKey];
+  const canHaveStorage = currentDevice?.isHybrid || currentDevice?.type === 'AC Charger' || installationType === 'only-storage';
 
   return (
     <form className="form-container photovoltaics-generator" onSubmit={handleGeneratePVPDF}>
@@ -148,7 +138,7 @@ export default function PhotovoltaicsOfferForm() {
       )}
 
       <div className="input-group">
-        <label htmlFor="pv_inverterType">Rodzaj falownika:</label>
+        <label htmlFor="pv_inverterType">Rodzaj falownika / ładowarki AC:</label>
         <select id="pv_inverterType" value={inverterTypeKey} onChange={(e) => setInverterTypeKey(e.target.value)}>
           {Object.keys(inverterTypesData).map(key => (
             <option key={key} value={key}>{inverterTypesData[key].name}</option>
@@ -156,23 +146,14 @@ export default function PhotovoltaicsOfferForm() {
         </select>
       </div>
       
-      {/* Opcja dodania magazynu energii, jeśli falownik jest hybrydowy LUB wybrano "only-storage" */}
-      {(inverterTypesData[inverterTypeKey]?.isHybrid || installationType === 'only-storage') && (
+      {canHaveStorage && (
         <div className="input-group">
           <label htmlFor="pv_includeStorage">
-            <input 
-              type="checkbox" 
-              id="pv_includeStorage" 
-              checked={includeStorage} 
-              onChange={(e) => setIncludeStorage(e.target.checked)} 
-            />
-            Dodaj magazyn energii DEYE
+            <input type="checkbox" id="pv_includeStorage" checked={includeStorage} onChange={(e) => setIncludeStorage(e.target.checked)} />
+            Dodaj magazyn energii
           </label>
         </div>
       )}
-      
-      {/* Można by dodać pole wyboru konkretnego modelu magazynu Deye, jeśli jest ich więcej */}
-      {/* Na razie zakładamy, że jest jeden domyślny magazyn Deye, jeśli 'includeStorage' jest zaznaczone */}
 
       <button type="submit">Generuj PDF Fotowoltaika</button>
     </form>

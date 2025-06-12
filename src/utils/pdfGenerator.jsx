@@ -232,40 +232,41 @@ function drawExtrasPage(page, fonts, data, title, logoImage = null) {
     });
 }
 
-function prepareTableData(deviceType, model, tankCapacity, bufferCapacity, systemType, offerOptions, isKotel) {
+function prepareTableData(deviceType, model, tankCapacity, bufferCapacity, systemType, offerOptions, isKotel, quantityOptions) {
     let mainTableData = getTableData(deviceType, model, tankCapacity, bufferCapacity, systemType);
     let extrasTableData = isKotel ? [...opcjeDlaKotlow] : [...opcjeDlaPompCiepla];
 
-    const movableItems = [
-        {
-            key: 'demontaz',
-            name: 'Demontaż starego źródła ciepła',
-            applicable: () => true
-        },
-        {
-            key: 'podbudowa',
-            name: 'Wykonanie podbudowy pod jednostkę zewnętrzną',
-            applicable: () => !isKotel
+    // NOWA LOGIKA: Zmiana ilości jednostek dla pomp ciepła
+    if (!isKotel && quantityOptions.isCustom) {
+        const outdoorUnitIndex = mainTableData.findIndex(row => row[1] && row[1].toLowerCase().includes('jednostka zew'));
+        if (outdoorUnitIndex !== -1) {
+            mainTableData[outdoorUnitIndex][3] = String(quantityOptions.outdoor); // Zmieniamy ilość
         }
+
+        const indoorUnitIndex = mainTableData.findIndex(row => row[1] && (row[1].toLowerCase().includes('hydrobox') || row[1].toLowerCase().includes('cylinder')));
+        if (indoorUnitIndex !== -1) {
+            mainTableData[indoorUnitIndex][3] = String(quantityOptions.indoor); // Zmieniamy ilość
+        }
+    }
+
+    const movableItems = [
+        { key: 'demontaz', name: 'Demontaż starego źródła ciepła', applicable: () => true },
+        { key: 'podbudowa', name: 'Wykonanie podbudowy pod jednostkę zewnętrzną', applicable: () => !isKotel }
     ];
 
     movableItems.forEach(item => {
         if (offerOptions[item.key] && item.applicable()) {
             const itemIndexInExtras = extrasTableData.findIndex(row => row[1] && row[1].includes(item.name));
-            
             if (itemIndexInExtras > -1) {
                 const [itemRow] = extrasTableData.splice(itemIndexInExtras, 1);
-                
-                const itemRowForMainTable = ['', itemRow[1], itemRow[3], '1', itemRow[2], 'common'];
-                
+                // Format: lp, nazwa, opis, jm, ilosc
+                const itemRowForMainTable = ['', itemRow[1], itemRow[2], itemRow[3], '1'];
                 const insertionKeywords = ["Montaż systemu grzewczego", "Podłączenie do istniejącej instalacji"];
                 let insertAtIndex = mainTableData.findIndex(row => insertionKeywords.some(keyword => row[1] && row[1].includes(keyword)));
-                
                 if (insertAtIndex === -1) {
                     const fallbackIndex = mainTableData.findIndex(row => row[1] && row[1].includes("Dokumentacja powykonawcza"));
                     insertAtIndex = fallbackIndex > -1 ? fallbackIndex : mainTableData.length - 2;
                 }
-                
                 mainTableData.splice(insertAtIndex, 0, itemRowForMainTable);
             }
         }
@@ -288,7 +289,8 @@ export async function generateOfferPDF(
   bufferCapacity,
   systemType,
   offerOptions,
-  isNettoPrice // <-- NOWY PARAMETR
+  isNettoPrice,
+  quantityOptions // <-- NOWY PARAMETR
 ) {
     if (!userName?.trim() || !String(cena).trim()) {
         alert('Uzupełnij wszystkie wymagane pola: Imię i nazwisko oraz cena!');
@@ -327,8 +329,9 @@ export async function generateOfferPDF(
         const dynamicPage = finalPdfDoc.addPage();
         const { width: pageWidth, height: pageHeight } = dynamicPage.getSize();
         
+        // ZMIANA: Przekazanie `quantityOptions` do funkcji przygotowującej dane
         const { mainTableData, extrasTableData } = prepareTableData(
-            deviceType, model, tankCapacity, bufferCapacity, systemType, offerOptions, isKotel
+            deviceType, model, tankCapacity, bufferCapacity, systemType, offerOptions, isKotel, quantityOptions
         );
         
         let currentY = pageHeight - 35;
@@ -347,7 +350,6 @@ export async function generateOfferPDF(
         
         let lastYPosAfterTable = drawTable(finalPdfDoc, dynamicPage, { regular: regularFont, bold: boldFont }, mainTableData, currentY);
 
-        // --- ZMIANA TUTAJ: Warunkowe ustawienie tekstu ceny ---
         const priceSuffix = isNettoPrice ? 'PLN netto' : 'PLN brutto';
         const priceString = `Cena końcowa: ${cena} ${priceSuffix}`;
         const priceFontSize = 15;

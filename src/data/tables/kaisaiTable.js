@@ -27,10 +27,19 @@ const kaisaiHydrobox_12kW_base = kaisaiHydrobox_10kW_base.map(row =>
       : [...row]
 );
 
+const kaisaiHydrobox_16kW_base = kaisaiHydrobox_10kW_base.map(row =>
+  row[0] === '1'
+    ? ['1', 'Pompa ciepła – jed. zew. 16kW (KHA-12RY3-B)', 'szt.', '1', 'Kaisai Arctic | Split | 1,0kW, 400V, R32 KHA-16RY3-B. Jednostka zewnętrzna typu Split, przeznaczona do współpracy z hydroboxem.']
+    : row[0] === '2'
+      ? ['2', 'Moduł wewnętrzny Hydrobox (KHA-12RY3-B)', 'szt.', '1', 'Kaisai Arctic | hydrobox | bez zintegrowanego zasobnika CWU | grzałka 3/6 kW, 400V | naczynie wzbiorcze 10L | do ogrzewania i przygotowania CWU przez zewnętrzny zbiornik.']
+      : [...row]
+);
+
 // --- Mapping nazw ---
 export const kaisaiHydroboxBaseTables = {
     'Kaisai': { // Klucz odpowiadający 'deviceType' dla Kaisai Hydrobox
   '10 kW': kaisaiHydrobox_10kW_base,
   '12 kW': kaisaiHydrobox_12kW_base,
+  '16 kW': kaisaiHydrobox_16kW_base,
     }
 };

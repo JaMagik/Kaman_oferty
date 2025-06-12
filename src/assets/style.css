@@ -216,3 +216,20 @@ button[type="submit"]:active,
   color: #555;
   cursor: pointer;
 }
+/* Style dla bloku z niestandardową ilością */
+.custom-quantity-inputs {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  margin-top: 10px;
+  padding-left: 10px;
+}
+
+.custom-quantity-inputs .input-group {
+  flex: 1;
+}
+
+.custom-quantity-inputs label {
+  font-size: 0.85rem;
+  font-weight: 500;
+}

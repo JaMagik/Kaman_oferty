@@ -69,7 +69,12 @@ export default function UnifiedOfferForm() {
   
   const [includeDemontaz, setIncludeDemontaz] = useState(true);
   const [includePodbudowa, setIncludePodbudowa] = useState(true);
-  const [isNettoPrice, setIsNettoPrice] = useState(false); // <-- NOWY STAN
+  const [isNettoPrice, setIsNettoPrice] = useState(false);
+
+  // NOWE STANY DO ZARZĄDZANIA ILOŚCIĄ
+  const [isCustomQuantity, setIsCustomQuantity] = useState(false);
+  const [outdoorUnitQty, setOutdoorUnitQty] = useState(1);
+  const [indoorUnitQty, setIndoorUnitQty] = useState(1);
 
   const [trelloCardId, setTrelloCardId] = useState(null);
   const [trelloUserToken, setTrelloUserToken] = useState(null);
@@ -84,12 +89,8 @@ export default function UnifiedOfferForm() {
     if (!value) return '';
     const [integer, decimal] = String(value).split('.');
     const formattedInteger = Number(integer).toLocaleString('pl-PL');
-    if (decimal !== undefined) {
-      return `${formattedInteger},${decimal}`;
-    }
-    if(String(value).slice(-1) === '.') {
-      return `${formattedInteger},`;
-    }
+    if (decimal !== undefined) return `${formattedInteger},${decimal}`;
+    if(String(value).slice(-1) === '.') return `${formattedInteger},`;
     return formattedInteger;
   };
 
@@ -97,9 +98,7 @@ export default function UnifiedOfferForm() {
     let cleanedValue = e.target.value.replace(/[^0-9,.]/g, '').replace(/\s/g, '');
     cleanedValue = cleanedValue.replace(',', '.');
     const parts = cleanedValue.split('.');
-    if (parts.length > 2) {
-        cleanedValue = parts[0] + '.' + parts.slice(1).join('');
-    }
+    if (parts.length > 2) cleanedValue = parts[0] + '.' + parts.slice(1).join('');
     if (parts[1] && parts[1].length > 2) {
       parts[1] = parts[1].substring(0, 2);
       cleanedValue = parts.join('.');
@@ -128,6 +127,7 @@ export default function UnifiedOfferForm() {
     }
     setCurrentBufferOptions(isBoiler ? boilerBufferOptions : heatPumpBufferOptions);
     if (!isBoiler) setSystemType('zamkniety');
+    if(isBoiler) setIsCustomQuantity(false); // Ukryj opcję dla kotłów
   }, [deviceType, model, isBoiler]);
 
   const handleGenerateAndSetPdf = async (e) => {
@@ -135,7 +135,8 @@ export default function UnifiedOfferForm() {
     const pdfData = await generateOfferPDF(
         price, userName, deviceType, model, tank, buffer, systemType, 
         { demontaz: includeDemontaz, podbudowa: includePodbudowa },
-        isNettoPrice // Przekazanie nowej wartości
+        isNettoPrice,
+        { isCustom: isCustomQuantity, outdoor: outdoorUnitQty, indoor: indoorUnitQty } // Przekazanie nowych danych
     );
     if (pdfData) {
       setGeneratedPdfData(pdfData);
@@ -166,19 +167,14 @@ export default function UnifiedOfferForm() {
       <label htmlFor="price">Cena Końcowa (PLN):</label>
       <input id="price" type="text" inputMode="decimal" value={formatPriceForDisplay(price)} onChange={handlePriceChange} placeholder="Podaj cenę" required />
       
-      {/* NOWE POLE WYBORU NETTO/BRUTTO */}
       <div className="input-group-inline">
-        <input 
-          type="checkbox" 
-          id="isNettoPrice" 
-          checked={isNettoPrice} 
-          onChange={(e) => setIsNettoPrice(e.target.checked)}
-        />
+        <input type="checkbox" id="isNettoPrice" checked={isNettoPrice} onChange={(e) => setIsNettoPrice(e.target.checked)} />
         <label htmlFor="isNettoPrice">Pokaż cenę jako netto</label>
       </div>
 
       <label htmlFor="deviceType">Typ Urządzenia/Oferty:</label>
       <select id="deviceType" value={deviceType} onChange={(e) => setDeviceType(e.target.value)}>
+        {/* Opcje urządzeń */}
         <optgroup label="Mitsubishi (Pompy Ciepła)">
           <option value="Mitsubishi-hydrobox">Mitsubishi Hydrobox (Standard PUD)</option>
           <option value="Mitsubishi-cylinder-PUZ">Mitsubishi Cylinder (Zubadan PUZ)</option>
@@ -224,6 +220,29 @@ export default function UnifiedOfferForm() {
           <option value="">Brak dostępnych modeli</option>
         )}
       </select>
+
+      {/* SEKCJA Z ILOŚCIĄ JEDNOSTEK (TYLKO DLA POMP CIEPŁA) */}
+      {!isBoiler && (
+        <div className="options-box">
+            <div className="option-row">
+                <input type="checkbox" id="isCustomQuantity" checked={isCustomQuantity} onChange={(e) => setIsCustomQuantity(e.target.checked)} />
+                <label htmlFor="isCustomQuantity">Niestandardowa ilość jednostek</label>
+            </div>
+            {isCustomQuantity && (
+                <div className="custom-quantity-inputs">
+                    <div className="input-group">
+                        <label htmlFor="outdoorUnitQty">Ilość jedn. zewnętrznych:</label>
+                        <input id="outdoorUnitQty" type="number" value={outdoorUnitQty} onChange={e => setOutdoorUnitQty(e.target.value)} min="1" />
+                    </div>
+                    <div className="input-group">
+                        <label htmlFor="indoorUnitQty">Ilość jedn. wewnętrznych:</label>
+                        <input id="indoorUnitQty" type="number" value={indoorUnitQty} onChange={e => setIndoorUnitQty(e.target.value)} min="1" />
+                    </div>
+                </div>
+            )}
+        </div>
+      )}
+
       <label htmlFor="tank">Pojemność zasobnika CWU:</label>
       <select id="tank" value={tank} onChange={(e) => setTank(e.target.value)}>
           <option value="140L">140 L</option>
@@ -243,17 +262,12 @@ export default function UnifiedOfferForm() {
       <div className="options-box">
         <div className="option-row">
           <input type="checkbox" id="includeDemontaz" checked={includeDemontaz} onChange={(e) => setIncludeDemontaz(e.target.checked)} />
-          <label htmlFor="includeDemontaz">
-            Uwzględnij demontaż starego źródła ciepła w ofercie
-          </label>
+          <label htmlFor="includeDemontaz">Uwzględnij demontaż starego źródła ciepła w ofercie</label>
         </div>
-        
         {!isBoiler && (
           <div className="option-row">
             <input type="checkbox" id="includePodbudowa" checked={includePodbudowa} onChange={(e) => setIncludePodbudowa(e.target.checked)} />
-            <label htmlFor="includePodbudowa">
-              Uwzględnij podbudowę pod pompę ciepła w ofercie
-            </label>
+            <label htmlFor="includePodbudowa">Uwzględnij podbudowę pod pompę ciepła w ofercie</label>
           </div>
         )}
       </div>
@@ -272,9 +286,7 @@ export default function UnifiedOfferForm() {
       <button type="submit">Generuj PDF</button>
 
       {generatedPdfData && (
-        <button type="button" onClick={handleDownloadPdf} style={{ marginTop: '10px', background: '#555' }}>
-          Pobierz wygenerowany PDF
-        </button>
+        <button type="button" onClick={handleDownloadPdf} style={{ marginTop: '10px', background: '#555' }}>Pobierz wygenerowany PDF</button>
       )}
     </form>
   );
