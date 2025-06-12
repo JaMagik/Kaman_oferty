@@ -7,11 +7,12 @@ export default function PhotovoltaicsOfferForm() {
   const [pricePV, setPricePV] = useState('');
   const [installationType, setInstallationType] = useState('dach'); 
   
-  const defaultPanelKey = 'CANADIAN_SOLAR_460';
+  // ZMIANA: Ustawienie nowego domyślnego panelu
+  const defaultPanelKey = 'CANADIAN_SOLAR_455';
   const [panelTypeKey, setPanelTypeKey] = useState(defaultPanelKey);
   
   const [powerInput, setPowerInput] = useState(
-    panelTypesData[defaultPanelKey] ? (panelTypesData[defaultPanelKey].power * 10).toFixed(3) : '4.600'
+    panelTypesData[defaultPanelKey] ? (panelTypesData[defaultPanelKey].power * 10).toFixed(3) : '4.550'
   );
   const [numberOfPanels, setNumberOfPanels] = useState(10);
   
@@ -19,7 +20,7 @@ export default function PhotovoltaicsOfferForm() {
   
   const [storageTypeKey, setStorageTypeKey] = useState('');
   const [includeStorage, setIncludeStorage] = useState(false);
-  const [storageModules, setStorageModules] = useState(1); // <-- NOWY STAN
+  const [storageModules, setStorageModules] = useState(1);
 
   useEffect(() => {
     const selectedPanelData = panelTypesData[panelTypeKey];
@@ -75,9 +76,9 @@ export default function PhotovoltaicsOfferForm() {
       } : null,
       inverterDetails: selectedInverter,
       storageDetails: selectedStorage,
-      storageModules: includeStorage ? storageModules : 0, // <-- Przekazanie liczby modułów
+      storageModules: includeStorage ? storageModules : 0,
     };
-
+    
     const pdfBlob = await generatePhotovoltaicsOfferPDF(formData); 
     
     if (pdfBlob) {
@@ -149,7 +150,6 @@ export default function PhotovoltaicsOfferForm() {
         </select>
       </div>
       
-      {/* ZMIANA: Dodanie pola wyboru liczby modułów */}
       {canHaveStorage && (
         <div className="options-box">
           <div className="option-row">
@@ -158,16 +158,17 @@ export default function PhotovoltaicsOfferForm() {
           </div>
           {includeStorage && (
             <div className="input-group" style={{paddingLeft: '15px', marginTop: '10px'}}>
-              <label htmlFor="storageModules">Ilość modułów magazynu (1-8):</label>
+              <label htmlFor="storageModules">Ilość modułów magazynu (1-4):</label>
               <select id="storageModules" value={storageModules} onChange={e => setStorageModules(Number(e.target.value))}>
                 <option value={1}>1 moduł</option>
                 <option value={2}>2 moduły</option>
                 <option value={3}>3 moduły</option>
                 <option value={4}>4 moduły</option>
                 <option value={5}>5 modułów</option>
-                <option value={6}>6 modułów</option>
-                <option value={7}>7 modułów</option>
+               <option value={6}>6 modułów</option>
+                <option value={7}>7 modułów</option> 
                 <option value={8}>8 modułów</option>
+      
               </select>
             </div>
           )}

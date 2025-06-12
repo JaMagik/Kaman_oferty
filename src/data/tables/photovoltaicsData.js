@@ -1,9 +1,18 @@
 // ścieżka: src/data/tables/photovoltaicsData.js
 
 export const panelTypesData = {
-  'CANADIAN_SOLAR_460': {
-    name: 'Panel fotowoltaiczny Canadian Solar 460 Wp',
-    power: 0.460,
+  'CANADIAN_SOLAR_455': {
+    name: 'Panel fotowoltaiczny Canadian Solar 455 Wp',
+    power: 0.455,
+    description: 'Wysokowydajny moduł monokrystaliczny z technologią PERC.',
+    datasheets: [
+      '/pdf_templates/photovoltaics/panels/canadian_solar_460/CS_460_DS1.pdf',
+      '/pdf_templates/photovoltaics/panels/canadian_solar_460/CS_460_DS2.pdf',
+    ]
+  },
+   'CANADIAN_SOLAR_465': {
+    name: 'Panel fotowoltaiczny Canadian Solar 465 Wp',
+    power: 0.455,
     description: 'Wysokowydajny moduł monokrystaliczny z technologią PERC.',
     datasheets: [
       '/pdf_templates/photovoltaics/panels/canadian_solar_460/CS_460_DS1.pdf',
@@ -22,15 +31,6 @@ export const inverterTypesData = {
     datasheets: [
       '/pdf_templates/photovoltaics/inverters/deye/DEYE_HYBRID_DS1.pdf',
       '/pdf_templates/photovoltaics/inverters/deye/DEYE_HYBRID_DS2.pdf',
-    ]
-  },
-  'SUNGROW_SG_RS': {
-    name: 'Falownik hybrydowy SUNGROW Seria SG-SH RS',
-    type: 'Hybrid Inverter',
-    isHybrid: true,
-    description: 'Zaawansowany inwerter hybrydowy, kompatybilny z magazynami energii.',
-    datasheets: [
-      '/pdf_templates/photovoltaics/inverters/sungrow/SUNGROW_SG_SH_RS_DS1.pdf',
     ]
   },
   // Ładowarki AC (Retrofit)

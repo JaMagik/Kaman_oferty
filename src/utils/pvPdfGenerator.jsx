@@ -52,8 +52,8 @@ async function drawTable(pdfDoc, page, fonts, tableData, startY, title) {
     
     if (title) {
         currentY -= 5;
-        currentPage.drawText(title, { x: tableStartX, y: currentY, font: boldFont, size: 12, color: rgb(0.1, 0.1, 0.25) });
-        currentY -= (12 + 8);
+        currentPage.drawText(title, { x: tableStartX, y: currentY, font: boldFont, size: 11, color: rgb(0.1, 0.1, 0.25) });
+        currentY -= (11 + 8);
     }
 
     let tableSegmentTopY = currentY;
@@ -84,8 +84,8 @@ async function drawTable(pdfDoc, page, fonts, tableData, startY, title) {
             currentPage = pdfDoc.addPage();
             currentY = currentPage.getHeight() - tableConfig.pageMargins.top;
             if (title) {
-                currentPage.drawText(`${title} (c.d.)`, { x: tableStartX, y: currentY, font: boldFont, size: 12, color: rgb(0.1, 0.1, 0.25) });
-                currentY -= (12 + 8);
+                currentPage.drawText(`${title} (c.d.)`, { x: tableStartX, y: currentY, font: boldFont, size: 11, color: rgb(0.1, 0.1, 0.25) });
+                currentY -= (11 + 8);
             }
             tableSegmentTopY = currentY;
             currentY = drawHeader(currentPage, currentY);
@@ -117,6 +117,42 @@ async function drawTable(pdfDoc, page, fonts, tableData, startY, title) {
 
     for (let i = 0; i <= tableConfig.columnWidths.length; i++) { currentPage.drawLine({ start: { x: columnPositions[i], y: currentY }, end: { x: columnPositions[i], y: tableSegmentTopY }, thickness: 0.5, color: tableConfig.lineColor }); }
     return {finalY: currentY, finalPage: currentPage};
+}
+
+function drawHeaderBlock(page, fonts, logoImage, details, yPos) {
+    const { width } = page.getSize();
+    const { bold: boldFont, regular: regularFont } = fonts;
+    let textBlockY = yPos;
+
+    // ZMIANA: Zmniejszone czcionki i odstępy
+    const detailsX = 50;
+    const detailsFontSize = 9;
+    const detailsLineHeight = 15;
+    const labelWidth = 100;
+
+    const drawDetailRow = (y, label, value) => {
+        page.drawText(label, { x: detailsX, y, font: boldFont, size: detailsFontSize, color: rgb(0.6, 0, 0.15) });
+        page.drawText(value, { x: detailsX + labelWidth, y, font: regularFont, size: detailsFontSize, color: rgb(0.1, 0.1, 0.1) });
+        return y - detailsLineHeight;
+    };
+    
+    const textBlockStartY = textBlockY;
+    details.forEach(detail => {
+        if(detail.value) {
+             textBlockY = drawDetailRow(textBlockY, detail.label, detail.value);
+        }
+    });
+    const textBlockHeight = textBlockStartY - textBlockY;
+
+    if (logoImage) {
+        // ZMIANA: Zmniejszone logo
+        const logoDims = logoImage.scale(0.05);
+        const logoX = width - logoDims.width - 50;
+        const logoY = textBlockStartY - textBlockHeight + (textBlockHeight / 2) - (logoDims.height / 2);
+        page.drawImage(logoImage, { x: logoX, y: logoY, width: logoDims.width, height: logoDims.height });
+    }
+
+    return textBlockY;
 }
 
 export async function generatePhotovoltaicsOfferPDF(formData) {
@@ -152,7 +188,7 @@ export async function generatePhotovoltaicsOfferPDF(formData) {
             const pdfBytes = await response.arrayBuffer();
             try {
                 const loadedPdf = await PDFDocument.load(pdfBytes);
-                loadedTemplatePDFs.push(loadedPdf);
+                loadedTemplatePDFs.push({doc: loadedPdf, path});
             } catch (parsingError) {
                 console.error(`Plik '${path}' nie jest prawidłowym plikiem PDF i zostanie pominięty. Błąd: ${parsingError.message}`);
             }
@@ -161,83 +197,92 @@ export async function generatePhotovoltaicsOfferPDF(formData) {
         }
     }
     
-    if (loadedTemplatePDFs.length > 0) {
-      const [copiedCoverPage] = await pdfDoc.copyPages(loadedTemplatePDFs.shift(), [0]);
-      pdfDoc.addPage(copiedCoverPage);
-    }
-
-    const offerPage = pdfDoc.addPage();
-    const { width, height } = offerPage.getSize();
-    let currentY = height - 60;
-    
-    const mainTitle = installationType === 'only-storage' ? "OFERTA NA MAGAZYN ENERGII" : "OFERTA INSTALACJI FOTOWOLTAICZNEJ";
-    offerPage.drawText(mainTitle, { x: 50, y: currentY, font: boldFont, size: 17, color: rgb(0.6, 0, 0.15) });
-    currentY -= 35;
-    
-    const detailsX = 50, detailsFontSize = 9.5, detailsLineHeight = 16, labelWidth = 110;
-    const drawDetailRow = (page, y, label, value) => {
-        page.drawText(label, { x: detailsX, y, font: boldFont, size: detailsFontSize, color: rgb(0.6, 0, 0.15) });
-        page.drawText(value, { x: detailsX + labelWidth, y, font: regularFont, size: detailsFontSize, color: rgb(0.1, 0.1, 0.1) });
-        return y - detailsLineHeight;
+    const findAndAddPage = async (pathFragment) => {
+        const index = loadedTemplatePDFs.findIndex(p => p.path.includes(pathFragment));
+        if (index > -1) {
+            const pdfToCopy = loadedTemplatePDFs.splice(index, 1)[0];
+            if (pdfToCopy) {
+                const [copiedPage] = await pdfDoc.copyPages(pdfToCopy.doc, [0]);
+                pdfDoc.addPage(copiedPage);
+            }
+        }
     };
     
-    currentY = drawDetailRow(offerPage, currentY, 'Klient:', userName.toUpperCase());
-    if (panelDetails) { currentY = drawDetailRow(offerPage, currentY, 'Moc instalacji:', `${panelDetails.totalPower.toFixed(2)} kWp`); }
-    currentY = drawDetailRow(offerPage, currentY, 'Typ instalacji:', `${installationType === 'dach' ? 'Dachowa' : installationType === 'grunt' ? 'Gruntowa' : 'Tylko magazyn energii'}`);
+    await findAndAddPage(pvOfferCommons.coverPage);
+
+    const offerPage = pdfDoc.addPage();
+    let lastContentPage = offerPage;
+    const { width, height } = offerPage.getSize();
+    let currentY = height - 50;
+    
+    const mainTitle = installationType === 'only-storage' ? "OFERTA NA MAGAZYN ENERGII" : "OFERTA INSTALACJI FOTOWOLTAICZNEJ";
+    offerPage.drawText(mainTitle, { x: 50, y: currentY, font: boldFont, size: 16, color: rgb(0.6, 0, 0.15) });
+    currentY -= 30;
+    
+    const mainOfferDetails = [
+        { label: 'Klient:', value: userName.toUpperCase() },
+        { label: 'Moc instalacji:', value: panelDetails ? `${panelDetails.totalPower.toFixed(2)} kWp` : null },
+        { label: 'Typ instalacji:', value: `${installationType === 'dach' ? 'Dachowa' : installationType === 'grunt' ? 'Gruntowa' : 'Tylko magazyn energii'}` },
+        { label: 'Panele:', value: panelDetails?.name },
+        { label: 'Falownik:', value: inverterDetails?.name }
+    ];
+    currentY = drawHeaderBlock(offerPage, { regular: regularFont, bold: boldFont }, kamanLogoImage, mainOfferDetails, currentY);
     
     let mainTableData = [];
-    if (panelDetails) { mainTableData.push(['', panelDetails.name, panelDetails.description, 'szt.', panelDetails.count]); }
-    if (inverterDetails) { mainTableData.push(['', inverterDetails.name, inverterDetails.description, 'szt.', '1']); }
-    if (storageDetails) {
-        const totalCapacity = (storageDetails.capacity * storageModules).toFixed(2);
-        const nameWithCapacity = `${storageDetails.name} ${totalCapacity} kWh`;
-        const descriptionWithModules = `${storageDetails.description} Zestaw składa się z ${storageModules} modułu/ów.`;
-        mainTableData.push(['', nameWithCapacity, descriptionWithModules, 'kpl.', '1']);
-    }
-    
     if (installationType !== 'only-storage') {
         const scopeData = installationType === 'grunt' ? pvGroundMountScope : pvRoofMountScope;
         mainTableData.push(...scopeData);
+    } else {
+        mainTableData = [['', 'Szczegółowy zakres prac na kolejnej stronie.', '', '', '']];
     }
     
     mainTableData = mainTableData.map((row, index) => { row[0] = String(index + 1); return row; });
     
-    currentY -= 10;
-    await drawTable(pdfDoc, offerPage, { regular: regularFont, bold: boldFont }, mainTableData, currentY, "Komponenty i zakres prac");
-    
+    currentY -= 15;
+    let tableResult = await drawTable(pdfDoc, offerPage, { regular: regularFont, bold: boldFont }, mainTableData, currentY, "Komponenty i zakres prac instalacji fotowoltaicznej");
+    lastContentPage = tableResult.finalPage;
+
     if (storageDetails) {
         const storageScopePage = pdfDoc.addPage();
+        lastContentPage = storageScopePage;
         let scopeY = height - 60;
-        if(kamanLogoImage) {
-            const logoDims = kamanLogoImage.scale(0.05);
-            storageScopePage.drawImage(kamanLogoImage, { x: (width - logoDims.width) / 2, y: scopeY, width: logoDims.width, height: logoDims.height });
-            scopeY -= (logoDims.height + 25);
-        }
         
         const scopeTitle = "Zakres prac – instalacja magazynu energii";
+        storageScopePage.drawText(scopeTitle, { x: 50, y: scopeY, font: boldFont, size: 16, color: rgb(0.6, 0, 0.15) });
+        scopeY -= 30;
+        
+        const totalCapacity = (storageDetails.capacity * storageModules).toFixed(2);
+        const chargingPower = (totalCapacity / 2).toFixed(2);
+        const storageDetailsList = [
+            { label: 'Pojemność magazynu: ', value: `${totalCapacity} kWh` },
+            { label: 'Moc ładowania/rozł.:', value: `${chargingPower} kW` },
+        ];
+        scopeY = drawHeaderBlock(storageScopePage, { regular: regularFont, bold: boldFont }, kamanLogoImage, storageDetailsList, scopeY);
+        
         let scopeTableData = JSON.parse(JSON.stringify(pvStorageScope));
         const connectionType = inverterDetails.type === 'Hybrid Inverter' ? 'bezpośrednio do falownika hybrydowego' : 'poprzez dedykowaną ładowarkę typu retrofit';
         scopeTableData[0][2] = `Określenie trybu integracji systemu bateryjnego – ${connectionType}.`;
-        
         scopeTableData[1][4] = String(storageModules);
         
         scopeTableData = scopeTableData.map((row, index) => {
             row[0] = String(index + 1);
             return row;
         });
-        await drawTable(pdfDoc, storageScopePage, { regular: regularFont, bold: boldFont }, scopeTableData, scopeY, scopeTitle);
+        
+        scopeY -= 20;
+        tableResult = await drawTable(pdfDoc, storageScopePage, { regular: regularFont, bold: boldFont }, scopeTableData, scopeY, "Szczegółowy zakres prac");
+        lastContentPage = tableResult.finalPage;
     }
     
-    const lastPage = pdfDoc.getPage(pdfDoc.getPageCount() - 1);
     const priceText = `CENA KOŃCOWA: ${price} PLN brutto (VAT 8%)`;
     const priceTextWidth = boldFont.widthOfTextAtSize(priceText, 14);
-    lastPage.drawText(priceText, { x: width - priceTextWidth - 50, y: 50, font: boldFont, size: 14, color: rgb(0.6, 0, 0.15) });
-    lastPage.drawText(`Oferta ważna 14 dni.`, { x: 50, y: 50, font: regularFont, size: 9, color: rgb(0.4, 0.4, 0.4) });
+    lastContentPage.drawText(priceText, { x: width - priceTextWidth - 50, y: 50, font: boldFont, size: 14, color: rgb(0.6, 0, 0.15) });
+    lastContentPage.drawText(`Oferta ważna 14 dni.`, { x: 50, y: 50, font: regularFont, size: 9, color: rgb(0.4, 0.4, 0.4) });
     
     for (const templateDoc of loadedTemplatePDFs) {
-      const pageIndices = templateDoc.getPageIndices();
+      const pageIndices = templateDoc.doc.getPageIndices();
       for (const pageIndex of pageIndices) {
-        const [copiedPage] = await pdfDoc.copyPages(templateDoc, [pageIndex]);
+        const [copiedPage] = await pdfDoc.copyPages(templateDoc.doc, [pageIndex]);
         pdfDoc.addPage(copiedPage);
       }
     }
