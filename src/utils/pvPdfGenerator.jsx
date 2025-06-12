@@ -123,32 +123,27 @@ function drawHeaderBlock(page, fonts, logoImage, details, yPos) {
     const { width } = page.getSize();
     const { bold: boldFont, regular: regularFont } = fonts;
     let textBlockY = yPos;
-
-    // ZMIANA: Zmniejszone czcionki i odstępy
+    
     const detailsX = 50;
     const detailsFontSize = 9;
     const detailsLineHeight = 15;
     const labelWidth = 100;
 
     const drawDetailRow = (y, label, value) => {
+        if (!value) return y;
         page.drawText(label, { x: detailsX, y, font: boldFont, size: detailsFontSize, color: rgb(0.6, 0, 0.15) });
-        page.drawText(value, { x: detailsX + labelWidth, y, font: regularFont, size: detailsFontSize, color: rgb(0.1, 0.1, 0.1) });
+        page.drawText(String(value), { x: detailsX + labelWidth, y, font: regularFont, size: detailsFontSize, color: rgb(0.1, 0.1, 0.1) });
         return y - detailsLineHeight;
     };
     
     const textBlockStartY = textBlockY;
-    details.forEach(detail => {
-        if(detail.value) {
-             textBlockY = drawDetailRow(textBlockY, detail.label, detail.value);
-        }
-    });
+    details.forEach(detail => { textBlockY = drawDetailRow(textBlockY, detail.label, detail.value); });
     const textBlockHeight = textBlockStartY - textBlockY;
 
     if (logoImage) {
-        // ZMIANA: Zmniejszone logo
-        const logoDims = logoImage.scale(0.05);
+        const logoDims = logoImage.scale(0.055); // Zmniejszone logo
         const logoX = width - logoDims.width - 50;
-        const logoY = textBlockStartY - textBlockHeight + (textBlockHeight / 2) - (logoDims.height / 2);
+        const logoY = textBlockStartY - (textBlockHeight / 2) - (logoDims.height / 2);
         page.drawImage(logoImage, { x: logoX, y: logoY, width: logoDims.width, height: logoDims.height });
     }
 
@@ -181,20 +176,11 @@ export async function generatePhotovoltaicsOfferPDF(formData) {
     for (const path of pdfOrder) {
         try {
             const response = await fetch(path);
-            if (!response.ok) {
-                console.error(`Nie udało się pobrać pliku: ${path} (status: ${response.status}). Plik zostanie pominięty.`);
-                continue;
-            }
+            if (!response.ok) { console.error(`Nie udało się pobrać pliku: ${path}. Plik pominięty.`); continue; }
             const pdfBytes = await response.arrayBuffer();
-            try {
-                const loadedPdf = await PDFDocument.load(pdfBytes);
-                loadedTemplatePDFs.push({doc: loadedPdf, path});
-            } catch (parsingError) {
-                console.error(`Plik '${path}' nie jest prawidłowym plikiem PDF i zostanie pominięty. Błąd: ${parsingError.message}`);
-            }
-        } catch (fetchError) {
-            console.error(`Błąd sieci podczas pobierania pliku ${path}: ${fetchError.message}. Plik zostanie pominięty.`);
-        }
+            try { loadedTemplatePDFs.push({doc: await PDFDocument.load(pdfBytes), path}); } 
+            catch (parsingError) { console.error(`Błąd parsowania PDF: ${path}. Plik pominięty.`); }
+        } catch (fetchError) { console.error(`Błąd sieci: ${path}. Plik pominięty.`); }
     }
     
     const findAndAddPage = async (pathFragment) => {
@@ -213,36 +199,55 @@ export async function generatePhotovoltaicsOfferPDF(formData) {
     const offerPage = pdfDoc.addPage();
     let lastContentPage = offerPage;
     const { width, height } = offerPage.getSize();
-    let currentY = height - 50;
+    let currentY = height - 55;
     
-    const mainTitle = installationType === 'only-storage' ? "OFERTA NA MAGAZYN ENERGII" : "OFERTA INSTALACJI FOTOWOLTAICZNEJ";
+    const isStorageOnly = installationType === 'only-storage';
+    const mainTitle = isStorageOnly ? "OFERTA NA MODERNIZACJĘ O MAGAZYN ENERGII" : "OFERTA INSTALACJI FOTOWOLTAICZNEJ";
+    
     offerPage.drawText(mainTitle, { x: 50, y: currentY, font: boldFont, size: 16, color: rgb(0.6, 0, 0.15) });
     currentY -= 30;
     
     const mainOfferDetails = [
         { label: 'Klient:', value: userName.toUpperCase() },
-        { label: 'Moc instalacji:', value: panelDetails ? `${panelDetails.totalPower.toFixed(2)} kWp` : null },
-        { label: 'Typ instalacji:', value: `${installationType === 'dach' ? 'Dachowa' : installationType === 'grunt' ? 'Gruntowa' : 'Tylko magazyn energii'}` },
+        { label: 'Moc instalacji:', value: !isStorageOnly && panelDetails ? `${panelDetails.totalPower.toFixed(2)} kWp` : null },
+        { label: 'Typ instalacji:', value: isStorageOnly ? 'Modernizacja (Retrofit)' : (installationType === 'dach' ? 'Dachowa' : 'Gruntowa') },
         { label: 'Panele:', value: panelDetails?.name },
-        { label: 'Falownik:', value: inverterDetails?.name }
+        { label: 'Falownik/Ładowarka:', value: inverterDetails?.name }
     ];
     currentY = drawHeaderBlock(offerPage, { regular: regularFont, bold: boldFont }, kamanLogoImage, mainOfferDetails, currentY);
     
     let mainTableData = [];
-    if (installationType !== 'only-storage') {
+    if (!isStorageOnly) {
+        mainTableData.push(['', panelDetails.name, panelDetails.description, 'szt.', panelDetails.count]);
+        mainTableData.push(['', inverterDetails.name, inverterDetails.description, 'szt.', '1']);
+        if (storageDetails) {
+            const totalCapacity = (storageDetails.capacity * storageModules).toFixed(2);
+            mainTableData.push(['', `${storageDetails.name} ${totalCapacity} kWh`, storageDetails.description, 'kpl.', '1']);
+        }
         const scopeData = installationType === 'grunt' ? pvGroundMountScope : pvRoofMountScope;
         mainTableData.push(...scopeData);
     } else {
-        mainTableData = [['', 'Szczegółowy zakres prac na kolejnej stronie.', '', '', '']];
+        // Logika dla oferty tylko na magazyn
+        const scopeTitle = "Komponenty i zakres prac";
+        mainTableData = JSON.parse(JSON.stringify(pvStorageScope));
+        
+        mainTableData.unshift(['', inverterDetails.name, inverterDetails.description, 'szt.', '1']);
+        
+        const storageRowIndex = mainTableData.findIndex(row => row[1].includes('Zestaw magazynowania energii'));
+        if(storageRowIndex > -1) {
+            const totalCapacity = (storageDetails.capacity * storageModules).toFixed(2);
+            mainTableData.splice(storageRowIndex, 0, ['', `${storageDetails.name} (${totalCapacity} kWh)`, storageDetails.description, 'kpl.', '1']);
+            mainTableData.splice(storageRowIndex + 1, 1); // Usuń stary, statyczny wiersz
+        }
     }
     
     mainTableData = mainTableData.map((row, index) => { row[0] = String(index + 1); return row; });
     
     currentY -= 15;
-    let tableResult = await drawTable(pdfDoc, offerPage, { regular: regularFont, bold: boldFont }, mainTableData, currentY, "Komponenty i zakres prac instalacji fotowoltaicznej");
+    let tableResult = await drawTable(pdfDoc, offerPage, { regular: regularFont, bold: boldFont }, mainTableData, currentY, "Komponenty i zakres prac");
     lastContentPage = tableResult.finalPage;
 
-    if (storageDetails) {
+    if (storageDetails && !isStorageOnly) {
         const storageScopePage = pdfDoc.addPage();
         lastContentPage = storageScopePage;
         let scopeY = height - 60;
@@ -254,14 +259,13 @@ export async function generatePhotovoltaicsOfferPDF(formData) {
         const totalCapacity = (storageDetails.capacity * storageModules).toFixed(2);
         const chargingPower = (totalCapacity / 2).toFixed(2);
         const storageDetailsList = [
-            { label: 'Pojemność magazynu: ', value: `${totalCapacity} kWh` },
+            { label: 'Klient:', value: userName.toUpperCase() },
+            { label: 'Pojemność magazynu:', value: `${totalCapacity} kWh` },
             { label: 'Moc ładowania/rozł.:', value: `${chargingPower} kW` },
         ];
         scopeY = drawHeaderBlock(storageScopePage, { regular: regularFont, bold: boldFont }, kamanLogoImage, storageDetailsList, scopeY);
         
         let scopeTableData = JSON.parse(JSON.stringify(pvStorageScope));
-        const connectionType = inverterDetails.type === 'Hybrid Inverter' ? 'bezpośrednio do falownika hybrydowego' : 'poprzez dedykowaną ładowarkę typu retrofit';
-        scopeTableData[0][2] = `Określenie trybu integracji systemu bateryjnego – ${connectionType}.`;
         scopeTableData[1][4] = String(storageModules);
         
         scopeTableData = scopeTableData.map((row, index) => {
