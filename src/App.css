@@ -301,3 +301,30 @@
     gap: 5px;
   }
 }
+/* src/App.css */
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  background-color: var(--light-gray-bg);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: background-image 0.5s ease-in-out;
+}
+
+.app-container.bg-heating, .app-container.bg-radiators { /* Połączono style tła */
+  background-image: url('./assets/backgrounds/heating-background.jpg');
+}
+
+.app-container.bg-pv, .app-container.bg-custom {
+  background-image: url('./assets/backgrounds/pv-background.jpg');
+}
+
+.app-container.bg-okna {
+  background-image: url('./assets/backgrounds/okna-background.jpg');
+}
+
+/* ... reszta pliku bez zmian ... */

@@ -28,6 +28,16 @@ const defaultTemplatePaths = [
 
 export const pdfTemplateSets = {
   // --- MITSUBISHI (Pompy Ciepła) ---
+
+  'DIAMOND': [
+    '/pdf_templates/diamond/1_okladka_grzejniki.pdf',
+    '/pdf_templates/diamond/2_katalog_diamond_stalowe.pdf',
+    '/pdf_templates/diamond/3_katalog_diamond_aluminiowe.pdf',
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
   'Mitsubishi-cylinder': [
     '/pdf_templates/mitsubishi/standard-cylinder/1_okladka.pdf',
  
