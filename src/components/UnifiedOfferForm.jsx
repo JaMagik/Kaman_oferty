@@ -11,6 +11,7 @@ import { kotlospawDrewkoPlusBaseTables } from "../data/tables/kotlospawDrewkoPlu
 import { kotlospawDrewkoHybridBaseTables } from "../data/tables/kotlospawDrewkoHybridTable";
 import { toshiba1fBaseTables } from '../data/tables/toshiba1fTable';
 import { kaisaiHydroboxBaseTables } from '../data/tables/kaisaiTable';
+import { vivaxAcBaseTables } from '../data/tables/acData';
 
 const allDevicesData = {
   ...mitsubishiBaseTables,
@@ -24,35 +25,13 @@ const allDevicesData = {
   ...kotlospawDrewkoHybridBaseTables,
   ...toshiba1fBaseTables,
   ...kaisaiHydroboxBaseTables,
+  ...vivaxAcBaseTables,
 };
 
-const boilerDeviceTypes = [
-    "LAZAR", 
-    "Kotlospaw Slimko Plus", 
-    "Kotlospaw slimko plus niski", 
-    "QMPELL", 
-    "Kotlospaw drewko plus",
-    "Kotlospaw drewko hybrid"
-];
-
-const heatPumpBufferOptions = [
-  { value: "sprzeglo", label: "Sprzęgło hydrauliczne z osprzętem" },
-  { value: "none", label: "Bufor niewymagany" },
-  { value: "40-100L", label: "Bufor 40-100 L + osprzęt" },
-  { value: "200L", label: "Bufor 200 L + osprzęt" },
-  { value: "300L", label: "Bufor 300 L + osprzęt" },
-];
-
-const boilerBufferOptions = [
-   { value: "sprzeglo", label: "Sprzęgło hydrauliczne z osprzętem" },
-  { value: "none", label: "Bufor niewymagany" },
-  { value: "zawor-4d", label: "Zawór czterodrożny z siłownikiem" },
-  { value: "100L", label: "Bufor 100 L + osprzęt" },
-  { value: "120L", label: "Bufor 120 L + osprzęt" },
-  { value: "140L", label: "Bufor 140 L + osprzęt" },
-  { value: "200L", label: "Bufor 200 L + osprzęt" },
-];
-
+const boilerDeviceTypes = [ "LAZAR", "Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid" ];
+const heatPumpBufferOptions = [ { value: "sprzeglo", label: "Sprzęgło hydrauliczne z osprzętem" }, { value: "none", label: "Bufor niewymagany" }, { value: "40-100L", label: "Bufor 40-100 L + osprzęt" }, { value: "200L", label: "Bufor 200 L + osprzęt" }, { value: "300L", label: "Bufor 300 L + osprzęt" }, ];
+const boilerBufferOptions = [ { value: "sprzeglo", label: "Sprzęgło hydrauliczne z osprzętem" }, { value: "none", label: "Bufor niewymagany" }, { value: "zawor-4d", label: "Zawór czterodrożny z siłownikiem" }, { value: "100L", label: "Bufor 100 L + osprzęt" }, { value: "120L", label: "Bufor 120 L + osprzęt" }, { value: "140L", label: "Bufor 140 L + osprzęt" }, { value: "200L", label: "Bufor 200 L + osprzęt" }, ];
+const acDeviceTypes = ['MITSUBISHI AY', 'MITSUBISHI HR', 'VIVAX Y-Design', 'VIVAX H-Design', 'VIVAX Q-Design', 'VIVAX N-Design'];
 
 export default function UnifiedOfferForm() {
   const [userName, setUserName] = useState("");
@@ -63,25 +42,19 @@ export default function UnifiedOfferForm() {
   const [tank, setTank] = useState("200 L STAL NIERDZEWNA");
   const [buffer, setBuffer] = useState("Sprzęgło hydrauliczne z osprzętem");
   const [currentBufferOptions, setCurrentBufferOptions] = useState(heatPumpBufferOptions);
-  
   const [includeDemontaz, setIncludeDemontaz] = useState(true);
   const [includePodbudowa, setIncludePodbudowa] = useState(true);
   const [isNettoPrice, setIsNettoPrice] = useState(false);
-  // NOWY STAN DLA DOTACJI
   const [includeDotacja, setIncludeDotacja] = useState(true);
-
+  const [showPrice, setShowPrice] = useState(true);
   const [isCustomQuantity, setIsCustomQuantity] = useState(false);
   const [outdoorUnitQty, setOutdoorUnitQty] = useState(1);
   const [indoorUnitQty, setIndoorUnitQty] = useState(1);
-
-  const [trelloCardId, setTrelloCardId] = useState(null);
-  const [trelloUserToken, setTrelloUserToken] = useState(null);
-  const [isSavingToTrello, setIsSavingToTrello] = useState(false);
   const [generatedPdfData, setGeneratedPdfData] = useState(null);
-  
   const [systemType, setSystemType] = useState('zamkniety');
-
+  
   const isBoiler = boilerDeviceTypes.includes(deviceType);
+  const isAcDevice = acDeviceTypes.includes(deviceType);
 
   const formatPriceForDisplay = (value) => {
     if (!value) return '';
@@ -103,18 +76,7 @@ export default function UnifiedOfferForm() {
     }
     setPrice(cleanedValue);
   };
-
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const cardIdFromUrl = urlParams.get('trelloCardId');
-    if (cardIdFromUrl) setTrelloCardId(cardIdFromUrl);
-    if (window.location.hash.includes("#token=")) {
-      const token = window.location.hash.substring(window.location.hash.indexOf('=') + 1);
-      setTrelloUserToken(token);
-      window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
-    }
-  }, []);
-
+  
   useEffect(() => {
     const modelsForDevice = allDevicesData[deviceType] ? Object.keys(allDevicesData[deviceType]) : [];
     setAvailableModels(modelsForDevice);
@@ -125,17 +87,21 @@ export default function UnifiedOfferForm() {
     }
     setCurrentBufferOptions(isBoiler ? boilerBufferOptions : heatPumpBufferOptions);
     if (!isBoiler) setSystemType('zamkniety');
-    if(isBoiler) setIsCustomQuantity(false);
-  }, [deviceType, model, isBoiler]);
+    if(isBoiler || isAcDevice) setIsCustomQuantity(false);
+  }, [deviceType, model, isBoiler, isAcDevice]);
 
   const handleGenerateAndSetPdf = async (e) => {
     e.preventDefault();
+    if (showPrice && !price.trim()) {
+      alert('Uzupełnij pole Ceny lub odznacz opcję pokazywania jej w ofercie.');
+      return;
+    }
     const pdfData = await generateOfferPDF(
         price, userName, deviceType, model, tank, buffer, systemType, 
-        // ZMIANA: Przekazanie opcji dotacji
         { demontaz: includeDemontaz, podbudowa: includePodbudowa, dotacja: includeDotacja },
         isNettoPrice,
-        { isCustom: isCustomQuantity, outdoor: outdoorUnitQty, indoor: indoorUnitQty }
+        { isCustom: isCustomQuantity, outdoor: outdoorUnitQty, indoor: indoorUnitQty },
+        showPrice
     );
     if (pdfData) {
       setGeneratedPdfData(pdfData);
@@ -143,18 +109,18 @@ export default function UnifiedOfferForm() {
   };
 
   const handleDownloadPdf = () => {
-    if (generatedPdfData) {
-      const url = URL.createObjectURL(generatedPdfData);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `Oferta_KAMAN_${userName.replace(/ /g, '_')}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } else {
-      alert("Najpierw wygeneruj PDF!");
+    if (!generatedPdfData) {
+        alert("Najpierw wygeneruj PDF!");
+        return;
     }
+    const url = URL.createObjectURL(generatedPdfData);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Oferta_KAMAN_${userName.replace(/ /g, '_')}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
   
   return (
@@ -164,16 +130,20 @@ export default function UnifiedOfferForm() {
       <input id="userName" type="text" value={userName} onChange={(e) => setUserName(e.target.value)} placeholder="Podaj imię i nazwisko" required />
 
       <label htmlFor="price">Cena Końcowa (PLN):</label>
-      <input id="price" type="text" inputMode="decimal" value={formatPriceForDisplay(price)} onChange={handlePriceChange} placeholder="Podaj cenę" required />
+      <input id="price" type="text" inputMode="decimal" value={formatPriceForDisplay(price)} onChange={handlePriceChange} placeholder="Podaj cenę" />
       
       <div className="input-group-inline">
         <input type="checkbox" id="isNettoPrice" checked={isNettoPrice} onChange={(e) => setIsNettoPrice(e.target.checked)} />
         <label htmlFor="isNettoPrice">Pokaż cenę jako netto</label>
       </div>
+      <div className="input-group-inline">
+        <input type="checkbox" id="showPrice" checked={showPrice} onChange={(e) => setShowPrice(e.target.checked)} />
+        <label htmlFor="showPrice">Dołącz cenę do oferty</label>
+      </div>
 
       <label htmlFor="deviceType">Typ Urządzenia/Oferty:</label>
       <select id="deviceType" value={deviceType} onChange={(e) => setDeviceType(e.target.value)}>
-        <optgroup label="Mitsubishi (Pompy Ciepła)">
+        <optgroup label="Pompy Ciepła Mitsubishi">
           <option value="Mitsubishi-hydrobox">Mitsubishi Hydrobox (Standard PUD)</option>
           <option value="Mitsubishi-cylinder-PUZ">Mitsubishi Cylinder (Zubadan PUZ)</option>
           <option value="Mitsubishi-cylinder-PUZ-1F">Mitsubishi Cylinder (Zubadan PUZ 1-faz.)</option>
@@ -182,13 +152,23 @@ export default function UnifiedOfferForm() {
           <option value="Mitsubishi-ecoinverter">Mitsubishi Ecoinverter (Cylinder)</option>
           <option value="Mitsubishi-ecoinverter-hydrobox">Mitsubishi Ecoinverter (Hydrobox)</option>
         </optgroup>
-        <optgroup label="Toshiba ( Pompy Ciepła)">
+        <optgroup label="Pompy Ciepła Toshiba">
           <option value="Toshiba 1F">Toshiba (1-fazowe)</option>
         </optgroup>
-        <optgroup label="Atlantic (Pompy Ciepła)">
+        <optgroup label="Pompy Ciepła Atlantic">
           <option value="ATLANTIC-M-DUO">Atlantic S-TRI hydrobox</option>
           <option value="ATLANTIC-S">Atlantic S-TRI-Duo cylinder</option>
           <option value="ATLANTIC-EXCELIA">Atlantic EXCELIA AI TRI hydrobox</option>
+        </optgroup>
+        <optgroup label="Klimatyzatory Mitsubishi">
+          <option value="MITSUBISHI AY">Mitsubishi AY</option>
+          <option value="MITSUBISHI HR">Mitsubishi HR</option>
+        </optgroup>
+        <optgroup label="Klimatyzatory VIVAX">
+            <option value="VIVAX Y-Design">VIVAX Y-Design</option>
+            <option value="VIVAX H-Design">VIVAX H+ Design</option>
+            <option value="VIVAX Q-Design">VIVAX Q-Design</option>
+            <option value="VIVAX N-Design">VIVAX N-Design</option>
         </optgroup>
         <optgroup label="Kotły na Pellet">
           <option value="LAZAR">Lazar</option>
@@ -200,33 +180,28 @@ export default function UnifiedOfferForm() {
             <option value="Kotlospaw drewko plus">Kotłospaw Drewko Plus</option>
             <option value="Kotlospaw drewko hybrid">Kotłospaw Drewko Hybrid</option>
         </optgroup>
-        <optgroup label="Viessmann (Pompy Ciepła)">
+        <optgroup label="Pompy Ciepła Viessmann">
             <option value="VIESSMANN">Viessmann Vitocal 150-A</option>
         </optgroup>
-        <optgroup label="Kaisai ( Pompy Ciepła)">
+        <optgroup label="Pompy Ciepła Kaisai">
             <option value="Kaisai">Kaisai</option>
         </optgroup>
-        <optgroup label="Mitsubishi (Klimatyzatory)">
-            <option value="MITSUBISHI AY">Klimatyzator Mitsubishi AY</option>
-            <option value="MITSUBISHI HR">Klimatyzator Mitsubishi HR</option>
-        </optgroup>
-      </select>
-      <label htmlFor="model">Model (Moc):</label>
-      <select id="model" value={model} onChange={(e) => setModel(e.target.value)} disabled={availableModels.length === 0}>
-        {availableModels.length > 0 ? (
-          availableModels.map((modelName) => <option key={modelName} value={modelName}>{modelName}</option>)
-        ) : (
-          <option value="">Brak dostępnych modeli</option>
-        )}
       </select>
 
-      {!isBoiler && (
-        <div className="options-box">
-            <div className="option-row">
-                <input type="checkbox" id="isCustomQuantity" checked={isCustomQuantity} onChange={(e) => setIsCustomQuantity(e.target.checked)} />
-                <label htmlFor="isCustomQuantity">Niestandardowa ilość jednostek</label>
-            </div>
-            {isCustomQuantity && (
+      <label htmlFor="model">Model (Moc):</label>
+      <select id="model" value={model} onChange={(e) => setModel(e.target.value)} disabled={availableModels.length === 0}>
+        {availableModels.length > 0 ? ( availableModels.map((modelName) => <option key={modelName} value={modelName}>{modelName}</option>) ) : ( <option value="">Brak dostępnych modeli</option> )}
+      </select>
+
+      {!isAcDevice && (
+        <>
+          {!isBoiler && (
+            <div className="options-box">
+              <div className="option-row">
+                  <input type="checkbox" id="isCustomQuantity" checked={isCustomQuantity} onChange={(e) => setIsCustomQuantity(e.target.checked)} />
+                  <label htmlFor="isCustomQuantity">Niestandardowa ilość jednostek</label>
+              </div>
+              {isCustomQuantity && (
                 <div className="custom-quantity-inputs">
                     <div className="input-group">
                         <label htmlFor="outdoorUnitQty">Ilość jedn. zewnętrznych:</label>
@@ -237,57 +212,56 @@ export default function UnifiedOfferForm() {
                         <input id="indoorUnitQty" type="number" value={indoorUnitQty} onChange={e => setIndoorUnitQty(e.target.value)} min="1" />
                     </div>
                 </div>
-            )}
-        </div>
-      )}
+              )}
+            </div>
+          )}
 
-      <label htmlFor="tank">Pojemność zasobnika CWU:</label>
-      <select id="tank" value={tank} onChange={(e) => setTank(e.target.value)}>
-          <option value="140L">140 L</option>
-          <option value="200L">200 L</option>
-          <option value="none">Zasobnik CWU nie wymagany/ Zintegrowany</option>
-          <option value="300L">300 L</option>
-          <option value="400L">400 L</option>
-          <option value="200 L STAL NIERDZEWNA">200 L STAL NIERDZEWNA</option>
-          <option value="250 L STAL NIERDZEWNA">250 L STAL NIERDZEWNA</option>
-          <option value="300 L STAL NIERDZEWNA">300 L STAL NIERDZEWNA</option>
-      </select>
-      <label htmlFor="buffer">Bufor/Sprzęgło:</label>
-      <select id="buffer" value={buffer} onChange={(e) => setBuffer(e.target.value)}>
-        {currentBufferOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
-      </select>
-
-      <div className="options-box">
-        {/* ZMIANA: Dodano Checkbox dla dotacji */}
-        <div className="option-row">
-          <input type="checkbox" id="includeDotacja" checked={includeDotacja} onChange={(e) => setIncludeDotacja(e.target.checked)} />
-          <label htmlFor="includeDotacja">Uwzględnij pomoc w uzyskaniu dotacji w ofercie</label>
-        </div>
-        <div className="option-row">
-          <input type="checkbox" id="includeDemontaz" checked={includeDemontaz} onChange={(e) => setIncludeDemontaz(e.target.checked)} />
-          <label htmlFor="includeDemontaz">Uwzględnij demontaż starego źródła ciepła w ofercie</label>
-        </div>
-        {!isBoiler && (
-          <div className="option-row">
-            <input type="checkbox" id="includePodbudowa" checked={includePodbudowa} onChange={(e) => setIncludePodbudowa(e.target.checked)} />
-            <label htmlFor="includePodbudowa">Uwzględnij podbudowę pod pompę ciepła w ofercie</label>
-          </div>
-        )}
-      </div>
-
-      {isBoiler && (
-        <div className="input-group" style={{marginTop: '10px'}}>
-          <label htmlFor="systemType">Typ układu hydraulicznego:</label>
-          <select id="systemType" value={systemType} onChange={(e) => setSystemType(e.target.value)}>
-              <option value="zamkniety">Układ zamknięty</option>
-              <option value="otwarty">Układ otwarty</option>
-              <option value="brak">Brak (tylko grupa bezp. bez naczynia)</option>
+          <label htmlFor="tank">Pojemność zasobnika CWU:</label>
+          <select id="tank" value={tank} onChange={(e) => setTank(e.target.value)}>
+              <option value="140L">140 L</option>
+              <option value="200L">200 L</option>
+              <option value="none">Zasobnik CWU nie wymagany/ Zintegrowany</option>
+              <option value="300L">300 L</option>
+              <option value="400L">400 L</option>
+              <option value="200 L STAL NIERDZEWNA">200 L STAL NIERDZEWNA</option>
+              <option value="250 L STAL NIERDZEWNA">250 L STAL NIERDZEWNA</option>
+              <option value="300 L STAL NIERDZEWNA">300 L STAL NIERDZEWNA</option>
           </select>
-        </div>
+          <label htmlFor="buffer">Bufor/Sprzęgło:</label>
+          <select id="buffer" value={buffer} onChange={(e) => setBuffer(e.target.value)}>
+            {currentBufferOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
+          </select>
+
+          <div className="options-box">
+            <div className="option-row">
+              <input type="checkbox" id="includeDotacja" checked={includeDotacja} onChange={(e) => setIncludeDotacja(e.target.checked)} />
+              <label htmlFor="includeDotacja">Uwzględnij pomoc w uzyskaniu dotacji w ofercie</label>
+            </div>
+            <div className="option-row">
+              <input type="checkbox" id="includeDemontaz" checked={includeDemontaz} onChange={(e) => setIncludeDemontaz(e.target.checked)} />
+              <label htmlFor="includeDemontaz">Uwzględnij demontaż starego źródła ciepła w ofercie</label>
+            </div>
+            {!isBoiler && (
+              <div className="option-row">
+                <input type="checkbox" id="includePodbudowa" checked={includePodbudowa} onChange={(e) => setIncludePodbudowa(e.target.checked)} />
+                <label htmlFor="includePodbudowa">Uwzględnij podbudowę pod pompę ciepła w ofercie</label>
+              </div>
+            )}
+          </div>
+          {isBoiler && (
+            <div className="input-group" style={{marginTop: '10px'}}>
+              <label htmlFor="systemType">Typ układu hydraulicznego:</label>
+              <select id="systemType" value={systemType} onChange={(e) => setSystemType(e.target.value)}>
+                  <option value="zamkniety">Układ zamknięty</option>
+                  <option value="otwarty">Układ otwarty</option>
+                  <option value="brak">Brak (tylko grupa bezp. bez naczynia)</option>
+              </select>
+            </div>
+          )}
+        </>
       )}
 
       <button type="submit">Generuj PDF</button>
-
       {generatedPdfData && (
         <button type="button" onClick={handleDownloadPdf} style={{ marginTop: '10px', background: '#555' }}>Pobierz wygenerowany PDF</button>
       )}

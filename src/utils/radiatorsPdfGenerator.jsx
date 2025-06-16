@@ -24,7 +24,7 @@ const wrapText = (text, textFont, textSize, maxWidth) => {
 };
 
 export async function generateRadiatorsOfferPDF(formData) {
-  const { userName, price, isNetto, rooms } = formData;
+  const { userName, price, isNetto, rooms, showPrice } = formData;
 
   try {
     const pdfDoc = await PDFDocument.create();
@@ -42,10 +42,12 @@ export async function generateRadiatorsOfferPDF(formData) {
     
     const requiredDatasheetPaths = new Set();
     rooms.forEach(room => {
-      const materialData = radiatorHierarchy[room.material];
-      if (materialData?.datasheets) {
-        materialData.datasheets.forEach(path => requiredDatasheetPaths.add(path));
-      }
+      room.radiators.forEach(radiator => {
+        const materialData = radiatorHierarchy[radiator.material];
+        if (materialData?.datasheets) {
+          materialData.datasheets.forEach(path => requiredDatasheetPaths.add(path));
+        }
+      });
     });
 
     const datasheetPromises = Array.from(requiredDatasheetPaths).map(path => 
@@ -56,20 +58,14 @@ export async function generateRadiatorsOfferPDF(formData) {
     );
     const datasheetPdfBytesArray = (await Promise.all(datasheetPromises)).filter(Boolean);
 
-    // Strona 1: Okładka
     const coverDoc = await PDFDocument.load(coverPdfBytes);
     const [copiedCoverPage] = await pdfDoc.copyPages(coverDoc, [0]);
     pdfDoc.addPage(copiedCoverPage);
 
-    // Strona 2: Ogólny zakres prac
     const offerPage = pdfDoc.addPage();
     const { width, height } = offerPage.getSize();
     let currentY = height - 55;
-    const mainOfferDetails = [
-        { type: 'title', value: 'OFERTA NA INSTALACJĘ GRZEJNIKOWĄ' },
-        { label: 'Klient:', value: userName.toUpperCase() },
-        { label: 'Liczba pomieszczeń:', value: rooms.length },
-    ];
+    const mainOfferDetails = [{ type: 'title', value: 'OFERTA NA INSTALACJĘ GRZEJNIKOWĄ' }, { label: 'Klient:', value: userName.toUpperCase() },];
     currentY = drawHeaderBlock(offerPage, { regular: regularFont, bold: boldFont }, kamanLogoImage, mainOfferDetails, currentY);
     const scopeTableData = radiatorsBaseScope.map((row, index) => {
         const newRow = [...row]; newRow[0] = String(index + 1); return newRow;
@@ -77,13 +73,8 @@ export async function generateRadiatorsOfferPDF(formData) {
     currentY -= 10;
     await drawTable(pdfDoc, offerPage, { regular: regularFont, bold: boldFont }, scopeTableData, currentY, "Ogólny zakres prac instalacyjnych");
 
-    // Strona 3 (i kolejne): Dobór grzejników - ZMIENIONY LAYOUT
     let detailsPage = pdfDoc.addPage();
-    let detailsY = height - 60; // Główny punkt startowy dla treści
-    const contentStartX = 50;
-    const contentBlockWidth = width - 100;
-
-    // ZMIANA: Logo w prawym górnym rogu, niezależnie od reszty treści
+    let detailsY = height - 60;
     if (kamanLogoImage) {
         const logoDims = kamanLogoImage.scale(0.035);
         detailsPage.drawImage(kamanLogoImage, {
@@ -93,79 +84,71 @@ export async function generateRadiatorsOfferPDF(formData) {
             height: logoDims.height,
         });
     }
-    
-    // Tytuł strony po lewej
-    const title = "Dobór grzejników";
-    detailsPage.drawText(title, { x: contentStartX, y: detailsY, font: boldFont, size: 14, color: rgb(0.1, 0.1, 0.25) });
+    detailsPage.drawText("Dobór grzejników", { x: 50, y: detailsY, font: boldFont, size: 14, color: rgb(0.1, 0.1, 0.25) });
     detailsY -= 40;
 
-    // Pętla rysująca sekcje dla każdego grzejnika
-    for (const [index, room] of rooms.entries()) {
-        const radiatorDetails = radiatorTypesData[room.radiatorKey];
-        const radiatorInfo = [
-            { label: 'Model grzejnika:', value: radiatorDetails?.name || 'Nie wybrano' },
-            { label: 'Opis techniczny:', value: radiatorDetails?.description || '' },
-        ];
-        
-        const sectionHeight = 50 + (radiatorInfo.length * 20);
+    const contentStartX = 50;
+    const contentBlockWidth = width - 100;
 
-        if (detailsY < sectionHeight) {
+    for (const [roomIndex, room] of rooms.entries()) {
+        const roomSectionHeight = 40 + room.radiators.length * 50;
+        if (detailsY < roomSectionHeight) {
             detailsPage = pdfDoc.addPage();
             detailsY = height - 70;
         }
 
         const bannerHeight = 25;
-        const bannerY = detailsY - bannerHeight;
-        detailsPage.drawRectangle({
-            x: contentStartX, y: bannerY, width: contentBlockWidth, height: bannerHeight,
-            color: rgb(0.6, 0, 0.15)
-        });
-        const bannerText = `${index + 1}. ${room.name.toUpperCase()}, Metraż: ${room.area || 'b.d.'} m²`;
-        detailsPage.drawText(bannerText, {
-            x: contentStartX + 10, y: bannerY + (bannerHeight - 11) / 2,
-            font: boldFont, size: 11, color: rgb(1, 1, 1)
-        });
+        detailsPage.drawRectangle({ x: contentStartX, y: detailsY - bannerHeight, width: contentBlockWidth, height: bannerHeight, color: rgb(0.6, 0, 0.15) });
+        const bannerText = `${roomIndex + 1}. ${room.name.toUpperCase()}, Metraż: ${room.area || 'b.d.'} m²`;
+        detailsPage.drawText(bannerText, { x: contentStartX + 10, y: detailsY - bannerHeight + (bannerHeight - 11) / 2, font: boldFont, size: 11, color: rgb(1, 1, 1) });
         detailsY -= (bannerHeight + 15);
 
-        const tableX = contentStartX + 10;
-        const labelWidth = 110;
-        const valueX = tableX + labelWidth;
+        for(const radiator of room.radiators) {
+          const radiatorDetails = radiatorTypesData[radiator.radiatorKey];
+          const radiatorInfo = [
+              { label: 'Model grzejnika:', value: radiatorDetails?.name || 'Nie wybrano' },
+              { label: 'Opis techniczny:', value: radiatorDetails?.description || '' },
+          ];
+          const tableX = contentStartX + 10;
+          const labelWidth = 110;
+          const valueX = tableX + labelWidth;
 
-        for (const item of radiatorInfo) {
-            detailsPage.drawText(item.label, { x: tableX, y: detailsY, font: boldFont, size: 9 });
-            const valueLines = wrapText(item.value, regularFont, 9, contentBlockWidth - labelWidth - 20);
-            valueLines.forEach(line => {
-                 detailsPage.drawText(line, { x: valueX, y: detailsY, font: regularFont, size: 9 });
-                 detailsY -= 12;
-            });
-            detailsY += 12;
-            detailsY -= 18;
+          for (const item of radiatorInfo) {
+              detailsPage.drawText(item.label, { x: tableX, y: detailsY, font: boldFont, size: 9 });
+              const valueLines = wrapText(item.value, regularFont, 9, contentBlockWidth - labelWidth - 20);
+              valueLines.forEach(line => {
+                  detailsPage.drawText(line, { x: valueX, y: detailsY, font: regularFont, size: 9 });
+                  detailsY -= 12;
+              });
+              detailsY += 12;
+              detailsY -= 18;
+          }
+          detailsY -= 5;
         }
-        detailsY -= 20;
+        detailsY -= 15;
     }
     
-    // Rysowanie ceny pod ostatnim elementem
-    detailsY -= 10;
-    if (detailsY < 80) {
-        detailsPage = pdfDoc.addPage();
-        detailsY = height - 100;
+    if (showPrice) {
+      if (detailsY < 80) {
+          detailsPage = pdfDoc.addPage();
+          detailsY = height - 100;
+      }
+      const priceSuffix = isNetto ? 'PLN netto' : 'PLN brutto';
+      const priceText = `CENA KOŃCOWA: ${price} ${priceSuffix}`;
+      const priceTextWidth = boldFont.widthOfTextAtSize(priceText, 16);
+      detailsPage.drawText(priceText, { 
+          x: (width - priceTextWidth) / 2, y: detailsY, font: boldFont, 
+          size: 16, color: rgb(0.6, 0, 0.15) 
+      });
+      detailsY -= 15;
+      const validityText = `Oferta ważna 14 dni.`;
+      const validityTextWidth = regularFont.widthOfTextAtSize(validityText, 9);
+      detailsPage.drawText(validityText, {
+          x: (width - validityTextWidth) / 2, y: detailsY, font: regularFont,
+          size: 9, color: rgb(0.4, 0.4, 0.4)
+      });
     }
-    const priceSuffix = isNetto ? 'PLN netto' : 'PLN brutto';
-    const priceText = `CENA KOŃCOWA: ${price} ${priceSuffix}`;
-    const priceTextWidth = boldFont.widthOfTextAtSize(priceText, 16);
-    detailsPage.drawText(priceText, { 
-        x: (width - priceTextWidth) / 2, y: detailsY, font: boldFont, 
-        size: 16, color: rgb(0.6, 0, 0.15) 
-    });
-    detailsY -= 15;
-    const validityText = `Oferta ważna 14 dni.`;
-    const validityTextWidth = regularFont.widthOfTextAtSize(validityText, 9);
-    detailsPage.drawText(validityText, {
-        x: (width - validityTextWidth) / 2, y: detailsY, font: regularFont,
-        size: 9, color: rgb(0.4, 0.4, 0.4)
-    });
 
-    // Dodawanie kart katalogowych i strony kontaktowej
     for (const pdfBytes of datasheetPdfBytesArray) {
       const templateDoc = await PDFDocument.load(pdfBytes);
       const copiedPages = await pdfDoc.copyPages(templateDoc, templateDoc.getPageIndices());

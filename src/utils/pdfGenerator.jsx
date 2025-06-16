@@ -74,7 +74,7 @@ export function drawTable(pdfDoc, initialPage, fonts, tableData, startY) {
     currentY = drawHeader(currentPage, currentY);
 
     tableData.forEach((row, rowIndex) => {
-        const [lp, name, unit, quantity, description] = row;
+        const [lp, name, description, unit, quantity] = row;
         const nameLines = wrapText(name, regularFont, tableConfig.contentFontSize, tableConfig.columnWidths[1] - 10);
         const descLines = wrapText(description || '', regularFont, tableConfig.descriptionFontSize, tableConfig.columnWidths[2] - 10);
         
@@ -94,10 +94,9 @@ export function drawTable(pdfDoc, initialPage, fonts, tableData, startY) {
         const rowY = currentY - rowHeight;
         if (rowIndex % 2 === 1) { currentPage.drawRectangle({ x: tableStartX, y: rowY, width: tableWidth, height: rowHeight, color: tableConfig.evenRowBgColor }); }
         
-        const drawCenteredCellText = (lines, font, fontSize, cellBounds) => {
+        const drawCellText = (lines, font, fontSize, cellBounds) => {
             const lineHeight = fontSize * 1.3;
-            const textBlockHeight = lines.length * lineHeight - (lineHeight - fontSize);
-            let textY = cellBounds.y + (cellBounds.height - textBlockHeight) / 2 + textBlockHeight - fontSize;
+            let textY = cellBounds.y + cellBounds.height - tableConfig.padding.top - fontSize;
 
             lines.forEach(line => {
                 const textWidth = font.widthOfTextAtSize(line, fontSize);
@@ -105,16 +104,16 @@ export function drawTable(pdfDoc, initialPage, fonts, tableData, startY) {
                 if (cellBounds.isCentered) {
                     textX = cellBounds.x + (cellBounds.width - textWidth) / 2;
                 }
-                currentPage.drawText(line, { x: textX, y: textY, font, size: fontSize, color: tableConfig.rowFontColor });
+                currentPage.drawText(line, { x: textX, y: textY, font, size: fontSize, color: tableConfig.rowFontColor, lineHeight: lineHeight });
                 textY -= lineHeight;
             });
         };
 
-        drawCenteredCellText([String(lp)], regularFont, tableConfig.contentFontSize, { x: columnPositions[0], y: rowY, width: tableConfig.columnWidths[0], height: rowHeight, isCentered: true });
-        drawCenteredCellText(nameLines, regularFont, tableConfig.contentFontSize, { x: columnPositions[1], y: rowY, width: tableConfig.columnWidths[1], height: rowHeight });
-        drawCenteredCellText(descLines, regularFont, tableConfig.descriptionFontSize, { x: columnPositions[2], y: rowY, width: tableConfig.columnWidths[2], height: rowHeight });
-        drawCenteredCellText([String(unit)], regularFont, tableConfig.contentFontSize, { x: columnPositions[3], y: rowY, width: tableConfig.columnWidths[3], height: rowHeight, isCentered: true });
-        drawCenteredCellText([String(quantity)], regularFont, tableConfig.contentFontSize, { x: columnPositions[4], y: rowY, width: tableConfig.columnWidths[4], height: rowHeight, isCentered: true });
+        drawCellText([String(lp)], regularFont, tableConfig.contentFontSize, { x: columnPositions[0], y: rowY, width: tableConfig.columnWidths[0], height: rowHeight, isCentered: true });
+        drawCellText(nameLines, regularFont, tableConfig.contentFontSize, { x: columnPositions[1], y: rowY, width: tableConfig.columnWidths[1], height: rowHeight });
+        drawCellText(descLines, regularFont, tableConfig.descriptionFontSize, { x: columnPositions[2], y: rowY, width: tableConfig.columnWidths[2], height: rowHeight });
+        drawCellText([String(unit)], regularFont, tableConfig.contentFontSize, { x: columnPositions[3], y: rowY, width: tableConfig.columnWidths[3], height: rowHeight, isCentered: true });
+        drawCellText([String(quantity)], regularFont, tableConfig.contentFontSize, { x: columnPositions[4], y: rowY, width: tableConfig.columnWidths[4], height: rowHeight, isCentered: true });
         
         currentY = rowY;
         currentPage.drawLine({ start: { x: tableStartX, y: currentY }, end: { x: tableStartX + tableWidth, y: currentY }, thickness: 0.5, color: tableConfig.lineColor });
@@ -125,18 +124,15 @@ export function drawTable(pdfDoc, initialPage, fonts, tableData, startY) {
 }
 
 function drawExtrasPage(page, fonts, data, title, logoImage = null) {
-    // ... implementacja bez zmian
-    const { width: pageWidth, height: pageHeight } = page.getSize();
+    const { width: pageWidth, height: pageHeight } = page.getSize();
     const { regular: regularFont, bold: boldFont } = fonts;
     const maroonColor = rgb(0.6, 0, 0.15);
     const whiteColor = rgb(1, 1, 1);
     const textColor = rgb(0.1, 0.1, 0.1);
     const evenRowBgColor = rgb(0.98, 0.96, 0.96);
     const lineColor = rgb(0.85, 0.85, 0.85);
-
     const titleFontSize = 14;
     const topBannerHeight = 40;
-
     const tableConfig = {
         columnWidths: [30, 220, 140, 40, 80],
         headerHeight: 22,
@@ -146,15 +142,12 @@ function drawExtrasPage(page, fonts, data, title, logoImage = null) {
         descriptionFontSize: 7.8,
     };
     const tableWidth = tableConfig.columnWidths.reduce((a, b) => a + b, 0);
-
     const footerText = "UWAGI: OPCJE DODATKOWE NIE SĄ WYMAGANE PRZEZ PRODUCENTÓW* DO PRACY INSTALACJI I O ICH ZASADNOŚCI KAŻDORAZOWO NALEŻY KONSULTOWAĆ SIĘ Z OPIEKUNEM HANDLOWYM LUB DORADCĄ TECHNICZNYM";
     const footerFontSize = 9;
     const footerLineHeight = footerFontSize * 1.4;
     const footerLines = wrapText(footerText, boldFont, footerFontSize, pageWidth - 80);
     const bottomBannerHeight = (footerLines.length * footerLineHeight) + 30;
-
     let currentY = pageHeight;
-    
     page.drawRectangle({ x: 0, y: currentY - topBannerHeight, width: pageWidth, height: topBannerHeight, color: maroonColor });
     const titleWidth = boldFont.widthOfTextAtSize(title, titleFontSize);
     page.drawText(title, {
@@ -163,7 +156,6 @@ function drawExtrasPage(page, fonts, data, title, logoImage = null) {
         font: boldFont, size: titleFontSize, color: whiteColor,
     });
     currentY -= (topBannerHeight + 20);
-
     const tableX = (pageWidth - tableWidth) / 2;
     const tableStartY = currentY;
     const columnPositions = [tableX];
@@ -181,7 +173,6 @@ function drawExtrasPage(page, fonts, data, title, logoImage = null) {
     });
     currentY = headerY;
     let segmentTopY = tableStartY;
-
     data.forEach((row, rowIndex) => {
         if (row.type === 'separator') {
             for (let i = 0; i <= tableConfig.columnWidths.length; i++) { page.drawLine({ start: { x: columnPositions[i], y: currentY }, end: { x: columnPositions[i], y: segmentTopY }, thickness: 0.5, color: lineColor }); }
@@ -197,18 +188,14 @@ function drawExtrasPage(page, fonts, data, title, logoImage = null) {
             segmentTopY = currentY;
             return; 
         }
-
         const [lp, name, description, unit, price] = row;
         const nameLines = wrapText(name, regularFont, tableConfig.contentFontSize, tableConfig.columnWidths[1] - 10);
         const descLines = wrapText(description, regularFont, tableConfig.descriptionFontSize, tableConfig.columnWidths[2] - 10);
         const dynamicRowHeight = Math.max(nameLines.length * tableConfig.contentFontSize * 1.3, descLines.length * tableConfig.descriptionFontSize * 1.3) + tableConfig.padding.top + tableConfig.padding.bottom;
         currentY -= dynamicRowHeight;
-
         if (rowIndex % 2 === 0) { page.drawRectangle({ x: tableX, y: currentY, width: tableWidth, height: dynamicRowHeight, color: evenRowBgColor }); }
-        
         const textStartY = currentY + dynamicRowHeight - tableConfig.padding.top - tableConfig.contentFontSize;
         const descTextStartY = currentY + dynamicRowHeight - tableConfig.padding.top - tableConfig.descriptionFontSize;
-
         page.drawText(String(lp), { x: columnPositions[0] + (tableConfig.columnWidths[0] - regularFont.widthOfTextAtSize(String(lp), tableConfig.contentFontSize)) / 2, y: textStartY, size: tableConfig.contentFontSize, font: regularFont, color: textColor });
         let nameY = textStartY;
         nameLines.forEach(line => { page.drawText(line, { x: columnPositions[1] + 5, y: nameY, size: tableConfig.contentFontSize, font: regularFont, color: textColor, lineHeight: tableConfig.contentFontSize * 1.3 }); nameY -= tableConfig.contentFontSize * 1.3; });
@@ -218,9 +205,7 @@ function drawExtrasPage(page, fonts, data, title, logoImage = null) {
         page.drawText(String(price), { x: columnPositions[4] + (tableConfig.columnWidths[4] - regularFont.widthOfTextAtSize(String(price), tableConfig.contentFontSize)) / 2, y: textStartY, size: tableConfig.contentFontSize, font: regularFont, color: textColor });
         page.drawLine({ start: { x: tableX, y: currentY }, end: { x: tableX + tableWidth, y: currentY }, thickness: 0.5, color: lineColor });
     });
-
     for (let i = 0; i <= tableConfig.columnWidths.length; i++) { page.drawLine({ start: { x: columnPositions[i], y: currentY }, end: { x: columnPositions[i], y: segmentTopY }, thickness: 0.5, color: lineColor }); }
-
     currentY -= 30;
     page.drawRectangle({ x: 0, y: currentY - bottomBannerHeight, width: pageWidth, height: bottomBannerHeight, color: maroonColor });
     const totalTextHeight = footerLines.length * footerLineHeight - (footerLineHeight - footerFontSize);
@@ -232,11 +217,11 @@ function drawExtrasPage(page, fonts, data, title, logoImage = null) {
     });
 }
 
-function prepareTableData(deviceType, model, tankCapacity, bufferCapacity, systemType, offerOptions, isKotel, quantityOptions) {
-    let mainTableData = getTableData(deviceType, model, tankCapacity, bufferCapacity, systemType);
+function prepareTableData(deviceType, model, tankCapacity, bufferCapacity, systemType, offerOptions, isKotel, quantityOptions, isAc) {
+    let mainTableData = getTableData(deviceType, model, tankCapacity, bufferCapacity, systemType, isAc);
     let extrasTableData = isKotel ? [...opcjeDlaKotlow] : [...opcjeDlaPompCiepla];
 
-    if (!isKotel && quantityOptions.isCustom) {
+    if (!isKotel && !isAc && quantityOptions.isCustom) {
         const outdoorUnitIndex = mainTableData.findIndex(row => row[1] && row[1].toLowerCase().includes('jednostka zew'));
         if (outdoorUnitIndex !== -1) { mainTableData[outdoorUnitIndex][3] = String(quantityOptions.outdoor); }
         const indoorUnitIndex = mainTableData.findIndex(row => row[1] && (row[1].toLowerCase().includes('hydrobox') || row[1].toLowerCase().includes('cylinder')));
@@ -244,8 +229,8 @@ function prepareTableData(deviceType, model, tankCapacity, bufferCapacity, syste
     }
 
     const movableItems = [
-        { key: 'demontaz', name: 'Demontaż starego źródła ciepła', applicable: () => true },
-        { key: 'podbudowa', name: 'Wykonanie podbudowy pod jednostkę zewnętrzną', applicable: () => !isKotel }
+        { key: 'demontaz', name: 'Demontaż starego źródła ciepła', applicable: () => !isAc },
+        { key: 'podbudowa', name: 'Wykonanie podbudowy pod jednostkę zewnętrzną', applicable: () => !isAc && !isKotel }
     ];
 
     movableItems.forEach(item => {
@@ -253,7 +238,8 @@ function prepareTableData(deviceType, model, tankCapacity, bufferCapacity, syste
             const itemIndexInExtras = extrasTableData.findIndex(row => row[1] && row[1].includes(item.name));
             if (itemIndexInExtras > -1) {
                 const [itemRow] = extrasTableData.splice(itemIndexInExtras, 1);
-                const itemRowForMainTable = ['', itemRow[1], itemRow[3], '1', itemRow[2]];
+                const itemRowForMainTable = ['', itemRow[1], itemRow[2], itemRow[3], '1'];
+                
                 const insertionKeywords = ["Montaż systemu grzewczego", "Podłączenie do istniejącej instalacji"];
                 let insertAtIndex = mainTableData.findIndex(row => insertionKeywords.some(keyword => row[1] && row[1].includes(keyword)));
                 if (insertAtIndex === -1) {
@@ -265,7 +251,6 @@ function prepareTableData(deviceType, model, tankCapacity, bufferCapacity, syste
         }
     });
     
-    // ZMIANA: Logika usuwania wiersza o dotacji
     if (offerOptions && offerOptions.dotacja === false) {
         mainTableData = mainTableData.filter(row => !row[1] || !row[1].includes('Pomoc w uzyskaniu dotacji'));
     }
@@ -278,7 +263,6 @@ function prepareTableData(deviceType, model, tankCapacity, bufferCapacity, syste
     return { mainTableData, extrasTableData };
 }
 
-
 export async function generateOfferPDF(
   cena,
   userName,
@@ -289,16 +273,18 @@ export async function generateOfferPDF(
   systemType,
   offerOptions,
   isNettoPrice,
-  quantityOptions
+  quantityOptions,
+  showPrice
 ) {
-    if (!userName?.trim() || !String(cena).trim()) {
-        alert('Uzupełnij wszystkie wymagane pola: Imię i nazwisko oraz cena!');
+    if (!userName?.trim()) {
+        alert('Uzupełnij pole Imię i Nazwisko!');
         return null;
     }
 
-    // POPRAWKA: Definicja `isKotel` przeniesiona na początek funkcji
     const kotlyDeviceTypes = ["LAZAR", "Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid"];
+    const acDeviceTypes = ['MITSUBISHI AY', 'MITSUBISHI HR', 'VIVAX Y-Design', 'VIVAX H-Design', 'VIVAX Q-Design', 'VIVAX N-Design'];
     const isKotel = kotlyDeviceTypes.includes(deviceType);
+    const isAc = acDeviceTypes.includes(deviceType);
     const kotlospawDeviceTypes = ["Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid"];
 
     try {
@@ -317,8 +303,7 @@ export async function generateOfferPDF(
         const regularFont = await finalPdfDoc.embedFont(regularFontBytes);
         
         let kamanLogoImage = null;
-        try { if (kamanLogoBytes) kamanLogoImage = await finalPdfDoc.embedPng(kamanLogoBytes); } 
-        catch (e) { console.error("Błąd ładowania logo KAMAN.", e); }
+        if (kamanLogoBytes) kamanLogoImage = await finalPdfDoc.embedPng(kamanLogoBytes);
 
         if (templatePdfBuffers[0]) {
             const okladkaDoc = await PDFDocument.load(templatePdfBuffers[0]);
@@ -330,7 +315,7 @@ export async function generateOfferPDF(
         const { width: pageWidth, height: pageHeight } = dynamicPage.getSize();
         
         const { mainTableData, extrasTableData } = prepareTableData(
-            deviceType, model, tankCapacity, bufferCapacity, systemType, offerOptions, isKotel, quantityOptions
+            deviceType, model, tankCapacity, bufferCapacity, systemType, offerOptions, isKotel, quantityOptions, isAc
         );
         
         let currentY = pageHeight - 35;
@@ -349,45 +334,46 @@ export async function generateOfferPDF(
         
         let lastYPosAfterTable = drawTable(finalPdfDoc, dynamicPage, { regular: regularFont, bold: boldFont }, mainTableData, currentY);
 
-        const priceSuffix = isNettoPrice ? 'PLN netto' : 'PLN brutto';
-        const priceString = `Cena końcowa: ${cena} ${priceSuffix}`;
-        const priceFontSize = 15;
-        const priceTextWidth = boldFont.widthOfTextAtSize(priceString, priceFontSize);
-
-        let pageForPrice = finalPdfDoc.getPage(finalPdfDoc.getPageCount() - 1);
-        let priceYPosition = lastYPosAfterTable - 40;
-
-        if (priceYPosition < 40) {
-             pageForPrice = finalPdfDoc.addPage();
-             priceYPosition = pageForPrice.getHeight() - 60;
+        if (showPrice) {
+            const priceSuffix = isNettoPrice ? 'PLN netto' : 'PLN brutto';
+            const priceString = `Cena końcowa: ${cena} ${priceSuffix}`;
+            const priceFontSize = 15;
+            const priceTextWidth = boldFont.widthOfTextAtSize(priceString, priceFontSize);
+            let pageForPrice = finalPdfDoc.getPage(finalPdfDoc.getPageCount() - 1);
+            let priceYPosition = lastYPosAfterTable - 40;
+            if (priceYPosition < 40) {
+                 pageForPrice = finalPdfDoc.addPage();
+                 priceYPosition = pageForPrice.getHeight() - 60;
+            }
+            pageForPrice.drawText(priceString, { x: (pageForPrice.getWidth() - priceTextWidth) / 2, y: priceYPosition, size: priceFontSize, font: boldFont, color: rgb(0.7, 0, 0.16) });
         }
         
-        pageForPrice.drawText(priceString, { x: (pageForPrice.getWidth() - priceTextWidth) / 2, y: priceYPosition, size: priceFontSize, font: boldFont, color: rgb(0.7, 0, 0.16) });
-        
-        let finalExtrasData = [...extrasTableData];
-        let producerOptions = null;
-        if (kotlospawDeviceTypes.includes(deviceType)) {
-            producerOptions = opcjeKotlospawProducent;
-        } else if (deviceType === 'LAZAR') {
-            producerOptions = opcjeLazarProducent;
-        }
+        if (!isAc) {
+            let finalExtrasData = [...extrasTableData];
+            let producerOptions = null;
+            if (kotlospawDeviceTypes.includes(deviceType)) {
+                producerOptions = opcjeKotlospawProducent;
+            } else if (deviceType === 'LAZAR') {
+                producerOptions = opcjeLazarProducent;
+            }
 
-        if (producerOptions && producerOptions.length > 0) {
-            finalExtrasData.push({ type: 'separator', title: 'WYPOSAŻENIE UZUPEŁNIAJĄCE (OPCJONALNIE) OD PRODUCENTA' });
-            finalExtrasData.push(...producerOptions);
-        }
-        
-        if (finalExtrasData.some(row => row.type !== 'separator')) {
-            let lpCounter = 1;
-            const numberedExtrasData = finalExtrasData.map(row => {
-                if (row.type === 'separator') return row;
-                const newRow = [...row];
-                newRow[0] = String(lpCounter++);
-                return newRow;
-            });
+            if (producerOptions && producerOptions.length > 0) {
+                finalExtrasData.push({ type: 'separator', title: 'WYPOSAŻENIE UZUPEŁNIAJĄCE (OPCJONALNIE) OD PRODUCENTA' });
+                finalExtrasData.push(...producerOptions);
+            }
             
-            const extrasPage = finalPdfDoc.addPage();
-            drawExtrasPage(extrasPage, {regular: regularFont, bold: boldFont}, numberedExtrasData, 'WYPOSAŻENIE UZUPEŁNIAJĄCE (OPCJONALNIE)');
+            if (finalExtrasData.some(row => row.type !== 'separator')) {
+                let lpCounter = 1;
+                const numberedExtrasData = finalExtrasData.map(row => {
+                    if (row.type === 'separator') return row;
+                    const newRow = [...row];
+                    newRow[0] = String(lpCounter++);
+                    return newRow;
+                });
+                
+                const extrasPage = finalPdfDoc.addPage();
+                drawExtrasPage(extrasPage, {regular: regularFont, bold: boldFont}, numberedExtrasData, 'WYPOSAŻENIE UZUPEŁNIAJĄCE (OPCJONALNIE)');
+            }
         }
 
         for (let i = 1; i < templatePdfBuffers.length; i++) {

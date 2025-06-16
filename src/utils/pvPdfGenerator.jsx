@@ -1,11 +1,10 @@
 import { PDFDocument, rgb } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 import { inverterTypesData, pvOfferCommons, pvRoofMountScope, pvGroundMountScope, pvStorageScope, panelTypesData } from '../data/tables/photovoltaicsData';
-// ZMIANA: Importujemy funkcje pomocnicze
 import { drawTable, drawHeaderBlock } from './pdfUtils'; 
 
 export async function generatePhotovoltaicsOfferPDF(formData) {
-  const { userName, price, isNetto, installationType, panelDetails, inverterDetails, inverterQuantity, storageDetails, storageModules } = formData;
+  const { userName, price, isNetto, installationType, panelDetails, inverterDetails, inverterQuantity, storageDetails, storageModules, showPrice } = formData;
 
   try {
     const pdfDoc = await PDFDocument.create();
@@ -79,11 +78,8 @@ export async function generatePhotovoltaicsOfferPDF(formData) {
         const scopeData = installationType === 'grunt' ? pvGroundMountScope : pvRoofMountScope;
         mainTableData.push(...scopeData);
     } else {
-        const scopeTitle = "Komponenty i zakres prac";
         mainTableData = JSON.parse(JSON.stringify(pvStorageScope));
-        
         mainTableData.unshift(['', inverterDetails.name, inverterDetails.description, 'szt.', String(inverterQuantity)]);
-        
         const storageRowIndex = mainTableData.findIndex(row => row[1].includes('Zestaw magazynowania energii'));
         if(storageRowIndex > -1) {
             const totalCapacity = (storageDetails.capacity * storageModules).toFixed(2);
@@ -102,35 +98,28 @@ export async function generatePhotovoltaicsOfferPDF(formData) {
         const storageScopePage = pdfDoc.addPage();
         lastContentPage = storageScopePage;
         let scopeY = height - 60;
-        
-        const scopeTitle = "Zakres prac – instalacja magazynu energii";
         const totalCapacity = (storageDetails.capacity * storageModules).toFixed(2);
-        
         const storageDetailsList = [
-            { type: 'title', value: scopeTitle },
+            { type: 'title', value: "Zakres prac – instalacja magazynu energii" },
             { label: 'Klient:', value: userName.toUpperCase() },
             { label: 'Pojemność magazynu:', value: `${totalCapacity} kWh` },
             { label: 'Moc ładowania/rozł.:', value: `${(storageDetails.capacity * storageModules / 2).toFixed(2)} kW` },
         ];
         scopeY = drawHeaderBlock(storageScopePage, { regular: regularFont, bold: boldFont }, kamanLogoImage, storageDetailsList, scopeY);
-        
         let scopeTableData = JSON.parse(JSON.stringify(pvStorageScope));
         scopeTableData[1][4] = String(storageModules);
-        
-        scopeTableData = scopeTableData.map((row, index) => {
-            row[0] = String(index + 1);
-            return row;
-        });
-        
+        scopeTableData = scopeTableData.map((row, index) => { row[0] = String(index + 1); return row; });
         scopeY -= 20;
         tableResult = await drawTable(pdfDoc, storageScopePage, { regular: regularFont, bold: boldFont }, scopeTableData, scopeY, "Szczegółowy zakres prac");
         lastContentPage = tableResult.finalPage;
     }
     
-    const priceSuffix = isNetto ? 'PLN netto' : 'PLN brutto (VAT 8%)';
-    const priceText = `CENA KOŃCOWA: ${price} ${priceSuffix}`;
-    const priceTextWidth = boldFont.widthOfTextAtSize(priceText, 14);
-    lastContentPage.drawText(priceText, { x: width - priceTextWidth - 50, y: 50, font: boldFont, size: 14, color: rgb(0.6, 0, 0.15) });
+    if (showPrice) {
+        const priceSuffix = isNetto ? 'PLN netto' : 'PLN brutto (VAT 8%)';
+        const priceText = `CENA KOŃCOWA: ${price} ${priceSuffix}`;
+        const priceTextWidth = boldFont.widthOfTextAtSize(priceText, 14);
+        lastContentPage.drawText(priceText, { x: width - priceTextWidth - 50, y: 50, font: boldFont, size: 14, color: rgb(0.6, 0, 0.15) });
+    }
     lastContentPage.drawText(`Oferta ważna 14 dni.`, { x: 50, y: 50, font: regularFont, size: 9, color: rgb(0.4, 0.4, 0.4) });
     
     for (const templateDoc of loadedTemplatePDFs) {

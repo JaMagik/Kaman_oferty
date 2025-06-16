@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { insulationMaterialTypes, wallScope, roofScope, basementScope } from '../data/tables/insulationData';
+import { insulationMaterialTypes } from '../data/tables/insulationData';
 import { generateInsulationOfferPDF } from '../utils/insulationPdfGenerator';
 
 const jobTypes = {
@@ -8,10 +8,13 @@ const jobTypes = {
   piwnica: 'Izolacja fundamentów / piwnicy',
 };
 
+// ZMIANA: Domyślny obiekt zawiera teraz opcje dla ścian
 const createNewJob = () => ({
   type: 'sciany',
   area: '',
   materialKey: Object.keys(insulationMaterialTypes)[0],
+  scopeType: 'komplet', // 'komplet', 'tynk', 'malowanie'
+  includeSills: true,
 });
 
 export default function InsulationOfferForm() {
@@ -19,6 +22,7 @@ export default function InsulationOfferForm() {
   const [userName, setUserName] = useState('');
   const [price, setPrice] = useState('');
   const [isNetto, setIsNetto] = useState(false);
+  const [showPrice, setShowPrice] = useState(true);
   const [jobs, setJobs] = useState([createNewJob()]);
 
   const handleJobChange = (index, field, value) => {
@@ -27,23 +31,17 @@ export default function InsulationOfferForm() {
     setJobs(newJobs);
   };
 
-  const addJob = () => {
-    setJobs([...jobs, createNewJob()]);
-  };
-
-  const removeJob = (index) => {
-    const newJobs = jobs.filter((_, i) => i !== index);
-    setJobs(newJobs);
-  };
+  const addJob = () => setJobs([...jobs, createNewJob()]);
+  const removeJob = (index) => setJobs(jobs.filter((_, i) => i !== index));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!userName.trim() || !price.trim()) {
-      alert('Uzupełnij Imię i Nazwisko oraz Cenę!');
+    if (showPrice && !price.trim()) {
+      alert('Uzupełnij pole Ceny lub odznacz opcję pokazywania jej w ofercie.');
       return;
     }
     setIsProcessing(true);
-    const pdfBlob = await generateInsulationOfferPDF({ userName, price, isNetto, jobs });
+    const pdfBlob = await generateInsulationOfferPDF({ userName, price, isNetto, jobs, showPrice });
     if (pdfBlob) {
       const url = URL.createObjectURL(pdfBlob);
       const a = document.createElement('a');
@@ -68,12 +66,16 @@ export default function InsulationOfferForm() {
 
       <div className="input-group">
         <label>Cena Końcowa (PLN):</label>
-        <input type="text" value={price} onChange={(e) => setPrice(e.target.value)} required />
+        <input type="text" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Podaj cenę" />
       </div>
 
       <div className="input-group-inline">
         <input type="checkbox" id="ins_isNetto" checked={isNetto} onChange={(e) => setIsNetto(e.target.checked)} />
         <label htmlFor="ins_isNetto">Pokaż cenę jako netto</label>
+      </div>
+      <div className="input-group-inline">
+        <input type="checkbox" id="ins_showPrice" checked={showPrice} onChange={(e) => setShowPrice(e.target.checked)} />
+        <label htmlFor="ins_showPrice">Dołącz cenę do oferty</label>
       </div>
 
       {jobs.map((job, index) => (
@@ -90,6 +92,25 @@ export default function InsulationOfferForm() {
               ))}
             </select>
           </div>
+          
+          {/* ZMIANA: Warunkowe wyświetlanie opcji dla ścian */}
+          {job.type === 'sciany' && (
+            <div className="options-box nested">
+              <div className="input-group">
+                <label>Zakres prac na ścianach:</label>
+                <select value={job.scopeType} onChange={(e) => handleJobChange(index, 'scopeType', e.target.value)}>
+                  <option value="komplet">Kompletny system ocieplenia</option>
+                  <option value="tynk">Tylko warstwa zbrojona i tynk</option>
+                  <option value="malowanie">Tylko malowanie</option>
+                </select>
+              </div>
+              <div className="option-row">
+                <input type="checkbox" id={`sills_${index}`} checked={job.includeSills} onChange={(e) => handleJobChange(index, 'includeSills', e.target.checked)} />
+                <label htmlFor={`sills_${index}`}>Wlicz montaż parapetów</label>
+              </div>
+            </div>
+          )}
+
           <div className="input-group">
             <label>Metraż (m²):</label>
             <input type="number" value={job.area} onChange={(e) => handleJobChange(index, 'area', e.target.value)} placeholder="np. 150" />

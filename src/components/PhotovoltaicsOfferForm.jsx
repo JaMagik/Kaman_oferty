@@ -1,18 +1,17 @@
-// src/components/PhotovoltaicsOfferForm.jsx
-
 import React, { useState, useEffect } from 'react';
 import { generatePhotovoltaicsOfferPDF } from '../utils/pvPdfGenerator'; 
 import { generateCustomOfferPDF } from '../utils/customPdfGenerator';
 import { panelTypesData, inverterTypesData, storageTypesData } from '../data/tables/photovoltaicsData';
 
 export default function PhotovoltaicsOfferForm() {
-  const [offerMode, setOfferMode] = useState('standard'); // 'standard' or 'custom'
+  const [offerMode, setOfferMode] = useState('standard');
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // --- Stany dla oferty standardowej ---
+  // Stany dla oferty standardowej
   const [userName, setUserName] = useState('');
   const [price, setPrice] = useState('');
   const [isNetto, setIsNetto] = useState(false);
+  const [showPrice, setShowPrice] = useState(true); // NOWY STAN
   const [installationType, setInstallationType] = useState('dach');
   const [panelTypeKey, setPanelTypeKey] = useState('CANADIAN_SOLAR_455');
   const [powerInput, setPowerInput] = useState('4.550');
@@ -24,7 +23,7 @@ export default function PhotovoltaicsOfferForm() {
   const [storageTypeKey, setStorageTypeKey] = useState('DEYE_STORAGE_LV');
   const [storageModules, setStorageModules] = useState(1);
   
-  // --- Stany dla oferty niestandardowej ---
+  // Stany dla oferty niestandardowej
   const [customPanelName, setCustomPanelName] = useState('');
   const [customPanelQuantity, setCustomPanelQuantity] = useState(10);
   const [customPanelPower, setCustomPanelPower] = useState(455);
@@ -72,19 +71,18 @@ export default function PhotovoltaicsOfferForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (showPrice && !price.trim()) {
+        alert('Uzupełnij pole Ceny lub odznacz opcję pokazywania jej w ofercie.');
+        return;
+    }
     setIsProcessing(true);
 
     let pdfBlob;
     let finalUserName = userName;
 
     if (offerMode === 'standard') {
-        if (!userName.trim() || !price.trim()) {
-            alert('Uzupełnij Imię i Nazwisko oraz Cenę!');
-            setIsProcessing(false);
-            return;
-        }
         const formData = {
-            userName, price, isNetto, installationType,
+            userName, price, isNetto, installationType, showPrice,
             panelDetails: installationType !== 'only-storage' ? { ...panelTypesData[panelTypeKey], count: numberOfPanels, totalPower: parseFloat(powerInput) } : null,
             inverterDetails: inverterTypesData[inverterTypeKey],
             inverterQuantity: isCustomInverterQuantity ? inverterQuantity : 1,
@@ -94,13 +92,8 @@ export default function PhotovoltaicsOfferForm() {
         pdfBlob = await generatePhotovoltaicsOfferPDF(formData);
 
     } else { // tryb niestandardowy
-        if (!userName.trim() || !price.trim() || !customPanelName.trim() || !customInverterName.trim()) {
-            alert('Uzupełnij wymagane pola: Klient, Cena, Nazwa Paneli i Nazwa Falownika!');
-            setIsProcessing(false);
-            return;
-        }
         const formData = {
-            clientName: userName, price, isNetto, installationType,
+            clientName: userName, price, isNetto, installationType, showPrice,
             panel: { name: customPanelName, quantity: customPanelQuantity, power: customPanelPower, datasheet: customPanelDatasheet },
             inverter: { name: customInverterName, quantity: customInverterQuantity, datasheet: customInverterDatasheet },
             storage: customIncludeStorage ? { name: customStorageName, quantity: customStorageQuantity, datasheet: customStorageDatasheet } : null,
@@ -135,21 +128,23 @@ export default function PhotovoltaicsOfferForm() {
       
         <h2>Generator Fotowoltaika</h2>
 
-        {/* --- Pola wspólne --- */}
         <div className="input-group">
             <label htmlFor="pv_userName">Imię i Nazwisko Klienta:</label>
             <input type="text" id="pv_userName" value={userName} onChange={(e) => setUserName(e.target.value)} placeholder="Podaj imię i nazwisko" required />
         </div>
         <div className="input-group">
             <label htmlFor="pv_pricePV">Cena Końcowa (PLN):</label>
-            <input type="text" id="pv_pricePV" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Podaj cenę" required />
+            <input type="text" id="pv_pricePV" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Podaj cenę" />
         </div>
         <div className="input-group-inline">
             <input type="checkbox" id="isNettoPricePV" checked={isNetto} onChange={(e) => setIsNetto(e.target.checked)} />
             <label htmlFor="isNettoPricePV">Pokaż cenę jako netto</label>
         </div>
+        <div className="input-group-inline">
+            <input type="checkbox" id="pv_showPrice" checked={showPrice} onChange={(e) => setShowPrice(e.target.checked)} />
+            <label htmlFor="pv_showPrice">Dołącz cenę do oferty</label>
+        </div>
 
-        {/* --- Tryb Standardowy --- */}
         {offerMode === 'standard' && (
             <>
                 <div className="input-group">
@@ -209,9 +204,9 @@ export default function PhotovoltaicsOfferForm() {
                             <option value={3}>3 moduły</option>
                             <option value={4}>4 moduły</option>
                             <option value={5}>5 modułów</option>
-               <option value={6}>6 modułów</option>
-                <option value={7}>7 modułów</option> 
-                <option value={8}>8 modułów</option>
+                            <option value={6}>6 modułów</option>
+                            <option value={7}>7 modułów</option> 
+                            <option value={8}>8 modułów</option>
                             </select>
                         </div>
                     )}
@@ -219,7 +214,6 @@ export default function PhotovoltaicsOfferForm() {
             </>
         )}
 
-        {/* --- Tryb Niestandardowy --- */}
         {offerMode === 'custom' && (
              <>
                 <div className="input-group">
@@ -246,7 +240,6 @@ export default function PhotovoltaicsOfferForm() {
                     <label htmlFor="customPanelDatasheet">Karta katalogowa paneli (PDF)</label>
                     <input id="customPanelDatasheet" type="file" accept=".pdf" onChange={handleFileChange(setCustomPanelDatasheet)} />
                 </fieldset>
-
                 <fieldset className="component-fieldset">
                     <legend>Falownik / Inwerter</legend>
                     <label htmlFor="customInverterName">Nazwa i model falownika</label>
@@ -258,7 +251,6 @@ export default function PhotovoltaicsOfferForm() {
                     <label htmlFor="customInverterDatasheet">Karta katalogowa falownika (PDF)</label>
                     <input id="customInverterDatasheet" type="file" accept=".pdf" onChange={handleFileChange(setCustomInverterDatasheet)} />
                 </fieldset>
-
                 <div className="options-box">
                     <div className="option-row">
                         <input type="checkbox" id="customIncludeStorage" checked={customIncludeStorage} onChange={e => setCustomIncludeStorage(e.target.checked)} />

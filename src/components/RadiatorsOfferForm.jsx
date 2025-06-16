@@ -4,7 +4,6 @@ import { generateRadiatorsOfferPDF } from '../utils/radiatorsPdfGenerator';
 
 const roomNameOptions = [ 'Salon', 'Kuchnia', 'Pokój', 'Sypialnia', 'Łazienka', 'Korytarz', 'Wiatrołap', 'Garaż', 'Pom. gospodarcze' ];
 
-// Funkcja tworząca domyślny obiekt grzejnika
 const createNewRadiator = () => {
   const material = Object.keys(radiatorHierarchy)[0];
   const connection = Object.keys(radiatorHierarchy[material].connections)[0];
@@ -15,7 +14,6 @@ const createNewRadiator = () => {
   return { material, connection, panelType, height, radiatorKey, id: Date.now() + Math.random() };
 };
 
-// Funkcja tworząca domyślny obiekt pomieszczenia
 const createNewRoom = () => ({
   name: roomNameOptions[0],
   area: '',
@@ -23,11 +21,12 @@ const createNewRoom = () => ({
   id: Date.now()
 });
 
-export default function InsulationOfferForm() {
+export default function RadiatorsOfferForm() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [userName, setUserName] = useState('');
   const [price, setPrice] = useState('');
   const [isNetto, setIsNetto] = useState(false);
+  const [showPrice, setShowPrice] = useState(true); // NOWY STAN
   const [rooms, setRooms] = useState([createNewRoom()]);
 
   const addRoom = () => setRooms([...rooms, createNewRoom()]);
@@ -56,7 +55,6 @@ export default function InsulationOfferForm() {
     const radiator = newRooms[roomIndex].radiators[radiatorIndex];
     radiator[field] = value;
 
-    // Kaskadowe resetowanie wartości
     if (field === 'material') {
         radiator.connection = Object.keys(radiatorHierarchy[radiator.material].connections)[0];
         radiator.panelType = Object.keys(radiatorHierarchy[radiator.material].connections[radiator.connection].panelTypes)[0];
@@ -78,12 +76,12 @@ export default function InsulationOfferForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!userName.trim() || !price.trim()) {
-      alert('Uzupełnij Imię i Nazwisko oraz Cenę!');
+    if (showPrice && !price.trim()) {
+      alert('Uzupełnij pole Ceny lub odznacz opcję pokazywania jej w ofercie.');
       return;
     }
     setIsProcessing(true);
-    const pdfBlob = await generateRadiatorsOfferPDF({ userName, price, isNetto, rooms });
+    const pdfBlob = await generateRadiatorsOfferPDF({ userName, price, isNetto, rooms, showPrice });
     if (pdfBlob) {
       const url = URL.createObjectURL(pdfBlob);
       const a = document.createElement('a');
@@ -107,11 +105,15 @@ export default function InsulationOfferForm() {
       </div>
       <div className="input-group">
         <label>Cena Końcowa (PLN):</label>
-        <input type="text" value={price} onChange={(e) => setPrice(e.target.value)} required />
+        <input type="text" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Podaj cenę" />
       </div>
       <div className="input-group-inline">
         <input type="checkbox" id="rad_isNetto" checked={isNetto} onChange={(e) => setIsNetto(e.target.checked)} />
         <label htmlFor="rad_isNetto">Pokaż cenę jako netto</label>
+      </div>
+      <div className="input-group-inline">
+        <input type="checkbox" id="rad_showPrice" checked={showPrice} onChange={(e) => setShowPrice(e.target.checked)} />
+        <label htmlFor="rad_showPrice">Dołącz cenę do oferty</label>
       </div>
 
       <hr/>

@@ -336,9 +336,51 @@ export const pdfTemplateSets = {
     commonContactPage,
   ],
 
+
+   'VIVAX Y-Design': [
+    '/pdf_templates/vivax/1_okladka_y_design.pdf',
+    '/pdf_templates/vivax/Karta katalogowa Y-Design-1.pdf', // Twoja karta 
+        '/pdf_templates/vivax/Karta katalogowa Y-Design-1.pdf', // Twoja karta
+
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+  'VIVAX H-Design': [
+    '/pdf_templates/vivax/1_okladka_h_design.pdf',
+    '/pdf_templates/vivax/Karta katalogowa H-Design-1.pdf',
+        '/pdf_templates/vivax/Karta katalogowa H-Design-2.pdf',
+
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+  'VIVAX Q-Design': [
+    '/pdf_templates/vivax/1_okladka_q_design.pdf',
+    '/pdf_templates/vivax/Karta katalogowa Q-Design-1.pdf',
+        '/pdf_templates/vivax/Karta katalogowa Q-Design-2.pdf',
+
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+  'VIVAX N-Design': [
+    '/pdf_templates/vivax/1_okladka_n_design.pdf',
+    '/pdf_templates/vivax/Karta katalogowa N-Design-1.pdf',
+    '/pdf_templates/vivax/Karta katalogowa N-Design-2.pdf',
+
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
 };
 
 export function getTemplatePathsForDevice(deviceType) {
   // Zwraca zdefiniowany zestaw ścieżek lub domyślny, jeśli klucz nie zostanie znaleziony
   return pdfTemplateSets[deviceType] || defaultTemplatePaths;
 }
+
