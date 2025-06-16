@@ -1,49 +1,59 @@
 export const radiatorHierarchy = {
   stalowe: {
     name: 'Grzejniki stalowe płytowe',
-    // Przypisujemy wszystkie PDFy dla grzejników stalowych
-    datasheets: [
-      '/pdf_templates/diamond/Folder_Grzejniki_Stalowe-1.pdf',
-      '/pdf_templates/diamond/Folder_Grzejniki_Stalowe-3.pdf',
-      '/pdf_templates/diamond/Folder_Grzejniki_Stalowe-4.pdf',
-      '/pdf_templates/diamond/Folder_Grzejniki_Stalowe-5.pdf',
-    ],
+    datasheets: ['/pdf_templates/diamond/Folder_Grzejniki_Stalowe-1.pdf', '/pdf_templates/diamond/Folder_Grzejniki_Stalowe-3.pdf', '/pdf_templates/diamond/Folder_Grzejniki_Stalowe-4.pdf', '/pdf_templates/diamond/Folder_Grzejniki_Stalowe-5.pdf'],
     connections: {
       boczne: {
         name: 'Podłączenie boczne (K)',
         panelTypes: {
-          K11: { name: '1 płyta / 1 konwektor (K11)', models: ['DIAMOND_K11_600x1000'] },
-          K21: { name: '2 płyty / 1 konwektor (K21)', models: ['DIAMOND_K21_600x1000'] },
-          K22: { name: '2 płyty / 2 konwektory (K22)', models: ['DIAMOND_K22_600x1000', 'DIAMOND_K22_600x1200'] },
-          K33: { name: '3 płyty / 3 konwektory (K33)', models: ['DIAMOND_K33_600x1000'] },
+          K22: {
+            name: '2 płyty / 2 konwektory (K22)',
+            heights: {
+              '600': { name: 'Wysokość 600 mm', models: ['DIAMOND_K22_B_600x1000', 'DIAMOND_K22_B_600x1200'] },
+              '500': { name: 'Wysokość 500 mm', models: ['DIAMOND_K22_B_500x1000'] }
+            }
+          },
+          K33: {
+            name: '3 płyty / 3 konwektory (K33)',
+            heights: {
+              '600': { name: 'Wysokość 600 mm', models: ['DIAMOND_K33_B_600x1000'] }
+            }
+          }
         }
       },
       dolne: {
         name: 'Podłączenie dolne (V)',
         panelTypes: {
-          V11: { name: '1 płyta / 1 konwektor (V11)', models: ['DIAMOND_V11_600x1000'] },
-          V21: { name: '2 płyty / 1 konwektor (V21)', models: ['DIAMOND_V21_600x1000'] },
-          V22: { name: '2 płyty / 2 konwektory (V22)', models: ['DIAMOND_V22_600x1000', 'DIAMOND_V22_600x1200'] },
-          V33: { name: '3 płyty / 3 konwektory (V33)', models: ['DIAMOND_V33_600x1000'] },
+          V22: {
+            name: '2 płyty / 2 konwektory (V22)',
+            heights: {
+              '600': { name: 'Wysokość 600 mm', models: ['DIAMOND_V22_D_600x1000', 'DIAMOND_V22_D_600x1200'] }
+            }
+          }
         }
       }
     }
   },
   aluminiowe: {
     name: 'Grzejniki aluminiowe członowe',
-    // Przypisujemy wszystkie PDFy dla grzejników aluminiowych
-    datasheets: [
-      '/pdf_templates/diamond/Folder_Grzejniki_Aluminiowe-1.pdf',
-      '/pdf_templates/diamond/Folder_Grzejniki_Aluminiowe-2.pdf',
-      '/pdf_templates/diamond/Folder_Grzejniki_Aluminiowe-3.pdf',
-      '/pdf_templates/diamond/Folder_Grzejniki_Aluminiowe-4.pdf',
-    ],
+    datasheets: ['/pdf_templates/diamond/Folder_Grzejniki_Aluminiowe-1.pdf', '/pdf_templates/diamond/Folder_Grzejniki_Aluminiowe-2.pdf', '/pdf_templates/diamond/Folder_Grzejniki_Aluminiowe-3.pdf', '/pdf_templates/diamond/Folder_Grzejniki_Aluminiowe-4.pdf'],
     connections: {
       boczne: {
         name: 'Standardowe (boczne)',
         panelTypes: {
-          Wulkan: { name: 'Linia Wulkan', models: ['DIAMOND_ALU_WULKAN_H350', 'DIAMOND_ALU_WULKAN_H500', 'DIAMOND_ALU_WULKAN_H800'] },
-          Gejzer: { name: 'Linia Gejzer', models: ['DIAMOND_ALU_GEJZER_H500'] },
+          Wulkan: {
+            name: 'Linia Wulkan',
+            heights: {
+              '350': { name: 'Wysokość 350 mm', models: ['DIAMOND_ALU_WULKAN_H350'] },
+              '500': { name: 'Wysokość 500 mm', models: ['DIAMOND_ALU_WULKAN_H500'] },
+            }
+          },
+          Gejzer: {
+            name: 'Linia Gejzer',
+            heights: {
+              '500': { name: 'Wysokość 500 mm', models: ['DIAMOND_ALU_GEJZER_H500'] }
+            }
+          }
         }
       }
     }
