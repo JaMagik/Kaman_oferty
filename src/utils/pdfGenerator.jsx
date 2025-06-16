@@ -24,13 +24,12 @@ const wrapText = (text, textFont, textSize, maxWidth) => {
     return lines;
 };
 
-// ZMIANA: Ta funkcja jest teraz wyeksportowana i ma poprawione szerokości kolumn
 export function drawTable(pdfDoc, initialPage, fonts, tableData, startY) {
     let currentPage = initialPage;
     let currentY = startY;
     const { regular: regularFont, bold: boldFont } = fonts;
     const tableConfig = {
-        columnWidths: [30, 160, 250, 35, 35], // Zmienione szerokości dla lepszego dopasowania
+        columnWidths: [30, 160, 250, 35, 35],
         headerHeight: 22,
         padding: { top: 4, bottom: 4, left: 5, right: 5 },
         headerFontSize: 9.5,
@@ -75,7 +74,6 @@ export function drawTable(pdfDoc, initialPage, fonts, tableData, startY) {
     currentY = drawHeader(currentPage, currentY);
 
     tableData.forEach((row, rowIndex) => {
-        // ZMIANA: Poprawiona kolejność odczytu danych z wiersza
         const [lp, name, unit, quantity, description] = row;
         const nameLines = wrapText(name, regularFont, tableConfig.contentFontSize, tableConfig.columnWidths[1] - 10);
         const descLines = wrapText(description || '', regularFont, tableConfig.descriptionFontSize, tableConfig.columnWidths[2] - 10);
@@ -127,7 +125,8 @@ export function drawTable(pdfDoc, initialPage, fonts, tableData, startY) {
 }
 
 function drawExtrasPage(page, fonts, data, title, logoImage = null) {
-    const { width: pageWidth, height: pageHeight } = page.getSize();
+    // ... implementacja bez zmian
+    const { width: pageWidth, height: pageHeight } = page.getSize();
     const { regular: regularFont, bold: boldFont } = fonts;
     const maroonColor = rgb(0.6, 0, 0.15);
     const whiteColor = rgb(1, 1, 1);
@@ -239,14 +238,9 @@ function prepareTableData(deviceType, model, tankCapacity, bufferCapacity, syste
 
     if (!isKotel && quantityOptions.isCustom) {
         const outdoorUnitIndex = mainTableData.findIndex(row => row[1] && row[1].toLowerCase().includes('jednostka zew'));
-        if (outdoorUnitIndex !== -1) {
-            mainTableData[outdoorUnitIndex][3] = String(quantityOptions.outdoor); 
-        }
-
+        if (outdoorUnitIndex !== -1) { mainTableData[outdoorUnitIndex][3] = String(quantityOptions.outdoor); }
         const indoorUnitIndex = mainTableData.findIndex(row => row[1] && (row[1].toLowerCase().includes('hydrobox') || row[1].toLowerCase().includes('cylinder')));
-        if (indoorUnitIndex !== -1) {
-            mainTableData[indoorUnitIndex][3] = String(quantityOptions.indoor);
-        }
+        if (indoorUnitIndex !== -1) { mainTableData[indoorUnitIndex][3] = String(quantityOptions.indoor); }
     }
 
     const movableItems = [
@@ -259,10 +253,7 @@ function prepareTableData(deviceType, model, tankCapacity, bufferCapacity, syste
             const itemIndexInExtras = extrasTableData.findIndex(row => row[1] && row[1].includes(item.name));
             if (itemIndexInExtras > -1) {
                 const [itemRow] = extrasTableData.splice(itemIndexInExtras, 1);
-                // ZMIANA: Poprawiony format tworzenia wiersza, aby pasował do reszty danych
-                // Prawidłowy format: [lp, nazwa, jm, ilosc, opis]
-                const itemRowForMainTable = ['', itemRow[1], itemRow[3], '1', itemRow[2]];
-                
+                const itemRowForMainTable = ['', itemRow[1], itemRow[3], '1', itemRow[2]];
                 const insertionKeywords = ["Montaż systemu grzewczego", "Podłączenie do istniejącej instalacji"];
                 let insertAtIndex = mainTableData.findIndex(row => insertionKeywords.some(keyword => row[1] && row[1].includes(keyword)));
                 if (insertAtIndex === -1) {
@@ -273,6 +264,11 @@ function prepareTableData(deviceType, model, tankCapacity, bufferCapacity, syste
             }
         }
     });
+    
+    // ZMIANA: Logika usuwania wiersza o dotacji
+    if (offerOptions && offerOptions.dotacja === false) {
+        mainTableData = mainTableData.filter(row => !row[1] || !row[1].includes('Pomoc w uzyskaniu dotacji'));
+    }
 
     mainTableData = mainTableData.map((row, index) => {
         row[0] = String(index + 1);
@@ -293,13 +289,14 @@ export async function generateOfferPDF(
   systemType,
   offerOptions,
   isNettoPrice,
-  quantityOptions // <-- NOWY PARAMETR
+  quantityOptions
 ) {
     if (!userName?.trim() || !String(cena).trim()) {
         alert('Uzupełnij wszystkie wymagane pola: Imię i nazwisko oraz cena!');
         return null;
     }
 
+    // POPRAWKA: Definicja `isKotel` przeniesiona na początek funkcji
     const kotlyDeviceTypes = ["LAZAR", "Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid"];
     const isKotel = kotlyDeviceTypes.includes(deviceType);
     const kotlospawDeviceTypes = ["Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid"];
@@ -332,7 +329,6 @@ export async function generateOfferPDF(
         const dynamicPage = finalPdfDoc.addPage();
         const { width: pageWidth, height: pageHeight } = dynamicPage.getSize();
         
-        // ZMIANA: Przekazanie `quantityOptions` do funkcji przygotowującej dane
         const { mainTableData, extrasTableData } = prepareTableData(
             deviceType, model, tankCapacity, bufferCapacity, systemType, offerOptions, isKotel, quantityOptions
         );

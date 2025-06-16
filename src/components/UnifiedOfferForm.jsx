@@ -26,9 +26,6 @@ const allDevicesData = {
   ...kaisaiHydroboxBaseTables,
 };
 
-const TRELLO_API_KEY = '0f932c28c8d97d03741c8863c2ff4afb';
-const TRELLO_APP_NAME = 'KamanOfertyPowerUp';
-
 const boilerDeviceTypes = [
     "LAZAR", 
     "Kotlospaw Slimko Plus", 
@@ -70,8 +67,9 @@ export default function UnifiedOfferForm() {
   const [includeDemontaz, setIncludeDemontaz] = useState(true);
   const [includePodbudowa, setIncludePodbudowa] = useState(true);
   const [isNettoPrice, setIsNettoPrice] = useState(false);
+  // NOWY STAN DLA DOTACJI
+  const [includeDotacja, setIncludeDotacja] = useState(true);
 
-  // NOWE STANY DO ZARZĄDZANIA ILOŚCIĄ
   const [isCustomQuantity, setIsCustomQuantity] = useState(false);
   const [outdoorUnitQty, setOutdoorUnitQty] = useState(1);
   const [indoorUnitQty, setIndoorUnitQty] = useState(1);
@@ -127,16 +125,17 @@ export default function UnifiedOfferForm() {
     }
     setCurrentBufferOptions(isBoiler ? boilerBufferOptions : heatPumpBufferOptions);
     if (!isBoiler) setSystemType('zamkniety');
-    if(isBoiler) setIsCustomQuantity(false); // Ukryj opcję dla kotłów
+    if(isBoiler) setIsCustomQuantity(false);
   }, [deviceType, model, isBoiler]);
 
   const handleGenerateAndSetPdf = async (e) => {
     e.preventDefault();
     const pdfData = await generateOfferPDF(
         price, userName, deviceType, model, tank, buffer, systemType, 
-        { demontaz: includeDemontaz, podbudowa: includePodbudowa },
+        // ZMIANA: Przekazanie opcji dotacji
+        { demontaz: includeDemontaz, podbudowa: includePodbudowa, dotacja: includeDotacja },
         isNettoPrice,
-        { isCustom: isCustomQuantity, outdoor: outdoorUnitQty, indoor: indoorUnitQty } // Przekazanie nowych danych
+        { isCustom: isCustomQuantity, outdoor: outdoorUnitQty, indoor: indoorUnitQty }
     );
     if (pdfData) {
       setGeneratedPdfData(pdfData);
@@ -174,7 +173,6 @@ export default function UnifiedOfferForm() {
 
       <label htmlFor="deviceType">Typ Urządzenia/Oferty:</label>
       <select id="deviceType" value={deviceType} onChange={(e) => setDeviceType(e.target.value)}>
-        {/* Opcje urządzeń */}
         <optgroup label="Mitsubishi (Pompy Ciepła)">
           <option value="Mitsubishi-hydrobox">Mitsubishi Hydrobox (Standard PUD)</option>
           <option value="Mitsubishi-cylinder-PUZ">Mitsubishi Cylinder (Zubadan PUZ)</option>
@@ -191,7 +189,6 @@ export default function UnifiedOfferForm() {
           <option value="ATLANTIC-M-DUO">Atlantic S-TRI hydrobox</option>
           <option value="ATLANTIC-S">Atlantic S-TRI-Duo cylinder</option>
           <option value="ATLANTIC-EXCELIA">Atlantic EXCELIA AI TRI hydrobox</option>
-
         </optgroup>
         <optgroup label="Kotły na Pellet">
           <option value="LAZAR">Lazar</option>
@@ -223,7 +220,6 @@ export default function UnifiedOfferForm() {
         )}
       </select>
 
-      {/* SEKCJA Z ILOŚCIĄ JEDNOSTEK (TYLKO DLA POMP CIEPŁA) */}
       {!isBoiler && (
         <div className="options-box">
             <div className="option-row">
@@ -262,6 +258,11 @@ export default function UnifiedOfferForm() {
       </select>
 
       <div className="options-box">
+        {/* ZMIANA: Dodano Checkbox dla dotacji */}
+        <div className="option-row">
+          <input type="checkbox" id="includeDotacja" checked={includeDotacja} onChange={(e) => setIncludeDotacja(e.target.checked)} />
+          <label htmlFor="includeDotacja">Uwzględnij pomoc w uzyskaniu dotacji w ofercie</label>
+        </div>
         <div className="option-row">
           <input type="checkbox" id="includeDemontaz" checked={includeDemontaz} onChange={(e) => setIncludeDemontaz(e.target.checked)} />
           <label htmlFor="includeDemontaz">Uwzględnij demontaż starego źródła ciepła w ofercie</label>
