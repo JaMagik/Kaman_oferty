@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { insulationMaterialTypes } from '../data/tables/insulationData';
 import { generateInsulationOfferPDF } from '../utils/insulationPdfGenerator';
+import TrelloActions from './TrelloActions'; // KROK 1: IMPORT KOMPONENTU TRELLO
 
 const jobTypes = {
   sciany: 'Ocieplenie ścian zewnętrznych',
@@ -8,22 +9,25 @@ const jobTypes = {
   piwnica: 'Izolacja fundamentów / piwnicy',
 };
 
-// ZMIANA: Domyślny obiekt zawiera teraz opcje dla ścian
 const createNewJob = () => ({
   type: 'sciany',
   area: '',
   materialKey: Object.keys(insulationMaterialTypes)[0],
-  scopeType: 'komplet', // 'komplet', 'tynk', 'malowanie'
+  scopeType: 'komplet',
   includeSills: true,
 });
 
 export default function InsulationOfferForm() {
+  // Stan formularza
   const [isProcessing, setIsProcessing] = useState(false);
   const [userName, setUserName] = useState('');
   const [price, setPrice] = useState('');
   const [isNetto, setIsNetto] = useState(false);
   const [showPrice, setShowPrice] = useState(true);
   const [jobs, setJobs] = useState([createNewJob()]);
+
+  // KROK 2: Dodanie stanu do przechowywania wygenerowanego PDF
+  const [generatedPdfData, setGeneratedPdfData] = useState(null);
 
   const handleJobChange = (index, field, value) => {
     const newJobs = [...jobs];
@@ -34,31 +38,41 @@ export default function InsulationOfferForm() {
   const addJob = () => setJobs([...jobs, createNewJob()]);
   const removeJob = (index) => setJobs(jobs.filter((_, i) => i !== index));
 
-  const handleSubmit = async (e) => {
+  // KROK 3: Modyfikacja funkcji 'handleSubmit' na 'handleGenerateAndSetPdf'
+  const handleGenerateAndSetPdf = async (e) => {
     e.preventDefault();
     if (showPrice && !price.trim()) {
       alert('Uzupełnij pole Ceny lub odznacz opcję pokazywania jej w ofercie.');
       return;
     }
     setIsProcessing(true);
+    setGeneratedPdfData(null); // Resetuj stan przed generowaniem
+
     const pdfBlob = await generateInsulationOfferPDF({ userName, price, isNetto, jobs, showPrice });
     if (pdfBlob) {
-      const url = URL.createObjectURL(pdfBlob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `Oferta_Elewacja_KAMAN_${userName.replace(/ /g, '_')}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      setGeneratedPdfData(pdfBlob); // Zapisz PDF w stanie
     }
     setIsProcessing(false);
   };
 
+  // KROK 4: Dodanie osobnej funkcji do pobierania PDF
+  const handleDownloadPdf = () => {
+    if (!generatedPdfData) return;
+    const url = URL.createObjectURL(generatedPdfData);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Oferta_Elewacja_KAMAN_${userName.replace(/ /g, '_')}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
-    <form className="form-container" onSubmit={handleSubmit}>
+    <form className="form-container" onSubmit={handleGenerateAndSetPdf}>
       <h2>Generator Ofert - Elewacje / Ocieplenia</h2>
       
+      {/* Reszta formularza bez zmian */}
       <div className="input-group">
         <label>Imię i Nazwisko Klienta:</label>
         <input type="text" value={userName} onChange={(e) => setUserName(e.target.value)} required />
@@ -93,7 +107,6 @@ export default function InsulationOfferForm() {
             </select>
           </div>
           
-          {/* ZMIANA: Warunkowe wyświetlanie opcji dla ścian */}
           {job.type === 'sciany' && (
             <div className="options-box nested">
               <div className="input-group">
@@ -127,9 +140,23 @@ export default function InsulationOfferForm() {
       ))}
 
       <button type="button" onClick={addJob} className="secondary-action">Dodaj kolejny zakres prac</button>
+      
+      {/* Przyciski akcji */}
       <button type="submit" disabled={isProcessing}>
         {isProcessing ? 'Przetwarzanie...' : 'Generuj Ofertę'}
       </button>
+
+      {generatedPdfData && (
+        <button type="button" onClick={handleDownloadPdf} style={{ marginTop: '10px', background: '#555' }}>
+          Pobierz wygenerowany PDF
+        </button>
+      )}
+
+      {/* KROK 5: DODANIE KOMPONENTU Z AKCJAMI TRELLO */}
+      <TrelloActions 
+        generatedPdfData={generatedPdfData}
+        userName={userName}
+      />
     </form>
   );
 }

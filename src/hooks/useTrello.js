@@ -19,9 +19,7 @@ export function useTrello() {
       setTrelloCardId(cardIdFromUrl);
     }
 
-    // Funkcja do obsługi pomyślnej autoryzacji
     const handleAuthSuccess = (token, secret) => {
-      // Sprawdź !isAuthorized, aby uniknąć wielokrotnego alertu
       if (token && secret && !(localStorage.getItem("trello_access_token") && localStorage.getItem("trello_access_token_secret"))) { 
         localStorage.setItem('trello_access_token', token);
         localStorage.setItem('trello_access_token_secret', secret);
@@ -31,7 +29,6 @@ export function useTrello() {
       }
     };
 
-    // Listener dla metody 'storage'
     const handleStorageChange = (event) => {
       if (event.key === 'trello_access_token' || event.key === 'trello_access_token_secret') {
         const token = localStorage.getItem('trello_access_token');
@@ -40,7 +37,6 @@ export function useTrello() {
       }
     };
 
-    // Listener dla metody 'postMessage'
     const handleMessage = (event) => {
       if (event.origin !== window.location.origin) return;
       if (event.data && event.data.type === 'TRELLO_OAUTH_SUCCESS') {
@@ -55,9 +51,8 @@ export function useTrello() {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('message', handleMessage);
     };
-  }, []); // Uruchamiamy tylko raz
+  }, []);
 
-  // Funkcja otwierająca okno autoryzacji Trello
   const handleTrelloAuth = () => {
     const width = 600, height = 600;
     const left = window.screenX + (window.outerWidth - width) / 2;
@@ -65,7 +60,7 @@ export function useTrello() {
     window.open('/api/trelloAuth/start.js', 'TrelloAuth', `width=${width},height=${height},left=${left},top=${top}`);
   };
 
-  // Funkcja wysyłająca plik PDF do Trello
+  // --- ZMODYFIKOWANA FUNKCJA ---
   const savePdfToTrello = async (pdfBlob, fileName) => {
     if (!pdfBlob) {
         alert("Brak pliku PDF do wysłania!");
@@ -79,6 +74,22 @@ export function useTrello() {
         alert("Brak autoryzacji Trello. Najpierw połącz z Trello!");
         return;
     }
+
+    // === NOWA CZĘŚĆ: Logika pobierania pliku ===
+    try {
+        const url = URL.createObjectURL(pdfBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    } catch (e) {
+        console.error("Błąd podczas próby pobrania pliku:", e);
+        alert("Wystąpił błąd podczas próby pobrania pliku na dysk.");
+    }
+    // ==========================================
     
     setIsSaving(true);
     const reader = new FileReader();
@@ -100,7 +111,8 @@ export function useTrello() {
         if (!res.ok) {
           throw new Error(data.message);
         }
-        alert("PDF został zapisany w Trello!");
+        // Komunikat o sukcesie zapisu w Trello (pobieranie już się odbyło)
+        alert("PDF został pomyślnie zapisany w Trello i pobrany na dysk!");
       } catch (error) {
         alert(`Błąd zapisu w Trello: ${error.message}`);
       } finally {
