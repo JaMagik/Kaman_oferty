@@ -1,5 +1,3 @@
-// jamagik/kaman_oferty_trello/kaman_oferty_trello-bfb2142551adeb7f98df4053f558f65743fcf124/api/trelloAuth/callback.js
-
 import OAuth from 'oauth-1.0a';
 import crypto from 'crypto';
 import fetch from 'node-fetch';
@@ -8,6 +6,9 @@ const OAUTH_ACCESS_TOKEN_URL = 'https://trello.com/1/OAuthGetAccessToken';
 const TRELLO_PUBLIC_API_KEY = process.env.TRELLO_PUBLIC_API_KEY;
 const TRELLO_SECRET = process.env.TRELLO_SECRET;
 
+// Upewnij się, że ten adres jest poprawny!
+const APP_BASE_URL = 'https://kaman-oferty.vercel.app';
+  
 const parseCookies = (cookieHeader) => {
   const list = {};
   if (!cookieHeader) return list;
@@ -24,9 +25,9 @@ const parseCookies = (cookieHeader) => {
 
 export default async function handler(req, res) {
   if (!TRELLO_PUBLIC_API_KEY || !TRELLO_SECRET) {
-    return res.status(500).send("Brak kluczy Trello.");
+    return res.status(500).send("Brak kluczy Trello w zmiennych środowiskowych.");
   }
-
+  
   const { oauth_token, oauth_verifier } = req.query;
   const cookies = parseCookies(req.headers.cookie);
   const oauth_token_secret = cookies.trello_oauth_secret;
@@ -48,7 +49,7 @@ export default async function handler(req, res) {
     method: 'POST',
     data: { oauth_token, oauth_verifier }
   };
-
+  
   const params = new URLSearchParams();
   params.append('oauth_token', oauth_token);
   params.append('oauth_verifier', oauth_verifier);
@@ -65,10 +66,11 @@ export default async function handler(req, res) {
     });
 
     const text = await response.text();
+    // Usuń ciasteczko po użyciu
     res.setHeader('Set-Cookie', 'trello_oauth_secret=; HttpOnly; Path=/; Max-Age=0');
 
     if (!response.ok) {
-      return res.status(response.status).send(`Błąd Trello: ${text}`);
+      return res.status(response.status).send(`Błąd podczas pobierania tokenu dostępu z Trello: ${text}`);
     }
 
     const accessParams = new URLSearchParams(text);
@@ -76,31 +78,44 @@ export default async function handler(req, res) {
     const accessTokenSecret = accessParams.get('oauth_token_secret');
 
     if (!accessToken || !accessTokenSecret) {
-      return res.status(400).send("Niekompletne dane z Trello.");
+      return res.status(400).send("Niekompletne dane uwierzytelniające otrzymane z Trello.");
     }
 
-    // ### ZMIENIONA CZĘŚĆ ###
-    // Zamiast postMessage, zapisujemy tokeny do localStorage i zamykamy okno.
-    // Aplikacja-matka zareaguje na zdarzenie 'storage'.
+    // Wyślij odpowiedź HTML, która uruchomi skrypt w przeglądarce
     res.setHeader('Content-Type', 'text/html');
     res.status(200).send(`
-      <!DOCTYPE html><html><head><title>Autoryzacja Trello</title></head>
-      <body>
-        <p>Autoryzacja zakończona pomyślnie. To okno zostanie zamknięte za chwilę.</p>
-        <script>
-          localStorage.setItem('trello_access_token', '${accessToken}');
-          localStorage.setItem('trello_access_token_secret', '${accessTokenSecret}');
-          
-          // Dajemy przeglądarce chwilę na zapisanie danych przed zamknięciem
-          setTimeout(() => {
-            try { window.close(); } catch(e) {
-              document.body.innerHTML = "<h1>Możesz już zamknąć to okno.</h1>";
+      <!DOCTYPE html>
+      <html>
+        <head><title>Autoryzacja Trello</title></head>
+        <body>
+          <p>Autoryzacja zakończona pomyślnie. To okno zostanie zamknięte.</p>
+          <script>
+            const payload = {
+              type: 'TRELLO_OAUTH_SUCCESS',
+              accessToken: '${accessToken}',
+              accessTokenSecret: '${accessTokenSecret}'
+            };
+  
+            // Metoda 1: Zapis do localStorage (dla listenera 'storage')
+            try {
+              localStorage.setItem('trello_access_token', payload.accessToken);
+              localStorage.setItem('trello_access_token_secret', payload.accessTokenSecret);
+            } catch (e) {
+              console.error('Błąd zapisu do localStorage', e);
             }
-          }, 100);
-        </script>
-      </body></html>
+            
+            // Metoda 2: Wysłanie wiadomości do okna-rodzica (jako fallback)
+            if (window.opener && !window.opener.closed) {
+              window.opener.postMessage(payload, '${APP_BASE_URL}');
+            }
+  
+            // Zamknij okno
+            setTimeout(() => { window.close(); }, 150);
+          </script>
+        </body>
+      </html>
     `);
   } catch (e) {
-    res.status(500).send("Błąd serwera: " + e.message);
+    res.status(500).send("Wystąpił wewnętrzny błąd serwera: " + e.message);
   }
 }
