@@ -37,8 +37,8 @@ function getTankRowData(tankCapacity) {
     };
     const data = tankDescriptions[tankCapacity];
     if (!data) return null;
-    return [' ', data.name, data.description, 'szt.', '1', 'common'];
-  }
+// NOWA WERSJA
+return [' ', data.name, 'szt.', '1', data.description, 'common'];  }
   
   function getBufferRowData(bufferCapacity) {
     if (!bufferCapacity || bufferCapacity === 'none' || bufferCapacity === 'Brak bufora') return null;
@@ -58,8 +58,8 @@ function getTankRowData(tankCapacity) {
     const bufferKey = bufferCapacity.includes('Sprzęgło') ? 'sprzeglo' : bufferCapacity;
     const data = bufferDescriptions[bufferKey];
     if (!data) return null;
-    return [' ', data.name, data.description, 'szt.', '1', 'common'];
-  }
+// NOWA WERSJA
+return [' ', data.name, 'szt.', '1', data.description, 'common'];  }
 
 export function getTableData(deviceType, model, tankCapacity, bufferCapacity, systemType, isAc = false) {
   const acDeviceTypes = ['MITSUBISHI AY', 'MITSUBISHI HR', 'VIVAX Y-Design', 'VIVAX H-Design', 'VIVAX Q-Design', 'VIVAX N-Design'];

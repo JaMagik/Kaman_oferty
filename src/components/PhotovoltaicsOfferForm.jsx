@@ -2,16 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { generatePhotovoltaicsOfferPDF } from '../utils/pvPdfGenerator'; 
 import { generateCustomOfferPDF } from '../utils/customPdfGenerator';
 import { panelTypesData, inverterTypesData, storageTypesData } from '../data/tables/photovoltaicsData';
+import TrelloActions from './TrelloActions'; // <-- KROK 1: IMPORT KOMPONENTU TRELLO
 
 export default function PhotovoltaicsOfferForm() {
+  // Stany formularza
   const [offerMode, setOfferMode] = useState('standard');
   const [isProcessing, setIsProcessing] = useState(false);
-
-  // Stany dla oferty standardowej
   const [userName, setUserName] = useState('');
   const [price, setPrice] = useState('');
   const [isNetto, setIsNetto] = useState(false);
-  const [showPrice, setShowPrice] = useState(true); // NOWY STAN
+  const [showPrice, setShowPrice] = useState(true);
   const [installationType, setInstallationType] = useState('dach');
   const [panelTypeKey, setPanelTypeKey] = useState('CANADIAN_SOLAR_455');
   const [powerInput, setPowerInput] = useState('4.550');
@@ -35,6 +35,9 @@ export default function PhotovoltaicsOfferForm() {
   const [customStorageName, setCustomStorageName] = useState('');
   const [customStorageQuantity, setCustomStorageQuantity] = useState(1);
   const [customStorageDatasheet, setCustomStorageDatasheet] = useState(null);
+
+  // KROK 2: Dodanie stanu do przechowywania wygenerowanego PDF
+  const [generatedPdfData, setGeneratedPdfData] = useState(null);
 
   useEffect(() => {
     if (offerMode === 'standard') {
@@ -69,17 +72,17 @@ export default function PhotovoltaicsOfferForm() {
     }
   };
 
-  const handleSubmit = async (e) => {
+  // KROK 3: Modyfikacja funkcji 'handleSubmit' na 'handleGenerateAndSetPdf'
+  const handleGenerateAndSetPdf = async (e) => {
     e.preventDefault();
     if (showPrice && !price.trim()) {
         alert('Uzupełnij pole Ceny lub odznacz opcję pokazywania jej w ofercie.');
         return;
     }
     setIsProcessing(true);
+    setGeneratedPdfData(null); // Resetuj stan przed generowaniem
 
     let pdfBlob;
-    let finalUserName = userName;
-
     if (offerMode === 'standard') {
         const formData = {
             userName, price, isNetto, installationType, showPrice,
@@ -91,7 +94,7 @@ export default function PhotovoltaicsOfferForm() {
         };
         pdfBlob = await generatePhotovoltaicsOfferPDF(formData);
 
-    } else { // tryb niestandardowy
+    } else {
         const formData = {
             clientName: userName, price, isNetto, installationType, showPrice,
             panel: { name: customPanelName, quantity: customPanelQuantity, power: customPanelPower, datasheet: customPanelDatasheet },
@@ -101,22 +104,30 @@ export default function PhotovoltaicsOfferForm() {
         pdfBlob = await generateCustomOfferPDF(formData);
     }
     
+    // Zapisz wygenerowany PDF w stanie komponentu
     if (pdfBlob) {
-        const url = URL.createObjectURL(pdfBlob);
-        const a = document.createElement('a');
-        a.download = `Oferta_PV_KAMAN_${finalUserName.replace(/ /g, '_')}.pdf`;
-        a.href = url;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        setGeneratedPdfData(pdfBlob);
     }
 
     setIsProcessing(false);
   };
   
+  // KROK 4: Dodanie osobnej funkcji do pobierania PDF
+  const handleDownloadPdf = () => {
+    if (!generatedPdfData) return;
+    const url = URL.createObjectURL(generatedPdfData);
+    const a = document.createElement('a');
+    a.download = `Oferta_PV_KAMAN_${userName.replace(/ /g, '_')}.pdf`;
+    a.href = url;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+  
   return (
-    <form className="form-container photovoltaics-generator" onSubmit={handleSubmit}>
+    <form className="form-container photovoltaics-generator" onSubmit={handleGenerateAndSetPdf}>
+        {/* Cały Twój formularz JSX pozostaje bez zmian */}
         <div className="form-mode-switcher">
             <button type="button" className={offerMode === 'standard' ? 'active' : ''} onClick={() => setOfferMode('standard')}>
                 Oferta Standardowa
@@ -274,6 +285,18 @@ export default function PhotovoltaicsOfferForm() {
         )}
 
       <button type="submit" disabled={isProcessing}>{isProcessing ? 'Przetwarzanie...' : 'Generuj PDF'}</button>
+
+      {/* KROK 5: Dodanie przycisku do pobierania i komponentu Trello */}
+      {generatedPdfData && (
+        <button type="button" onClick={handleDownloadPdf} style={{ marginTop: '10px', background: '#555' }}>
+          Pobierz wygenerowany PDF
+        </button>
+      )}
+
+      <TrelloActions 
+        generatedPdfData={generatedPdfData}
+        userName={userName}
+      />
     </form>
   );
 }
