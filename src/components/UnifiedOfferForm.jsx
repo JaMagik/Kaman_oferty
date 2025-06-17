@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { generateOfferPDF } from "../utils/pdfGenerator";
+import TrelloActions from './TrelloActions'; // KROK 1: IMPORT KOMPONENTU TRELLO
+
+// Importy wszystkich tabel z danymi
 import { mitsubishiBaseTables } from "../data/tables/mitsubishiTables";
 import { atlanticBaseTables } from "../data/tables/atlanticTables";
 import { lazarBaseTables } from "../data/tables/lazarTables";
+// Załóżmy, że reszta importów jest poprawna
 import { viessmannBaseTables } from "../data/tables/viessmannTables";
 import { kotlospawSlimkoPlusBaseTables } from "../data/tables/kotlospawSlimkoPlusTable";
 import { kotlospawSlimkoPlusNiskiBaseTables } from "../data/tables/kotlospawSlimkoPlusNiskiTable";
@@ -12,6 +16,7 @@ import { kotlospawDrewkoHybridBaseTables } from "../data/tables/kotlospawDrewkoH
 import { toshiba1fBaseTables } from '../data/tables/toshiba1fTable';
 import { kaisaiHydroboxBaseTables } from '../data/tables/kaisaiTable';
 import { vivaxAcBaseTables } from '../data/tables/acData';
+
 
 const allDevicesData = {
   ...mitsubishiBaseTables,
@@ -34,6 +39,7 @@ const boilerBufferOptions = [ { value: "sprzeglo", label: "Sprzęgło hydraulicz
 const acDeviceTypes = ['MITSUBISHI AY', 'MITSUBISHI HR', 'VIVAX Y-Design', 'VIVAX H-Design', 'VIVAX Q-Design', 'VIVAX N-Design'];
 
 export default function UnifiedOfferForm() {
+  // Cały stan formularza pozostaje bez zmian
   const [userName, setUserName] = useState("");
   const [price, setPrice] = useState("");
   const [deviceType, setDeviceType] = useState("Mitsubishi-cylinder-PUZ");
@@ -96,6 +102,7 @@ export default function UnifiedOfferForm() {
       alert('Uzupełnij pole Ceny lub odznacz opcję pokazywania jej w ofercie.');
       return;
     }
+    setGeneratedPdfData(null); // Resetuj stan przed generowaniem
     const pdfData = await generateOfferPDF(
         price, userName, deviceType, model, tank, buffer, systemType, 
         { demontaz: includeDemontaz, podbudowa: includePodbudowa, dotacja: includeDotacja },
@@ -126,6 +133,8 @@ export default function UnifiedOfferForm() {
   return (
     <form className="form-container" onSubmit={handleGenerateAndSetPdf}>
       <h2>Generator Ofert KAMAN</h2>
+      
+      {/* Cała zawartość formularza bez zmian */}
       <label htmlFor="userName">Imię i Nazwisko Klienta:</label>
       <input id="userName" type="text" value={userName} onChange={(e) => setUserName(e.target.value)} placeholder="Podaj imię i nazwisko" required />
 
@@ -261,10 +270,18 @@ export default function UnifiedOfferForm() {
         </>
       )}
 
+      {/* Przyciski akcji */}
       <button type="submit">Generuj PDF</button>
+
       {generatedPdfData && (
         <button type="button" onClick={handleDownloadPdf} style={{ marginTop: '10px', background: '#555' }}>Pobierz wygenerowany PDF</button>
       )}
+
+      {/* KROK 2: DODANIE KOMPONENTU Z AKCJAMI TRELLO */}
+      <TrelloActions 
+        generatedPdfData={generatedPdfData}
+        userName={userName}
+      />
     </form>
   );
 }

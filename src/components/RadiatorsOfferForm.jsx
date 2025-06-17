@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { radiatorHierarchy, radiatorTypesData } from '../data/tables/radiatorsData';
 import { generateRadiatorsOfferPDF } from '../utils/radiatorsPdfGenerator';
+import TrelloActions from './TrelloActions'; // KROK 1: IMPORT KOMPONENTU TRELLO
 
 const roomNameOptions = [ 'Salon', 'Kuchnia', 'Pokój', 'Sypialnia', 'Łazienka', 'Korytarz', 'Wiatrołap', 'Garaż', 'Pom. gospodarcze' ];
 
@@ -22,12 +23,16 @@ const createNewRoom = () => ({
 });
 
 export default function RadiatorsOfferForm() {
+  // Stan formularza
   const [isProcessing, setIsProcessing] = useState(false);
   const [userName, setUserName] = useState('');
   const [price, setPrice] = useState('');
   const [isNetto, setIsNetto] = useState(false);
-  const [showPrice, setShowPrice] = useState(true); // NOWY STAN
+  const [showPrice, setShowPrice] = useState(true);
   const [rooms, setRooms] = useState([createNewRoom()]);
+
+  // KROK 2: Dodanie stanu do przechowywania wygenerowanego PDF
+  const [generatedPdfData, setGeneratedPdfData] = useState(null);
 
   const addRoom = () => setRooms([...rooms, createNewRoom()]);
   const removeRoom = (roomIndex) => setRooms(rooms.filter((_, i) => i !== roomIndex));
@@ -55,6 +60,7 @@ export default function RadiatorsOfferForm() {
     const radiator = newRooms[roomIndex].radiators[radiatorIndex];
     radiator[field] = value;
 
+    // Logika do resetowania zależności w selectach
     if (field === 'material') {
         radiator.connection = Object.keys(radiatorHierarchy[radiator.material].connections)[0];
         radiator.panelType = Object.keys(radiatorHierarchy[radiator.material].connections[radiator.connection].panelTypes)[0];
@@ -74,31 +80,41 @@ export default function RadiatorsOfferForm() {
     setRooms(newRooms);
   };
 
-  const handleSubmit = async (e) => {
+  // KROK 3: Modyfikacja funkcji 'handleSubmit' na 'handleGenerateAndSetPdf'
+  const handleGenerateAndSetPdf = async (e) => {
     e.preventDefault();
     if (showPrice && !price.trim()) {
       alert('Uzupełnij pole Ceny lub odznacz opcję pokazywania jej w ofercie.');
       return;
     }
     setIsProcessing(true);
+    setGeneratedPdfData(null); // Resetuj stan przed generowaniem
+
     const pdfBlob = await generateRadiatorsOfferPDF({ userName, price, isNetto, rooms, showPrice });
     if (pdfBlob) {
-      const url = URL.createObjectURL(pdfBlob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `Oferta_Grzejniki_KAMAN_${userName.replace(/ /g, '_')}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      setGeneratedPdfData(pdfBlob); // Zapisz PDF w stanie
     }
     setIsProcessing(false);
   };
+
+  // KROK 4: Dodanie osobnej funkcji do pobierania PDF
+  const handleDownloadPdf = () => {
+    if (!generatedPdfData) return;
+    const url = URL.createObjectURL(generatedPdfData);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Oferta_Grzejniki_KAMAN_${userName.replace(/ /g, '_')}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
   
   return (
-    <form className="form-container" onSubmit={handleSubmit}>
+    <form className="form-container" onSubmit={handleGenerateAndSetPdf}>
       <h2>Generator Ofert - Grzejniki</h2>
       
+      {/* Cały Twój formularz JSX pozostaje bez zmian */}
       <div className="input-group">
         <label>Imię i Nazwisko Klienta:</label>
         <input type="text" value={userName} onChange={(e) => setUserName(e.target.value)} required />
@@ -179,7 +195,19 @@ export default function RadiatorsOfferForm() {
       ))}
 
       <button type="button" onClick={addRoom} className="secondary-action">Dodaj kolejne pomieszczenie</button>
+      
+      {/* Przyciski akcji */}
       <button type="submit" disabled={isProcessing}>{isProcessing ? 'Przetwarzanie...' : 'Generuj Ofertę'}</button>
+
+      {generatedPdfData && (
+        <button type="button" onClick={handleDownloadPdf} style={{ marginTop: '10px', background: '#555' }}>Pobierz wygenerowany PDF</button>
+      )}
+
+      {/* KROK 5: DODANIE KOMPONENTU Z AKCJAMI TRELLO */}
+      <TrelloActions 
+        generatedPdfData={generatedPdfData}
+        userName={userName}
+      />
     </form>
   );
 }
