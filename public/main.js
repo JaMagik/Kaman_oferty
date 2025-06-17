@@ -4,7 +4,7 @@ const KAMAN_APP_URL = 'https://kaman-oferty.vercel.app';
 window.TrelloPowerUp.initialize({
   'card-buttons': function (t) {
     return [{
-      icon: `${KAMAN_APP_URL}/vite.svg`,
+      icon: `${KAMAN_APP_URL}/logo.png`,
       text: 'Generuj ofertę Kaman',
       callback: function (t_click_context) {
         return t_click_context.card('id')
