@@ -1,4 +1,4 @@
-// src/utils/pdfUtils.js
+// Pełna i poprawna zawartość pliku: src/utils/pdfUtils.js
 
 import { rgb } from 'pdf-lib';
 
@@ -21,27 +21,69 @@ const wrapText = (text, textFont, textSize, maxWidth) => {
     return lines;
 };
 
+export function drawHeaderBlock(page, fonts, logoImage, details, yPos) {
+    const { width } = page.getSize();
+    const { bold: boldFont, regular: regularFont } = fonts;
+    let currentY = yPos;
+    
+    const detailsX = 50;
+    const titleFontSize = 11;
+    const detailsFontSize = 7.5;
+    const detailsLineHeight = 11;
+    const labelWidth = 100;
+
+    const textBlockStartY = currentY;
+
+    details.forEach(detail => {
+        if (detail.type === 'title' && detail.value) {
+            page.drawText(detail.value, {
+                x: detailsX,
+                y: currentY,
+                font: boldFont,
+                size: titleFontSize,
+                color: rgb(0.6, 0, 0.15)
+            });
+            currentY -= (titleFontSize + 4); 
+        } else if (detail.label && detail.value) {
+            page.drawText(detail.label, { x: detailsX, y: currentY, font: boldFont, size: detailsFontSize, color: rgb(0.6, 0, 0.15) });
+            page.drawText(String(detail.value), { x: detailsX + labelWidth, y: currentY, font: regularFont, size: detailsFontSize, color: rgb(0.1, 0.1, 0.1) });
+            currentY -= detailsLineHeight;
+        }
+    });
+
+    const textBlockHeight = textBlockStartY - currentY;
+
+    if (logoImage) {
+        const logoDims = logoImage.scale(0.03); 
+        const logoX = width - logoDims.width - 50;
+        const logoY = textBlockStartY - (textBlockHeight / 2) - (logoDims.height / 2);
+        page.drawImage(logoImage, { x: logoX, y: logoY, width: logoDims.width, height: logoDims.height });
+    }
+
+    return currentY;
+}
+
 export async function drawTable(pdfDoc, page, fonts, tableData, startY, title) {
     let currentPage = page;
     let currentY = startY;
     const { regular: regularFont, bold: boldFont } = fonts;
     
-    // Zwiększamy padding i mnożnik interlinii dla lepszej czytelności
-    const tableConfig = {
-        columnWidths: [30, 160, 250, 35, 35],
-        headerHeight: 22,
-        padding: { top: 5, bottom: 5, left: 5, right: 5 },
-        headerFontSize: 9,
-        contentFontSize: 8,
-        descriptionFontSize: 7.5,
-        lineHeightMultiplier: 1.4, // Zwiększona interlinia
-        lineColor: rgb(0.85, 0.85, 0.85),
-        headerBgColor: rgb(0.6, 0, 0.15),
-        headerFontColor: rgb(1, 1, 1),
-        rowFontColor: rgb(0.2, 0.2, 0.2),
-        evenRowBgColor: rgb(0.98, 0.96, 0.96),
-        pageMargins: { top: 40, bottom: 80 }
-    };
+  // NOWA, POPRAWIONA WERSJA ZE ZMNIEJSZONĄ CZCIONKĄ
+const tableConfig = {
+    columnWidths: [30, 160, 250, 35, 35],
+    headerHeight: 22,
+    padding: { top: 5, bottom: 5, left: 5, right: 5 },
+    headerFontSize: 9,
+    contentFontSize: 7,      // Zmniejszono z 8
+    descriptionFontSize: 6.4,    // Zmniejszono z 7.5
+    lineHeightMultiplier: 1.3, // Lekko zmniejszono dla zwartości
+    lineColor: rgb(0.85, 0.85, 0.85),
+    headerBgColor: rgb(0.6, 0, 0.15),
+    headerFontColor: rgb(1, 1, 1),
+    rowFontColor: rgb(0.2, 0.2, 0.2),
+    evenRowBgColor: rgb(0.98, 0.96, 0.96),
+    pageMargins: { top: 40, bottom: 80 }
+};
     
     const tableWidth = tableConfig.columnWidths.reduce((a, b) => a + b, 0);
     const tableStartX = (currentPage.getSize().width - tableWidth) / 2;
@@ -131,46 +173,4 @@ export async function drawTable(pdfDoc, page, fonts, tableData, startY, title) {
 
     for (let i = 0; i <= tableConfig.columnWidths.length; i++) { currentPage.drawLine({ start: { x: columnPositions[i], y: currentY }, end: { x: columnPositions[i], y: tableSegmentTopY }, thickness: 0.5, color: tableConfig.lineColor }); }
     return {finalY: currentY, finalPage: currentPage};
-}
-
-export function drawHeaderBlock(page, fonts, logoImage, details, yPos) {
-    const { width } = page.getSize();
-    const { bold: boldFont, regular: regularFont } = fonts;
-    let currentY = yPos;
-    
-    const detailsX = 50;
-    const titleFontSize = 11;
-    const detailsFontSize = 7.5;
-    const detailsLineHeight = 11;
-    const labelWidth = 100;
-
-    const textBlockStartY = currentY;
-
-    details.forEach(detail => {
-        if (detail.type === 'title' && detail.value) {
-            page.drawText(detail.value, {
-                x: detailsX,
-                y: currentY,
-                font: boldFont,
-                size: titleFontSize,
-                color: rgb(0.6, 0, 0.15)
-            });
-            currentY -= (titleFontSize + 4); 
-        } else if (detail.label && detail.value) {
-            page.drawText(detail.label, { x: detailsX, y: currentY, font: boldFont, size: detailsFontSize, color: rgb(0.6, 0, 0.15) });
-            page.drawText(String(detail.value), { x: detailsX + labelWidth, y: currentY, font: regularFont, size: detailsFontSize, color: rgb(0.1, 0.1, 0.1) });
-            currentY -= detailsLineHeight;
-        }
-    });
-
-    const textBlockHeight = textBlockStartY - currentY;
-
-    if (logoImage) {
-        const logoDims = logoImage.scale(0.03); 
-        const logoX = width - logoDims.width - 50;
-        const logoY = textBlockStartY - (textBlockHeight / 2) - (logoDims.height / 2);
-        page.drawImage(logoImage, { x: logoX, y: logoY, width: logoDims.width, height: logoDims.height });
-    }
-
-    return currentY;
 }

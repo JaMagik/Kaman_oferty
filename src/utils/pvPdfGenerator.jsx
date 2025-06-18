@@ -1,10 +1,13 @@
+// Pełna, zaktualizowana zawartość pliku: src/utils/pvPdfGenerator.jsx
+
 import { PDFDocument, rgb } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 import { inverterTypesData, pvOfferCommons, pvRoofMountScope, pvGroundMountScope, pvStorageScope, panelTypesData } from '../data/tables/photovoltaicsData';
 import { drawTable, drawHeaderBlock } from './pdfUtils'; 
 
 export async function generatePhotovoltaicsOfferPDF(formData) {
-  const { userName, price, isNetto, installationType, panelDetails, inverterDetails, inverterQuantity, storageDetails, storageModules, showPrice } = formData;
+  // --- ZMIANA 1: Odczytanie nowego parametru ---
+  const { userName, price, isNetto, installationType, panelDetails, inverterDetails, inverterQuantity, storageDetails, storageModules, showPrice, isBracketMount } = formData;
 
   try {
     const pdfDoc = await PDFDocument.create();
@@ -75,8 +78,24 @@ export async function generatePhotovoltaicsOfferPDF(formData) {
             const totalCapacity = (storageDetails.capacity * storageModules).toFixed(2);
             mainTableData.push(['', `${storageDetails.name} ${totalCapacity} kWh`, storageDetails.description, 'kpl.', '1']);
         }
-        const scopeData = installationType === 'grunt' ? pvGroundMountScope : pvRoofMountScope;
+        
+        // --- ZMIANA 2: Warunkowa modyfikacja zakresu prac ---
+        let scopeData;
+        if (installationType === 'grunt') {
+            scopeData = JSON.parse(JSON.stringify(pvGroundMountScope));
+        } else { // Dach
+            scopeData = JSON.parse(JSON.stringify(pvRoofMountScope));
+            if (isBracketMount) {
+                const systemRowIndex = scopeData.findIndex(row => row[1].includes('Dostarczenie systemu montażowego'));
+                if (systemRowIndex > -1) {
+                    scopeData[systemRowIndex][1] = 'Dostarczenie systemu montażowego na ekierkach';
+                    scopeData[systemRowIndex][2] = 'Kompletny, certyfikowany zestaw konstrukcyjny na ekierkach, przeznaczony do montażu na dachu płaskim lub o niewielkim spadku.';
+                }
+            }
+        }
         mainTableData.push(...scopeData);
+        // --------------------------------------------------
+
     } else {
         mainTableData = JSON.parse(JSON.stringify(pvStorageScope));
         mainTableData.unshift(['', inverterDetails.name, inverterDetails.description, 'szt.', String(inverterQuantity)]);
@@ -130,7 +149,8 @@ export async function generatePhotovoltaicsOfferPDF(formData) {
       }
     }
 
-    const pdfBytes = await pdfDoc.save();
+    // NOWA WERSJA
+const pdfBytes = await pdfDoc.save({ useObjectStreams: false });
     return new Blob([pdfBytes], { type: 'application/pdf' });
 
   } catch (error) {

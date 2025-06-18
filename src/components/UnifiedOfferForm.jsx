@@ -45,7 +45,7 @@ export default function UnifiedOfferForm() {
   const [deviceType, setDeviceType] = useState("Mitsubishi-cylinder-PUZ");
   const [model, setModel] = useState("12 kW");
   const [availableModels, setAvailableModels] = useState([]);
-  const [tank, setTank] = useState("200 L STAL NIERDZEWNA");
+  const [tank, setTank] = useState("200L");
   const [buffer, setBuffer] = useState("Sprzęgło hydrauliczne z osprzętem");
   const [currentBufferOptions, setCurrentBufferOptions] = useState(heatPumpBufferOptions);
   const [includeDemontaz, setIncludeDemontaz] = useState(true);

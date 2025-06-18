@@ -1,3 +1,7 @@
+// =======================================================================
+// OSTATECZNA, POPRAWIONA WERSJA: src/utils/pdfGenerator.jsx
+// =======================================================================
+
 import { PDFDocument, rgb } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 import { getTableData } from '../data/tables';
@@ -5,6 +9,7 @@ import { getTemplatePathsForDevice } from '../data/tables/pdfTemplateSets';
 import { opcjeDlaPompCiepla, opcjeDlaKotlow } from '../data/tables/opcjeDodatkowe.js';
 import { opcjeKotlospawProducent, opcjeLazarProducent } from '../data/tables/opcjeProducenta.js';
 
+// Funkcja pomocnicza do zawijania tekstu
 const wrapText = (text, textFont, textSize, maxWidth) => {
     if (typeof text !== 'string') { text = String(text); }
     const words = text.split(' ');
@@ -24,11 +29,12 @@ const wrapText = (text, textFont, textSize, maxWidth) => {
     return lines;
 };
 
-// NOWA, POPRAWIONA WERSJA FUNKCJI RYSUJĄCEJ TABELĘ
-export function drawTable(pdfDoc, initialPage, fonts, tableData, startY) {
+// Lokalna funkcja rysująca tabelę z poprawioną logiką
+function drawTable(pdfDoc, initialPage, fonts, tableData, startY) {
     let currentPage = initialPage;
     let currentY = startY;
     const { regular: regularFont, bold: boldFont } = fonts;
+    
     const tableConfig = {
         columnWidths: [30, 160, 250, 35, 35],
         headerHeight: 22,
@@ -76,8 +82,11 @@ export function drawTable(pdfDoc, initialPage, fonts, tableData, startY) {
     currentY = drawHeader(currentPage, currentY);
 
     tableData.forEach((row, rowIndex) => {
-// POPRAWNA WERSJA
-const [lp, name, unit, quantity, description] = row;        
+        // ### OSTATECZNA POPRAWKA KOLEJNOŚCI KOLUMN ###
+        // Twoje dane mają strukturę: [Lp, Nazwa, J.m., Ilość, Opis]
+        // Odczytujemy je w tej właśnie kolejności:
+        const [lp, name, unit, quantity, description] = row;        
+        
         const nameLines = wrapText(name, regularFont, tableConfig.contentFontSize, tableConfig.columnWidths[1] - (tableConfig.padding.left * 2));
         const descLines = wrapText(description || '', regularFont, tableConfig.descriptionFontSize, tableConfig.columnWidths[2] - (tableConfig.padding.left * 2));
         
@@ -87,7 +96,7 @@ const [lp, name, unit, quantity, description] = row;
         ) + tableConfig.padding.top + tableConfig.padding.bottom;
 
         if (currentY - rowHeight < tableConfig.pageMargins.bottom) {
-             for (let i = 0; i <= tableConfig.columnWidths.length; i++) { currentPage.drawLine({ start: { x: columnPositions[i], y: currentY }, end: { x: columnPositions[i], y: tableSegmentTopY }, thickness: 0.5, color: tableConfig.lineColor }); }
+            for (let i = 0; i <= tableConfig.columnWidths.length; i++) { currentPage.drawLine({ start: { x: columnPositions[i], y: currentY }, end: { x: columnPositions[i], y: tableSegmentTopY }, thickness: 0.5, color: tableConfig.lineColor }); }
             currentPage = pdfDoc.addPage();
             currentY = currentPage.getHeight() - tableConfig.pageMargins.top;
             tableSegmentTopY = currentY;
@@ -97,8 +106,6 @@ const [lp, name, unit, quantity, description] = row;
         const rowY = currentY - rowHeight;
         if (rowIndex % 2 === 1) { currentPage.drawRectangle({ x: tableStartX, y: rowY, width: tableWidth, height: rowHeight, color: tableConfig.evenRowBgColor }); }
         
-        const topOfCell = rowY + rowHeight;
-
         const drawCenteredTextInCell = (text, colIndex, fontSize) => {
             const textWidth = regularFont.widthOfTextAtSize(String(text), fontSize);
             const textHeight = regularFont.heightAtSize(fontSize);
@@ -111,28 +118,29 @@ const [lp, name, unit, quantity, description] = row;
             });
         };
         
-        drawCenteredTextInCell(lp, 0, tableConfig.contentFontSize);
-
-        currentPage.drawText(name, {
-            x: columnPositions[1] + tableConfig.padding.left,
-            y: topOfCell - tableConfig.padding.top - tableConfig.contentFontSize,
-            font: regularFont,
-            size: tableConfig.contentFontSize,
-            color: tableConfig.rowFontColor,
-            lineHeight: tableConfig.contentFontSize * tableConfig.lineHeight,
-            maxWidth: tableConfig.columnWidths[1] - (tableConfig.padding.left * 2),
+        // Rysowanie tekstu dla nazwy (z obsługą wielu linii)
+        let nameTextY = rowY + rowHeight - tableConfig.padding.top - tableConfig.contentFontSize;
+        nameLines.forEach(line => {
+            currentPage.drawText(line, {
+                x: columnPositions[1] + tableConfig.padding.left,
+                y: nameTextY,
+                font: regularFont, size: tableConfig.contentFontSize, color: tableConfig.rowFontColor,
+            });
+            nameTextY -= tableConfig.contentFontSize * tableConfig.lineHeight;
         });
 
-        currentPage.drawText(description || '', {
-            x: columnPositions[2] + tableConfig.padding.left,
-            y: topOfCell - tableConfig.padding.top - tableConfig.descriptionFontSize,
-            font: regularFont,
-            size: tableConfig.descriptionFontSize,
-            color: tableConfig.rowFontColor,
-            lineHeight: tableConfig.descriptionFontSize * tableConfig.lineHeight,
-            maxWidth: tableConfig.columnWidths[2] - (tableConfig.padding.left * 2),
+        // Rysowanie tekstu dla opisu (z obsługą wielu linii)
+        let descTextY = rowY + rowHeight - tableConfig.padding.top - tableConfig.descriptionFontSize;
+        descLines.forEach(line => {
+             currentPage.drawText(line, {
+                x: columnPositions[2] + tableConfig.padding.left,
+                y: descTextY,
+                font: regularFont, size: tableConfig.descriptionFontSize, color: tableConfig.rowFontColor,
+            });
+            descTextY -= tableConfig.descriptionFontSize * tableConfig.lineHeight;
         });
         
+        drawCenteredTextInCell(lp, 0, tableConfig.contentFontSize);
         drawCenteredTextInCell(unit, 3, tableConfig.contentFontSize);
         drawCenteredTextInCell(quantity, 4, tableConfig.contentFontSize);
 
@@ -140,16 +148,13 @@ const [lp, name, unit, quantity, description] = row;
         currentPage.drawLine({ start: { x: tableStartX, y: currentY }, end: { x: tableStartX + tableWidth, y: currentY }, thickness: 0.5, color: tableConfig.lineColor });
     });
 
-    for (let i = 0; i <= tableConfig.columnWidths.length; i++) { currentPage.drawLine({ start: { x: columnPositions[i], y: currentY }, end: { x: columnPositions[i], y: startY }, thickness: 0.5, color: tableConfig.lineColor }); }
-    return currentY;
+    for (let i = 0; i <= tableConfig.columnWidths.length; i++) { currentPage.drawLine({ start: { x: columnPositions[i], y: currentY }, end: { x: columnPositions[i], y: tableSegmentTopY }, thickness: 0.5, color: tableConfig.lineColor }); }
+    
+    return { finalY: currentY, finalPage: currentPage };
 }
 
-
-
-// Reszta pliku pdfGenerator.jsx (funkcje drawExtrasPage, prepareTableData, generateOfferPDF) pozostaje bez zmian.
-// Poniżej wklejam je dla kompletności, nie trzeba w nich nic zmieniać.
-
-function drawExtrasPage(page, fonts, data, title, logoImage = null) {
+// Reszta pliku pozostaje bez zmian
+function drawExtrasPage(page, fonts, data, title) {
     const { width: pageWidth, height: pageHeight } = page.getSize();
     const { regular: regularFont, bold: boldFont } = fonts;
     const maroonColor = rgb(0.6, 0, 0.15);
@@ -264,11 +269,8 @@ function prepareTableData(deviceType, model, tankCapacity, bufferCapacity, syste
             const itemIndexInExtras = extrasTableData.findIndex(row => row[1] && row[1].includes(item.name));
             if (itemIndexInExtras > -1) {
                 const [itemRow] = extrasTableData.splice(itemIndexInExtras, 1);
-// POPRAWNA WERSJA, TWORZĄCA SPÓJNY FORMAT WIERSZA
-// POPRAWNA WERSJA, TWORZĄCA SPÓJNY FORMAT WIERSZA
-// NOWA, POPRAWNA WERSJA
-const itemRowForMainTable = ['', itemRow[1], itemRow[3], '1', itemRow[2]];
-             const insertionKeywords = ["Montaż systemu grzewczego", "Podłączenie do istniejącej instalacji"];
+                const itemRowForMainTable = ['', itemRow[1], itemRow[3], '1', itemRow[2]];
+                const insertionKeywords = ["Montaż systemu grzewczego", "Podłączenie do istniejącej instalacji"];
                 let insertAtIndex = mainTableData.findIndex(row => insertionKeywords.some(keyword => row[1] && row[1].includes(keyword)));
                 if (insertAtIndex === -1) {
                     const fallbackIndex = mainTableData.findIndex(row => row[1] && row[1].includes("Dokumentacja powykonawcza"));
@@ -360,20 +362,23 @@ export async function generateOfferPDF(
         dynamicPage.drawText(userNameText, { x: (pageWidth - userNameTextWidth) / 2, y: currentY, size: userNameFontSize, font: boldFont, color: rgb(0.7, 0, 0.16) });
         currentY -= (userNameFontSize + 20);
         
-        let lastYPosAfterTable = drawTable(finalPdfDoc, dynamicPage, { regular: regularFont, bold: boldFont }, mainTableData, currentY);
+        const tableResult = drawTable(finalPdfDoc, dynamicPage, { regular: regularFont, bold: boldFont }, mainTableData, currentY);
+        let lastContentPage = tableResult.finalPage;
+        let lastYPosAfterTable = tableResult.finalY;
 
         if (showPrice) {
             const priceSuffix = isNettoPrice ? 'PLN netto' : 'PLN brutto';
             const priceString = `Cena końcowa: ${cena} ${priceSuffix}`;
             const priceFontSize = 15;
             const priceTextWidth = boldFont.widthOfTextAtSize(priceString, priceFontSize);
-            let pageForPrice = finalPdfDoc.getPage(finalPdfDoc.getPageCount() - 1);
-            let priceYPosition = lastYPosAfterTable - 40;
-            if (priceYPosition < 40) {
-                 pageForPrice = finalPdfDoc.addPage();
-                 priceYPosition = pageForPrice.getHeight() - 60;
+            
+            if (lastYPosAfterTable < 80) {
+                 lastContentPage = finalPdfDoc.addPage();
+                 lastYPosAfterTable = lastContentPage.getHeight() - 60;
+            } else {
+                 lastYPosAfterTable -= 40;
             }
-            pageForPrice.drawText(priceString, { x: (pageForPrice.getWidth() - priceTextWidth) / 2, y: priceYPosition, size: priceFontSize, font: boldFont, color: rgb(0.7, 0, 0.16) });
+            lastContentPage.drawText(priceString, { x: (lastContentPage.getWidth() - priceTextWidth) / 2, y: lastYPosAfterTable, size: priceFontSize, font: boldFont, color: rgb(0.7, 0, 0.16) });
         }
         
         if (!isAc) {

@@ -107,8 +107,9 @@ export function getTableData(deviceType, model, tankCapacity, bufferCapacity, sy
     }
   }
   
-  let workingTable = isBoiler 
-    ? baseTableData.filter(row => !row[5] === 'common' || row[5] === (systemType || 'zamkniety'))
+// POPRAWNA WERSJA
+let workingTable = isBoiler
+    ? baseTableData.filter(row => row[5] === 'common' || row[5] === (systemType || 'zamkniety'))
     : baseTableData;
 
   const tankRow = getTankRowData(tankCapacity);
