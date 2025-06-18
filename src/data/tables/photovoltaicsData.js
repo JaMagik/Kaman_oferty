@@ -52,7 +52,6 @@ export const inverterTypesData = {
     description: 'Wysokowydajny, trójfazowy falownik sieciowy (on-grid).',
     datasheets: [
       '/pdf_templates/photovoltaics/inverters/foxess/FOXESS_T_G3_DS1.pdf',
-      '/pdf_templates/photovoltaics/inverters/foxess/FOXESS_T_G3_DS2.pdf',
     ]
   },
 };
