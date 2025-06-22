@@ -1,7 +1,9 @@
+// Pełna, zaktualizowana zawartość pliku: src/components/RadiatorsOfferForm.jsx
+
 import React, { useState } from 'react';
 import { radiatorHierarchy, radiatorTypesData } from '../data/tables/radiatorsData';
 import { generateRadiatorsOfferPDF } from '../utils/radiatorsPdfGenerator';
-import TrelloActions from './TrelloActions'; // KROK 1: IMPORT KOMPONENTU TRELLO
+import TrelloActions from './TrelloActions';
 
 const roomNameOptions = [ 'Salon', 'Kuchnia', 'Pokój', 'Sypialnia', 'Łazienka', 'Korytarz', 'Wiatrołap', 'Garaż', 'Pom. gospodarcze' ];
 
@@ -23,16 +25,16 @@ const createNewRoom = () => ({
 });
 
 export default function RadiatorsOfferForm() {
-  // Stan formularza
   const [isProcessing, setIsProcessing] = useState(false);
   const [userName, setUserName] = useState('');
   const [price, setPrice] = useState('');
   const [isNetto, setIsNetto] = useState(false);
   const [showPrice, setShowPrice] = useState(true);
   const [rooms, setRooms] = useState([createNewRoom()]);
-
-  // KROK 2: Dodanie stanu do przechowywania wygenerowanego PDF
   const [generatedPdfData, setGeneratedPdfData] = useState(null);
+
+  // --- ZMIANA 1: Dodanie stanu dla typu oferty ---
+  const [offerType, setOfferType] = useState('szczegolowa'); // 'szczegolowa' lub 'prosta'
 
   const addRoom = () => setRooms([...rooms, createNewRoom()]);
   const removeRoom = (roomIndex) => setRooms(rooms.filter((_, i) => i !== roomIndex));
@@ -60,7 +62,6 @@ export default function RadiatorsOfferForm() {
     const radiator = newRooms[roomIndex].radiators[radiatorIndex];
     radiator[field] = value;
 
-    // Logika do resetowania zależności w selectach
     if (field === 'material') {
         radiator.connection = Object.keys(radiatorHierarchy[radiator.material].connections)[0];
         radiator.panelType = Object.keys(radiatorHierarchy[radiator.material].connections[radiator.connection].panelTypes)[0];
@@ -80,7 +81,6 @@ export default function RadiatorsOfferForm() {
     setRooms(newRooms);
   };
 
-  // KROK 3: Modyfikacja funkcji 'handleSubmit' na 'handleGenerateAndSetPdf'
   const handleGenerateAndSetPdf = async (e) => {
     e.preventDefault();
     if (showPrice && !price.trim()) {
@@ -88,16 +88,16 @@ export default function RadiatorsOfferForm() {
       return;
     }
     setIsProcessing(true);
-    setGeneratedPdfData(null); // Resetuj stan przed generowaniem
+    setGeneratedPdfData(null); 
 
-    const pdfBlob = await generateRadiatorsOfferPDF({ userName, price, isNetto, rooms, showPrice });
+    // --- ZMIANA 3: Przekazanie typu oferty do generatora ---
+    const pdfBlob = await generateRadiatorsOfferPDF({ userName, price, isNetto, rooms, showPrice, offerType });
     if (pdfBlob) {
-      setGeneratedPdfData(pdfBlob); // Zapisz PDF w stanie
+      setGeneratedPdfData(pdfBlob);
     }
     setIsProcessing(false);
   };
 
-  // KROK 4: Dodanie osobnej funkcji do pobierania PDF
   const handleDownloadPdf = () => {
     if (!generatedPdfData) return;
     const url = URL.createObjectURL(generatedPdfData);
@@ -114,7 +114,6 @@ export default function RadiatorsOfferForm() {
     <form className="form-container" onSubmit={handleGenerateAndSetPdf}>
       <h2>Generator Ofert - Grzejniki</h2>
       
-      {/* Cały Twój formularz JSX pozostaje bez zmian */}
       <div className="input-group">
         <label>Imię i Nazwisko Klienta:</label>
         <input type="text" value={userName} onChange={(e) => setUserName(e.target.value)} required />
@@ -123,6 +122,20 @@ export default function RadiatorsOfferForm() {
         <label>Cena Końcowa (PLN):</label>
         <input type="text" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Podaj cenę" />
       </div>
+
+      {/* --- ZMIANA 2: Dodanie przełącznika typu oferty --- */}
+      <div className="input-group">
+          <label>Typ oferty:</label>
+          <div className="form-mode-switcher">
+              <button type="button" className={offerType === 'szczegolowa' ? 'active' : ''} onClick={() => setOfferType('szczegolowa')}>
+                  Szczegółowa
+              </button>
+              <button type="button" className={offerType === 'prosta' ? 'active' : ''} onClick={() => setOfferType('prosta')}>
+                  Prosta
+              </button>
+          </div>
+      </div>
+
       <div className="input-group-inline">
         <input type="checkbox" id="rad_isNetto" checked={isNetto} onChange={(e) => setIsNetto(e.target.checked)} />
         <label htmlFor="rad_isNetto">Pokaż cenę jako netto</label>
@@ -196,14 +209,12 @@ export default function RadiatorsOfferForm() {
 
       <button type="button" onClick={addRoom} className="secondary-action">Dodaj kolejne pomieszczenie</button>
       
-      {/* Przyciski akcji */}
       <button type="submit" disabled={isProcessing}>{isProcessing ? 'Przetwarzanie...' : 'Generuj Ofertę'}</button>
 
       {generatedPdfData && (
         <button type="button" onClick={handleDownloadPdf} style={{ marginTop: '10px', background: '#555' }}>Pobierz wygenerowany PDF</button>
       )}
 
-      {/* KROK 5: DODANIE KOMPONENTU Z AKCJAMI TRELLO */}
       <TrelloActions 
         generatedPdfData={generatedPdfData}
         userName={userName}

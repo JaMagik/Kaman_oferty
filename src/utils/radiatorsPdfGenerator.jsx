@@ -1,3 +1,5 @@
+// Pełna, zaktualizowana zawartość pliku: src/utils/radiatorsPdfGenerator.jsx
+
 import { PDFDocument, rgb } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 import { drawTable, drawHeaderBlock } from './pdfUtils'; 
@@ -24,7 +26,8 @@ const wrapText = (text, textFont, textSize, maxWidth) => {
 };
 
 export async function generateRadiatorsOfferPDF(formData) {
-  const { userName, price, isNetto, rooms, showPrice } = formData;
+  // --- ZMIANA 1: Odczytanie nowego parametru ---
+  const { userName, price, isNetto, rooms, showPrice, offerType } = formData;
 
   try {
     const pdfDoc = await PDFDocument.create();
@@ -62,18 +65,23 @@ export async function generateRadiatorsOfferPDF(formData) {
     const [copiedCoverPage] = await pdfDoc.copyPages(coverDoc, [0]);
     pdfDoc.addPage(copiedCoverPage);
 
-    const offerPage = pdfDoc.addPage();
-    const { width, height } = offerPage.getSize();
-    let currentY = height - 55;
-    const mainOfferDetails = [{ type: 'title', value: 'OFERTA NA INSTALACJĘ GRZEJNIKOWĄ' }, { label: 'Klient:', value: userName.toUpperCase() },];
-    currentY = drawHeaderBlock(offerPage, { regular: regularFont, bold: boldFont }, kamanLogoImage, mainOfferDetails, currentY);
-    const scopeTableData = radiatorsBaseScope.map((row, index) => {
-        const newRow = [...row]; newRow[0] = String(index + 1); return newRow;
-    });
-    currentY -= 10;
-    await drawTable(pdfDoc, offerPage, { regular: regularFont, bold: boldFont }, scopeTableData, currentY, "Ogólny zakres prac instalacyjnych");
+    // --- ZMIANA 2: Logika warunkowa dla oferty szczegółowej ---
+    if (offerType === 'szczegolowa') {
+      const offerPage = pdfDoc.addPage();
+      const { width, height } = offerPage.getSize();
+      let currentY = height - 55;
+      const mainOfferDetails = [{ type: 'title', value: 'OFERTA NA INSTALACJĘ GRZEJNIKOWĄ' }, { label: 'Klient:', value: userName.toUpperCase() },];
+      currentY = drawHeaderBlock(offerPage, { regular: regularFont, bold: boldFont }, kamanLogoImage, mainOfferDetails, currentY);
+      const scopeTableData = radiatorsBaseScope.map((row, index) => {
+          const newRow = [...row]; newRow[0] = String(index + 1); return newRow;
+      });
+      currentY -= 10;
+      await drawTable(pdfDoc, offerPage, { regular: regularFont, bold: boldFont }, scopeTableData, currentY, "Ogólny zakres prac instalacyjnych");
+    }
+    // ---------------------------------------------------------
 
     let detailsPage = pdfDoc.addPage();
+    const { width, height } = detailsPage.getSize();
     let detailsY = height - 60;
     if (kamanLogoImage) {
         const logoDims = kamanLogoImage.scale(0.035);

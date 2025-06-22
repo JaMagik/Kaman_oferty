@@ -1,7 +1,10 @@
+// Pełna, poprawna zawartość pliku: src/data/tables/radiatorsData.js
+
 export const radiatorHierarchy = {
   stalowe: {
     name: 'Grzejniki stalowe płytowe',
-    datasheets: ['/pdf_templates/diamond/Folder_Grzejniki_Stalowe-1.pdf', '/pdf_templates/diamond/Folder_Grzejniki_Stalowe-3.pdf', '/pdf_templates/diamond/Folder_Grzejniki_Stalowe-4.pdf', '/pdf_templates/diamond/Folder_Grzejniki_Stalowe-5.pdf'],
+    datasheets: ['/pdf_templates/diamond/Folder_Grzejniki_Stalowe-1.pdf',
+     ],
     connections: {
       boczne: {
         name: 'Podłączenie boczne (K)',
@@ -36,7 +39,8 @@ export const radiatorHierarchy = {
   },
   aluminiowe: {
     name: 'Grzejniki aluminiowe członowe',
-    datasheets: ['/pdf_templates/diamond/Folder_Grzejniki_Aluminiowe-1.pdf', '/pdf_templates/diamond/Folder_Grzejniki_Aluminiowe-2.pdf', '/pdf_templates/diamond/Folder_Grzejniki_Aluminiowe-3.pdf', '/pdf_templates/diamond/Folder_Grzejniki_Aluminiowe-4.pdf'],
+    datasheets: ['/pdf_templates/diamond/Folder_Grzejniki_Aluminiowe-1.pdf',
+       ],
     connections: {
       boczne: {
         name: 'Standardowe (boczne)',
@@ -60,28 +64,25 @@ export const radiatorHierarchy = {
   }
 };
 
-// Płaska struktura z danymi końcowymi, bez zmian
+// --- ZAKTUALIZOWANA TABELA Z DANYMI ---
+// Klucze zostały poprawione, aby odpowiadały tym generowanym w formularzu
 export const radiatorTypesData = {
-  'DIAMOND_K11_600x1000': { name: 'Grzejnik stalowy Diamond K11 600x1000', description: 'Typ K11 (1 płyta, 1 konwektor), podłączenie boczne.' },
-  'DIAMOND_K21_600x1000': { name: 'Grzejnik stalowy Diamond K21 600x1000', description: 'Typ K21 (2 płyty, 1 konwektor), podłączenie boczne.' },
-  'DIAMOND_K22_600x1000': { name: 'Grzejnik stalowy Diamond K22 600x1000', description: 'Najpopularniejszy wariant. Typ K22 (2 płyty, 2 konwektory), podłączenie boczne.' },
-  'DIAMOND_K22_600x1200': { name: 'Grzejnik stalowy Diamond K22 600x1200', description: 'Najpopularniejszy wariant. Typ K22 (2 płyty, 2 konwektory), podłączenie boczne.' },
-  'DIAMOND_K33_600x1000': { name: 'Grzejnik stalowy Diamond K33 600x1000', description: 'Wysoka moc. Typ K33 (3 płyty, 3 konwektory), podłączenie boczne.' },
-  'DIAMOND_V11_600x1000': { name: 'Grzejnik stalowy Diamond V11 600x1000', description: 'Wbudowany zawór termostatyczny. Typ V11 (1 płyta, 1 konwektor), podłączenie dolne.' },
-  'DIAMOND_V21_600x1000': { name: 'Grzejnik stalowy Diamond V21 600x1000', description: 'Wbudowany zawór termostatyczny. Typ V21 (2 płyty, 1 konwektor), podłączenie dolne.' },
-  'DIAMOND_V22_600x1000': { name: 'Grzejnik stalowy Diamond V22 600x1000', description: 'Najpopularniejszy wariant z wbudowanym zaworem. Typ V22 (2 płyty, 2 konwektory), podłączenie dolne.' },
-  'DIAMOND_V22_600x1200': { name: 'Grzejnik stalowy Diamond V22 600x1200', description: 'Najpopularniejszy wariant z wbudowanym zaworem. Typ V22 (2 płyty, 2 konwektory), podłączenie dolne.' },
-  'DIAMOND_V33_600x1000': { name: 'Grzejnik stalowy Diamond V33 600x1000', description: 'Wysoka moc i wbudowany zawór. Typ V33 (3 płyty, 3 konwektory), podłączenie dolne.' },
+  // Grzejniki stalowe, podłączenie boczne (K)
+  'DIAMOND_K22_B_500x1000': { name: 'Grzejnik stalowy Diamond K22 500x1000', description: 'Typ K22 (2 płyty, 2 konwektory), podłączenie boczne.' },
+  'DIAMOND_K22_B_600x1000': { name: 'Grzejnik stalowy Diamond K22 600x1000', description: 'Najpopularniejszy wariant. Typ K22 (2 płyty, 2 konwektory), podłączenie boczne.' },
+  'DIAMOND_K22_B_600x1200': { name: 'Grzejnik stalowy Diamond K22 600x1200', description: 'Najpopularniejszy wariant. Typ K22 (2 płyty, 2 konwektory), podłączenie boczne.' },
+  'DIAMOND_K33_B_600x1000': { name: 'Grzejnik stalowy Diamond K33 600x1000', description: 'Wysoka moc. Typ K33 (3 płyty, 3 konwektory), podłączenie boczne.' },
+  
+  // Grzejniki stalowe, podłączenie dolne (V)
+  'DIAMOND_V22_D_600x1000': { name: 'Grzejnik stalowy Diamond V22 600x1000', description: 'Najpopularniejszy wariant z wbudowanym zaworem. Typ V22 (2 płyty, 2 konwektory), podłączenie dolne.' },
+  'DIAMOND_V22_D_600x1200': { name: 'Grzejnik stalowy Diamond V22 600x1200', description: 'Najpopularniejszy wariant z wbudowanym zaworem. Typ V22 (2 płyty, 2 konwektory), podłączenie dolne.' },
+
+  // Grzejniki aluminiowe
   'DIAMOND_ALU_WULKAN_H350': { name: 'Grzejnik aluminiowy Wulkan H350', description: 'Wysokość 350mm, podłączenie boczne 350mm. Członowy, 15 lat gwarancji.' },
   'DIAMOND_ALU_WULKAN_H500': { name: 'Grzejnik aluminiowy Wulkan H500', description: 'Wysokość 500mm, podłączenie boczne 500mm. Członowy, 15 lat gwarancji.' },
-  'DIAMOND_ALU_WULKAN_H800': { name: 'Grzejnik aluminiowy Wulkan H800', description: 'Wysokość 800mm, podłączenie boczne 800mm. Członowy, 15 lat gwarancji.' },
   'DIAMOND_ALU_GEJZER_H500': { name: 'Grzejnik aluminiowy Gejzer H500', description: 'Wysokość 500mm, podłączenie boczne 500mm. Zwiększona powierzchnia żeber.' },
 };
 
-/**
- * Podstawowy, ogólny zakres prac przy montażu instalacji grzejnikowej.
- * Będzie on wyświetlany na górze tabeli w każdej ofercie.
- */
 export const radiatorsBaseScope = [
     ['', 'Przygotowanie i zabezpieczenie miejsca pracy', 'Zabezpieczenie podłóg, ścian i mebli folią oraz kartonem w strefie prowadzonych robót instalacyjnych.', 'szt.', '1'],
     ['', 'Demontaż istniejących grzejników i armatury', 'Odłączenie, spuszczenie wody, bezpieczne zdemontowanie grzejników, zaworów i konsol wraz z wyniesieniem do miejsca składowania.', 'kpl.', '1'],

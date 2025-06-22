@@ -262,30 +262,29 @@ button[type="submit"]:active,
 }
 
 .form-mode-switcher button {
-    flex: 1;
-    padding: 8px 12px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    border: none;
-    border-radius: 7px; /* Zaokrąglenie wewnętrznego przycisku */
-    cursor: pointer;
-    transition: all 0.25s ease;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    
-    /* Domyślny, nieaktywny stan */
-    background-color: transparent;
-    color: #34495e; /* Ciemnoszary tekst dla dobrego kontrastu na jasnym tle */
-    box-shadow: none;
+  flex: 1;
+  padding: 8px 10px;
+  border: none;
+  background-color: transparent;
+  color: #34495e; /* Zmieniono kolor dla lepszej czytelności nieaktywnej opcji */
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.25s ease-in-out; /* Lekko wydłużona animacja */
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  transform: scale(0.90); /* Nieaktywny przycisk jest lekko mniejszy */
+  opacity: 0.7; /* Nieaktywny przycisk jest lekko przezroczysty */
 }
+
 
 .form-mode-switcher button.active {
-    /* Aktywny stan */
-    background-color: var(--kaman-red); /* Tło w kolorze marki */
-    color: #ffffff;                     /* Biały tekst dla maksymalnego kontrastu */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15); /* Subtelny cień dla głębi */
+  background-color: var(--kaman-red); /* Używamy koloru marki dla spójności */
+  color: rgb(255, 255, 255);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.15); /* Wyraźniejszy cień */
+  transform: scale(1.05); /* Aktywny przycisk jest powiększony */
+  opacity: 1; /* Pełna widoczność */
 }
-
 .form-mode-switcher button:not(.active):hover {
     background-color: rgba(0, 0, 0, 0.05); /* Delikatne podświetlenie przy najechaniu */
 }
