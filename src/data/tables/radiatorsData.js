@@ -13,6 +13,8 @@ export const radiatorHierarchy = {
             name: '2 płyty / 2 konwektory (K22)',
             heights: {
               '600': { name: 'Wysokość 600 mm', models: ['DIAMOND_K22_B_600x1000', 'DIAMOND_K22_B_600x1200'] },
+                            '600': { name: 'Wysokość 550 mm', models: ['DIAMOND_K22_B_550x1000', 'DIAMOND_K22_B_550x1200'] },
+
               '500': { name: 'Wysokość 500 mm', models: ['DIAMOND_K22_B_500x1000'] }
             }
           },
