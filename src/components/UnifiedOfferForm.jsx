@@ -1,12 +1,12 @@
+// Pełna, zaktualizowana zawartość pliku: src/components/UnifiedOfferForm.jsx
+
 import React, { useState, useEffect } from "react";
 import { generateOfferPDF } from "../utils/pdfGenerator";
-import TrelloActions from './TrelloActions'; // KROK 1: IMPORT KOMPONENTU TRELLO
+import TrelloActions from './TrelloActions';
 
-// Importy wszystkich tabel z danymi
 import { mitsubishiBaseTables } from "../data/tables/mitsubishiTables";
 import { atlanticBaseTables } from "../data/tables/atlanticTables";
 import { lazarBaseTables } from "../data/tables/lazarTables";
-// Załóżmy, że reszta importów jest poprawna
 import { viessmannBaseTables } from "../data/tables/viessmannTables";
 import { kotlospawSlimkoPlusBaseTables } from "../data/tables/kotlospawSlimkoPlusTable";
 import { kotlospawSlimkoPlusNiskiBaseTables } from "../data/tables/kotlospawSlimkoPlusNiskiTable";
@@ -39,7 +39,6 @@ const boilerBufferOptions = [ { value: "sprzeglo", label: "Sprzęgło hydraulicz
 const acDeviceTypes = ['MITSUBISHI AY', 'MITSUBISHI HR', 'VIVAX Y-Design', 'VIVAX H-Design', 'VIVAX Q-Design', 'VIVAX N-Design'];
 
 export default function UnifiedOfferForm() {
-  // Cały stan formularza pozostaje bez zmian
   const [userName, setUserName] = useState("");
   const [price, setPrice] = useState("");
   const [deviceType, setDeviceType] = useState("Mitsubishi-cylinder-PUZ");
@@ -59,8 +58,14 @@ export default function UnifiedOfferForm() {
   const [generatedPdfData, setGeneratedPdfData] = useState(null);
   const [systemType, setSystemType] = useState('zamkniety');
   
+  // --- ZMIANA 1: Dodanie stanu dla wentylatora wyciągowego ---
+  const [includeExhaustFan, setIncludeExhaustFan] = useState(false);
+
   const isBoiler = boilerDeviceTypes.includes(deviceType);
   const isAcDevice = acDeviceTypes.includes(deviceType);
+  
+  // --- ZMIANA 2: Sprawdzenie, czy wybrany kocioł to Kotłospaw ---
+  const isKotlospaw = deviceType.toLowerCase().includes('kotlospaw');
 
   const formatPriceForDisplay = (value) => {
     if (!value) return '';
@@ -102,10 +107,19 @@ export default function UnifiedOfferForm() {
       alert('Uzupełnij pole Ceny lub odznacz opcję pokazywania jej w ofercie.');
       return;
     }
-    setGeneratedPdfData(null); // Resetuj stan przed generowaniem
+    setGeneratedPdfData(null);
+    
+    // --- ZMIANA 3: Przekazanie nowej opcji do generatora ---
+    const offerOptions = {
+      demontaz: includeDemontaz,
+      podbudowa: includePodbudowa,
+      dotacja: includeDotacja,
+      exhaustFan: isKotlospaw && includeExhaustFan, // Przekazuj tylko dla Kotłospaw
+    };
+
     const pdfData = await generateOfferPDF(
         price, userName, deviceType, model, tank, buffer, systemType, 
-        { demontaz: includeDemontaz, podbudowa: includePodbudowa, dotacja: includeDotacja },
+        offerOptions,
         isNettoPrice,
         { isCustom: isCustomQuantity, outdoor: outdoorUnitQty, indoor: indoorUnitQty },
         showPrice
@@ -134,7 +148,6 @@ export default function UnifiedOfferForm() {
     <form className="form-container" onSubmit={handleGenerateAndSetPdf}>
       <h2>Generator Ofert KAMAN</h2>
       
-      {/* Cała zawartość formularza bez zmian */}
       <label htmlFor="userName">Imię i Nazwisko Klienta:</label>
       <input id="userName" type="text" value={userName} onChange={(e) => setUserName(e.target.value)} placeholder="Podaj imię i nazwisko" required />
 
@@ -204,27 +217,6 @@ export default function UnifiedOfferForm() {
 
       {!isAcDevice && (
         <>
-          {!isBoiler && (
-            <div className="options-box">
-              <div className="option-row">
-                  <input type="checkbox" id="isCustomQuantity" checked={isCustomQuantity} onChange={(e) => setIsCustomQuantity(e.target.checked)} />
-                  <label htmlFor="isCustomQuantity">Niestandardowa ilość jednostek</label>
-              </div>
-              {isCustomQuantity && (
-                <div className="custom-quantity-inputs">
-                    <div className="input-group">
-                        <label htmlFor="outdoorUnitQty">Ilość jedn. zewnętrznych:</label>
-                        <input id="outdoorUnitQty" type="number" value={outdoorUnitQty} onChange={e => setOutdoorUnitQty(e.target.value)} min="1" />
-                    </div>
-                    <div className="input-group">
-                        <label htmlFor="indoorUnitQty">Ilość jedn. wewnętrznych:</label>
-                        <input id="indoorUnitQty" type="number" value={indoorUnitQty} onChange={e => setIndoorUnitQty(e.target.value)} min="1" />
-                    </div>
-                </div>
-              )}
-            </div>
-          )}
-
           <label htmlFor="tank">Pojemność zasobnika CWU:</label>
           <select id="tank" value={tank} onChange={(e) => setTank(e.target.value)}>
               <option value="140L">140 L</option>
@@ -256,6 +248,18 @@ export default function UnifiedOfferForm() {
                 <label htmlFor="includePodbudowa">Uwzględnij podbudowę pod pompę ciepła w ofercie</label>
               </div>
             )}
+             {/* --- ZMIANA 4: Dodanie warunkowego checkboxa dla Kotłospaw --- */}
+             {isKotlospaw && (
+              <div className="option-row">
+                <input
+                  type="checkbox"
+                  id="includeExhaustFan"
+                  checked={includeExhaustFan}
+                  onChange={(e) => setIncludeExhaustFan(e.target.checked)}
+                />
+                <label htmlFor="includeExhaustFan">Uwzględnij wentylator wyciągowy w ofercie</label>
+              </div>
+            )}
           </div>
           {isBoiler && (
             <div className="input-group" style={{marginTop: '10px'}}>
@@ -270,14 +274,12 @@ export default function UnifiedOfferForm() {
         </>
       )}
 
-      {/* Przyciski akcji */}
       <button type="submit">Generuj PDF</button>
 
       {generatedPdfData && (
         <button type="button" onClick={handleDownloadPdf} style={{ marginTop: '10px', background: '#555' }}>Pobierz wygenerowany PDF</button>
       )}
 
-      {/* KROK 2: DODANIE KOMPONENTU Z AKCJAMI TRELLO */}
       <TrelloActions 
         generatedPdfData={generatedPdfData}
         userName={userName}

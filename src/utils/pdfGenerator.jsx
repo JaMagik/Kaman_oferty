@@ -1,6 +1,4 @@
-// =======================================================================
-// OSTATECZNA, POPRAWIONA WERSJA: src/utils/pdfGenerator.jsx
-// =======================================================================
+// Pełna, poprawna zawartość pliku: src/utils/pdfGenerator.jsx
 
 import { PDFDocument, rgb } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
@@ -9,7 +7,8 @@ import { getTemplatePathsForDevice } from '../data/tables/pdfTemplateSets';
 import { opcjeDlaPompCiepla, opcjeDlaKotlow } from '../data/tables/opcjeDodatkowe.js';
 import { opcjeKotlospawProducent, opcjeLazarProducent } from '../data/tables/opcjeProducenta.js';
 
-// Funkcja pomocnicza do zawijania tekstu
+// --- Funkcje pomocnicze ---
+
 const wrapText = (text, textFont, textSize, maxWidth) => {
     if (typeof text !== 'string') { text = String(text); }
     const words = text.split(' ');
@@ -29,13 +28,12 @@ const wrapText = (text, textFont, textSize, maxWidth) => {
     return lines;
 };
 
-// Lokalna funkcja rysująca tabelę z poprawioną logiką
-function drawTable(pdfDoc, initialPage, fonts, tableData, startY) {
+function drawTable(pdfDoc, initialPage, fonts, tableData, startY, customConfig = {}) {
     let currentPage = initialPage;
     let currentY = startY;
     const { regular: regularFont, bold: boldFont } = fonts;
     
-    const tableConfig = {
+    const defaultConfig = {
         columnWidths: [30, 160, 250, 35, 35],
         headerHeight: 22,
         padding: { top: 5, bottom: 5, left: 5, right: 5 },
@@ -50,6 +48,9 @@ function drawTable(pdfDoc, initialPage, fonts, tableData, startY) {
         evenRowBgColor: rgb(0.98, 0.96, 0.96),
         pageMargins: { top: 40, bottom: 40 }
     };
+
+    const tableConfig = { ...defaultConfig, ...customConfig };
+
     const tableWidth = tableConfig.columnWidths.reduce((a, b) => a + b, 0);
     const tableStartX = (currentPage.getWidth() - tableWidth) / 2;
 
@@ -82,9 +83,6 @@ function drawTable(pdfDoc, initialPage, fonts, tableData, startY) {
     currentY = drawHeader(currentPage, currentY);
 
     tableData.forEach((row, rowIndex) => {
-        // ### OSTATECZNA POPRAWKA KOLEJNOŚCI KOLUMN ###
-        // Twoje dane mają strukturę: [Lp, Nazwa, J.m., Ilość, Opis]
-        // Odczytujemy je w tej właśnie kolejności:
         const [lp, name, unit, quantity, description] = row;        
         
         const nameLines = wrapText(name, regularFont, tableConfig.contentFontSize, tableConfig.columnWidths[1] - (tableConfig.padding.left * 2));
@@ -118,25 +116,15 @@ function drawTable(pdfDoc, initialPage, fonts, tableData, startY) {
             });
         };
         
-        // Rysowanie tekstu dla nazwy (z obsługą wielu linii)
         let nameTextY = rowY + rowHeight - tableConfig.padding.top - tableConfig.contentFontSize;
         nameLines.forEach(line => {
-            currentPage.drawText(line, {
-                x: columnPositions[1] + tableConfig.padding.left,
-                y: nameTextY,
-                font: regularFont, size: tableConfig.contentFontSize, color: tableConfig.rowFontColor,
-            });
+            currentPage.drawText(line, { x: columnPositions[1] + tableConfig.padding.left, y: nameTextY, font: regularFont, size: tableConfig.contentFontSize, color: tableConfig.rowFontColor });
             nameTextY -= tableConfig.contentFontSize * tableConfig.lineHeight;
         });
 
-        // Rysowanie tekstu dla opisu (z obsługą wielu linii)
         let descTextY = rowY + rowHeight - tableConfig.padding.top - tableConfig.descriptionFontSize;
         descLines.forEach(line => {
-             currentPage.drawText(line, {
-                x: columnPositions[2] + tableConfig.padding.left,
-                y: descTextY,
-                font: regularFont, size: tableConfig.descriptionFontSize, color: tableConfig.rowFontColor,
-            });
+             currentPage.drawText(line, { x: columnPositions[2] + tableConfig.padding.left, y: descTextY, font: regularFont, size: tableConfig.descriptionFontSize, color: tableConfig.rowFontColor });
             descTextY -= tableConfig.descriptionFontSize * tableConfig.lineHeight;
         });
         
@@ -153,7 +141,7 @@ function drawTable(pdfDoc, initialPage, fonts, tableData, startY) {
     return { finalY: currentY, finalPage: currentPage };
 }
 
-// Reszta pliku pozostaje bez zmian
+
 function drawExtrasPage(page, fonts, data, title) {
     const { width: pageWidth, height: pageHeight } = page.getSize();
     const { regular: regularFont, bold: boldFont } = fonts;
@@ -173,11 +161,14 @@ function drawExtrasPage(page, fonts, data, title) {
         descriptionFontSize: 7.8,
     };
     const tableWidth = tableConfig.columnWidths.reduce((a, b) => a + b, 0);
+    
+    // --- ZMIANA 1: Zmniejszenie czcionki i interlinii w stopce ---
     const footerText = "UWAGI: OPCJE DODATKOWE NIE SĄ WYMAGANE PRZEZ PRODUCENTÓW* DO PRACY INSTALACJI I O ICH ZASADNOŚCI KAŻDORAZOWO NALEŻY KONSULTOWAĆ SIĘ Z OPIEKUNEM HANDLOWYM LUB DORADCĄ TECHNICZNYM";
-    const footerFontSize = 9;
-    const footerLineHeight = footerFontSize * 1.4;
+    const footerFontSize = 7.5; // Zmniejszono z 9
+    const footerLineHeight = footerFontSize * 1.3; // Zmniejszono z 1.4
+
     const footerLines = wrapText(footerText, boldFont, footerFontSize, pageWidth - 80);
-    const bottomBannerHeight = (footerLines.length * footerLineHeight) + 30;
+    const bottomBannerHeight = (footerLines.length * footerLineHeight) + 20; // Zmniejszono padding (z 30 na 20)
     let currentY = pageHeight;
     page.drawRectangle({ x: 0, y: currentY - topBannerHeight, width: pageWidth, height: topBannerHeight, color: maroonColor });
     const titleWidth = boldFont.widthOfTextAtSize(title, titleFontSize);
@@ -237,7 +228,10 @@ function drawExtrasPage(page, fonts, data, title) {
         page.drawLine({ start: { x: tableX, y: currentY }, end: { x: tableX + tableWidth, y: currentY }, thickness: 0.5, color: lineColor });
     });
     for (let i = 0; i <= tableConfig.columnWidths.length; i++) { page.drawLine({ start: { x: columnPositions[i], y: currentY }, end: { x: columnPositions[i], y: segmentTopY }, thickness: 0.5, color: lineColor }); }
-    currentY -= 30;
+    
+    // --- ZMIANA 2: Przesunięcie banera wyżej i zapewnienie, że nie wyjdzie poza stronę ---
+    currentY = Math.max(bottomBannerHeight, currentY - 20); // Zapewnia, że jest miejsce na baner
+
     page.drawRectangle({ x: 0, y: currentY - bottomBannerHeight, width: pageWidth, height: bottomBannerHeight, color: maroonColor });
     const totalTextHeight = footerLines.length * footerLineHeight - (footerLineHeight - footerFontSize);
     let footerTextY = (currentY - bottomBannerHeight) + (bottomBannerHeight + totalTextHeight) / 2 - footerFontSize;
@@ -251,7 +245,20 @@ function drawExtrasPage(page, fonts, data, title) {
 function prepareTableData(deviceType, model, tankCapacity, bufferCapacity, systemType, offerOptions, isKotel, quantityOptions, isAc) {
     let mainTableData = getTableData(deviceType, model, tankCapacity, bufferCapacity, systemType, isAc);
     let extrasTableData = isKotel ? [...opcjeDlaKotlow] : [...opcjeDlaPompCiepla];
+    
+    const kotlospawDeviceTypes = ["Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid"];
+    let producerOptions = null;
+    if (kotlospawDeviceTypes.includes(deviceType)) {
+        producerOptions = [...opcjeKotlospawProducent];
+    } else if (deviceType === 'LAZAR') {
+        producerOptions = [...opcjeLazarProducent];
+    }
 
+    if (producerOptions) {
+        extrasTableData.push({ type: 'separator', title: 'WYPOSAŻENIE UZUPEŁNIAJĄCE (OPCJONALNIE) OD PRODUCENTA' });
+        extrasTableData.push(...producerOptions);
+    }
+    
     if (!isKotel && !isAc && quantityOptions.isCustom) {
         const outdoorUnitIndex = mainTableData.findIndex(row => row[1] && row[1].toLowerCase().includes('jednostka zew'));
         if (outdoorUnitIndex !== -1) { mainTableData[outdoorUnitIndex][3] = String(quantityOptions.outdoor); }
@@ -261,27 +268,34 @@ function prepareTableData(deviceType, model, tankCapacity, bufferCapacity, syste
 
     const movableItems = [
         { key: 'demontaz', name: 'Demontaż starego źródła ciepła', applicable: () => !isAc },
-        { key: 'podbudowa', name: 'Wykonanie podbudowy pod jednostkę zewnętrzną', applicable: () => !isAc && !isKotel }
+        { key: 'podbudowa', name: 'Wykonanie podbudowy pod jednostkę zewnętrzną', applicable: () => !isAc && !isKotel },
+        { key: 'exhaustFan', name: 'Wentylator wyciągowy', applicable: () => isKotel },
     ];
-
+    
     movableItems.forEach(item => {
         if (offerOptions[item.key] && item.applicable()) {
-            const itemIndexInExtras = extrasTableData.findIndex(row => row[1] && row[1].includes(item.name));
+            let itemIndexInExtras = extrasTableData.findIndex(row => row[1] && row[1].includes(item.name));
+            
             if (itemIndexInExtras > -1) {
                 const [itemRow] = extrasTableData.splice(itemIndexInExtras, 1);
+                // Struktura opcji dodatkowych: [lp, nazwa, opis, j.m, cena]
+                // Struktura tabeli głównej: [lp, nazwa, j.m, ilość, opis]
                 const itemRowForMainTable = ['', itemRow[1], itemRow[3], '1', itemRow[2]];
-                const insertionKeywords = ["Montaż systemu grzewczego", "Podłączenie do istniejącej instalacji"];
+                
+                const insertionKeywords = ["Podłączenie kominowe", "Montaż systemu grzewczego"];
                 let insertAtIndex = mainTableData.findIndex(row => insertionKeywords.some(keyword => row[1] && row[1].includes(keyword)));
                 if (insertAtIndex === -1) {
-                    const fallbackIndex = mainTableData.findIndex(row => row[1] && row[1].includes("Dokumentacja powykonawcza"));
-                    insertAtIndex = fallbackIndex > -1 ? fallbackIndex : mainTableData.length - 2;
+                    insertAtIndex = mainTableData.findIndex(row => row[1].includes("Kocioł"));
+                    insertAtIndex = insertAtIndex > -1 ? insertAtIndex + 1 : 1;
+                } else {
+                    insertAtIndex += 1;
                 }
                 mainTableData.splice(insertAtIndex, 0, itemRowForMainTable);
             }
         }
     });
     
-    if (offerOptions && offerOptions.dotacja === false) {
+    if (offerOptions.dotacja === false) {
         mainTableData = mainTableData.filter(row => !row[1] || !row[1].includes('Pomoc w uzyskaniu dotacji'));
     }
 
@@ -362,7 +376,16 @@ export async function generateOfferPDF(
         dynamicPage.drawText(userNameText, { x: (pageWidth - userNameTextWidth) / 2, y: currentY, size: userNameFontSize, font: boldFont, color: rgb(0.7, 0, 0.16) });
         currentY -= (userNameFontSize + 20);
         
-        const tableResult = drawTable(finalPdfDoc, dynamicPage, { regular: regularFont, bold: boldFont }, mainTableData, currentY);
+        let tableConfigOverrides = {};
+        if (mainTableData.length > 16) {
+            tableConfigOverrides = {
+                contentFontSize: 7.5,
+                descriptionFontSize: 7,
+                lineHeight: 1.25,
+            };
+        }
+
+        const tableResult = drawTable(finalPdfDoc, dynamicPage, { regular: regularFont, bold: boldFont }, mainTableData, currentY, tableConfigOverrides);
         let lastContentPage = tableResult.finalPage;
         let lastYPosAfterTable = tableResult.finalY;
 
@@ -371,7 +394,7 @@ export async function generateOfferPDF(
             const priceString = `Cena końcowa: ${cena} ${priceSuffix}`;
             const priceFontSize = 15;
             const priceTextWidth = boldFont.widthOfTextAtSize(priceString, priceFontSize);
-            
+
             if (lastYPosAfterTable < 80) {
                  lastContentPage = finalPdfDoc.addPage();
                  lastYPosAfterTable = lastContentPage.getHeight() - 60;
@@ -383,19 +406,8 @@ export async function generateOfferPDF(
         
         if (!isAc) {
             let finalExtrasData = [...extrasTableData];
-            let producerOptions = null;
-            if (kotlospawDeviceTypes.includes(deviceType)) {
-                producerOptions = opcjeKotlospawProducent;
-            } else if (deviceType === 'LAZAR') {
-                producerOptions = opcjeLazarProducent;
-            }
-
-            if (producerOptions && producerOptions.length > 0) {
-                finalExtrasData.push({ type: 'separator', title: 'WYPOSAŻENIE UZUPEŁNIAJĄCE (OPCJONALNIE) OD PRODUCENTA' });
-                finalExtrasData.push(...producerOptions);
-            }
             
-            if (finalExtrasData.some(row => row.type !== 'separator')) {
+            if (finalExtrasData.some(row => row.type !== 'separator' && row[1] && !row[1].includes('Wentylator wyciągowy'))) {
                 let lpCounter = 1;
                 const numberedExtrasData = finalExtrasData.map(row => {
                     if (row.type === 'separator') return row;
@@ -404,8 +416,10 @@ export async function generateOfferPDF(
                     return newRow;
                 });
                 
-                const extrasPage = finalPdfDoc.addPage();
-                drawExtrasPage(extrasPage, {regular: regularFont, bold: boldFont}, numberedExtrasData, 'WYPOSAŻENIE UZUPEŁNIAJĄCE (OPCJONALNIE)');
+                if (numberedExtrasData.length > 0) {
+                    const extrasPage = finalPdfDoc.addPage();
+                    drawExtrasPage(extrasPage, {regular: regularFont, bold: boldFont}, numberedExtrasData, 'WYPOSAŻENIE UZUPEŁNIAJĄCE (OPCJONALNIE)');
+                }
             }
         }
 
