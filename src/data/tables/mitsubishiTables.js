@@ -22,7 +22,7 @@ const mitsubishiCylinder_standard_6kW_base = [
 
 const mitsubishiCylinder_standard_8kW_base = [
   ['1', 'Pompa ciepła – jed. zew. 8kW (PUD-SHWM80YAA)', 'szt.', '1', 'Ecodan | Zubadan Inverter | Split | 8,0kW, 400V, R32 PUD-SHWM80YAA. Jednostka zewnętrzna typu Split z technologią Zubadan.'],
-  ['2', 'Moduł wewnętrzny Cylinder 200L (EHSD-YM6/9D)', 'szt.', '1', 'Ecodan | moduł wew. 200 litrów | Split | grz. 6/9 kW, 3x400V | naczynie wz. 10L | grzanie EHSD-YM6/9D. Zintegrowany zasobnik CWU.'],
+  ['2', 'Moduł wewnętrzny Cylinder 200L (ERSD-YM9E)', 'szt.', '1', 'Ecodan | moduł wew. 200 litrów | Split | grz. 6/9 kW, 3x400V | naczynie wz. 10L | grzanie ERSD-YM9E. Zintegrowany zasobnik CWU.'],
   // ... reszta 11 punktów jak wyżej
         ['3', 'Pompa obiegowa CO IBO PRO', 'szt.', '1', 'Zapewnia prawidłowy obieg czynnika grzewczego w instalacji.'],
 
@@ -302,7 +302,7 @@ const mitsubishiCylinderPUZ_1F_12kW_base = [
 
 const mitsubishiHydrobox_standard_6kW_base = [
   ['1', 'Pompa ciepła – jednostka zewnętrzna 6kW', 'szt.', '1', 'Mitsubishi PUD-SHWM60YAA – Split, moc 6,0 kW, zasilanie 3x400V, czynnik chłodniczy R32, technologia Zubadan zapewniająca stabilną pracę nawet przy niskich temperaturach.'],
-  ['2', 'Hydrobox – jednostka wewnętrzna', 'szt.', '1', 'Mitsubishi EHSD-YM6/9D – z grzałką elektryczną 6/9 kW oraz wbudowanym naczyniem wzbiorczym 10 litrów. Odpowiada za zarządzanie obiegiem grzewczym.'],
+  ['2', 'Hydrobox – jednostka wewnętrzna', 'szt.', '1', 'Mitsubishi ERSD-YM9E – z grzałką elektryczną 6/9 kW oraz wbudowanym naczyniem wzbiorczym 10 litrów. Odpowiada za zarządzanie obiegiem grzewczym.'],
  ['3', 'Pompa obiegowa CO IBO PRO', 'szt.', '1', 'Zapewnia prawidłowy obieg czynnika grzewczego w instalacji.'],
 
  ['4', 'Komplet elementów hydraulicznych', 'kpl.', '1', 'W tym: zawory kulowe, zawory zwrotne, odpowietrzniki automatyczne, filtry, trójniki, kształtki, nyple, redukcje i pozostała armatura niezbędna do wykonania instalacji wodnej.'],
@@ -321,7 +321,7 @@ const mitsubishiHydrobox_standard_6kW_base = [
 
 const mitsubishiHydrobox_standard_8kW_base = [
   ['1', 'Pompa ciepła – jednostka zewnętrzna 8kW', 'szt.', '1', 'Mitsubishi PUD-SHWM80YAA – Split, moc 8,0 kW, zasilanie 3x400V, czynnik chłodniczy R32, technologia Zubadan zapewniająca stabilną pracę nawet przy niskich temperaturach.'],
-  ['2', 'Hydrobox – jednostka wewnętrzna', 'szt.', '1', 'Mitsubishi EHSD-YM6/9D – z grzałką elektryczną 6/9 kW oraz wbudowanym naczyniem wzbiorczym 10 litrów. Odpowiada za zarządzanie obiegiem grzewczym.'],
+  ['2', 'Hydrobox – jednostka wewnętrzna', 'szt.', '1', 'Mitsubishi ERSD-YM9E – z grzałką elektryczną 6/9 kW oraz wbudowanym naczyniem wzbiorczym 10 litrów. Odpowiada za zarządzanie obiegiem grzewczym.'],
   ['3', 'Pompa obiegowa CO IBO PRO', 'szt.', '1', 'Zapewnia prawidłowy obieg czynnika grzewczego w instalacji.'],
 
  ['4', 'Komplet elementów hydraulicznych', 'kpl.', '1', 'W tym: zawory kulowe, zawory zwrotne, odpowietrzniki automatyczne, filtry, trójniki, kształtki, nyple, redukcje i pozostała armatura niezbędna do wykonania instalacji wodnej.'],
@@ -341,7 +341,7 @@ const mitsubishiHydrobox_standard_8kW_base = [
 
 const mitsubishiHydrobox_standard_10kW_base = [
   ['1', 'Pompa ciepła – jednostka zewnętrzna 10kW', 'szt.', '1', 'Mitsubishi PUD-SHWM100YAA – Split, moc 10,0 kW, zasilanie 3x400V, czynnik chłodniczy R32, technologia Zubadan zapewniająca stabilną pracę nawet przy niskich temperaturach.'],
-  ['2', 'Hydrobox – jednostka wewnętrzna', 'szt.', '1', 'Mitsubishi EHSD-YM6/9D – z grzałką elektryczną 6/9 kW oraz wbudowanym naczyniem wzbiorczym 10 litrów. Odpowiada za zarządzanie obiegiem grzewczym.'],
+  ['2', 'Hydrobox – jednostka wewnętrzna', 'szt.', '1', 'Mitsubishi ERSD-YM9E – z grzałką elektryczną 6/9 kW oraz wbudowanym naczyniem wzbiorczym 10 litrów. Odpowiada za zarządzanie obiegiem grzewczym.'],
   ['3', 'Pompa obiegowa CO IBO PRO', 'szt.', '1', 'Zapewnia prawidłowy obieg czynnika grzewczego w instalacji.'],
 
  ['4', 'Komplet elementów hydraulicznych', 'kpl.', '1', 'W tym: zawory kulowe, zawory zwrotne, odpowietrzniki automatyczne, filtry, trójniki, kształtki, nyple, redukcje i pozostała armatura niezbędna do wykonania instalacji wodnej.'],
@@ -361,7 +361,7 @@ const mitsubishiHydrobox_standard_10kW_base = [
 
 const mitsubishiHydrobox_standard_12kW_base = [
   ['1', 'Pompa ciepła – jednostka zewnętrzna 12kW', 'szt.', '1', 'Mitsubishi PUD-SHWM120YAA – Split, moc 12,0 kW, zasilanie 3x400V, czynnik chłodniczy R32, technologia Zubadan zapewniająca stabilną pracę nawet przy niskich temperaturach.'],
-  ['2', 'Hydrobox – jednostka wewnętrzna', 'szt.', '1', 'Mitsubishi EHSD-YM6/9D – z grzałką elektryczną 6/9 kW oraz wbudowanym naczyniem wzbiorczym 10 litrów. Odpowiada za zarządzanie obiegiem grzewczym.'],
+  ['2', 'Hydrobox – jednostka wewnętrzna', 'szt.', '1', 'Mitsubishi ERSD-YM9E – z grzałką elektryczną 6/9 kW oraz wbudowanym naczyniem wzbiorczym 10 litrów. Odpowiada za zarządzanie obiegiem grzewczym.'],
   ['3', 'Pompa obiegowa CO IBO PRO', 'szt.', '1', 'Zapewnia prawidłowy obieg czynnika grzewczego w instalacji.'],
 
  ['4', 'Komplet elementów hydraulicznych', 'kpl.', '1', 'W tym: zawory kulowe, zawory zwrotne, odpowietrzniki automatyczne, filtry, trójniki, kształtki, nyple, redukcje i pozostała armatura niezbędna do wykonania instalacji wodnej.'],
@@ -381,7 +381,7 @@ const mitsubishiHydrobox_standard_12kW_base = [
 
 const mitsubishiHydrobox_standard_14kW_base = [
   ['1', 'Pompa ciepła – jednostka zewnętrzna 14kW', 'szt.', '1', 'Mitsubishi PUD-SHWM140YAA – Split, moc 14,0 kW, zasilanie 3x400V, czynnik chłodniczy R32, technologia Zubadan zapewniająca stabilną pracę nawet przy niskich temperaturach.'],
-  ['2', 'Hydrobox – jednostka wewnętrzna', 'szt.', '1', 'Mitsubishi EHSD-YM6/9D – z grzałką elektryczną 6/9 kW oraz wbudowanym naczyniem wzbiorczym 10 litrów. Odpowiada za zarządzanie obiegiem grzewczym.'],
+  ['2', 'Hydrobox – jednostka wewnętrzna', 'szt.', '1', 'Mitsubishi ERSD-YM9E – z grzałką elektryczną 6/9 kW oraz wbudowanym naczyniem wzbiorczym 10 litrów. Odpowiada za zarządzanie obiegiem grzewczym.'],
  ['3', 'Pompa obiegowa CO IBO PRO', 'szt.', '1', 'Zapewnia prawidłowy obieg czynnika grzewczego w instalacji.'],
 
  ['4', 'Komplet elementów hydraulicznych', 'kpl.', '1', 'W tym: zawory kulowe, zawory zwrotne, odpowietrzniki automatyczne, filtry, trójniki, kształtki, nyple, redukcje i pozostała armatura niezbędna do wykonania instalacji wodnej.'],
