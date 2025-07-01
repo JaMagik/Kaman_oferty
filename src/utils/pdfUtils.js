@@ -115,7 +115,9 @@ const tableConfig = {
     currentY = drawHeader(currentPage, currentY);
 
     for (const [rowIndex, row] of tableData.entries()) {
+        // *** KOREKTA: Poprawna kolejność destrukturyzacji ***
         const [lp, name, description, unit, quantity] = row;
+
         const nameLines = wrapText(name, regularFont, tableConfig.contentFontSize, tableConfig.columnWidths[1] - (2 * tableConfig.padding.left));
         const descLines = wrapText(description || '', regularFont, tableConfig.descriptionFontSize, tableConfig.columnWidths[2] - (2 * tableConfig.padding.left));
         

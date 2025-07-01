@@ -54,7 +54,9 @@ return [' ', data.name, 'szt.', '1', data.description, 'common'];  }
       '140L': { name: 'Bufor 140 L z osprzętem', description: 'Zbiornik buforowy 140L, który zwiększa zład wody w instalacji.' },
       '200L': { name: 'Bufor 200 L z osprzętem', description: 'Zbiornik buforowy 200L, zalecany dla bardziej rozbudowanych instalacji.' },
       '300L': { name: 'Bufor 300 L z osprzętem', description: 'Zbiornik buforowy 300L do magazynowania nadmiaru ciepła.'},
-     
+      '500L': { name: 'Bufor 500 L z osprzętem', description: 'Zbiornik buforowy 500L do magazynowania nadmiaru ciepła.'},
+            '800L': { name: 'Bufor 800 L z osprzętem', description: 'Zbiornik buforowy 800L do magazynowania nadmiaru ciepła.'},
+      '1000L': { name: 'Bufor 1000 L z osprzętem', description: 'Zbiornik buforowy 1000L do magazynowania nadmiaru ciepła.' },
     };
     const bufferKey = bufferCapacity.includes('Sprzęgło') ? 'sprzeglo' : bufferCapacity;
     const data = bufferDescriptions[bufferKey];

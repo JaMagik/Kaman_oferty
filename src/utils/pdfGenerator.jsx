@@ -244,94 +244,97 @@ function drawExtrasPage(page, fonts, data, title) {
 
 function prepareTableData(deviceType, model, tankCapacity, bufferCapacity, systemType, offerOptions, isKotel, quantityOptions, isAc) {
     let mainTableData = getTableData(deviceType, model, tankCapacity, bufferCapacity, systemType, isAc);
-    let extrasTableData = isKotel ? [...opcjeDlaKotlow] : [...opcjeDlaPompCiepla];
-    
-    const kotlospawDeviceTypes = ["Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid"];
-    let producerOptions = null;
-    if (kotlospawDeviceTypes.includes(deviceType)) {
-        producerOptions = [...opcjeKotlospawProducent];
-    } else if (deviceType === 'LAZAR') {
-        producerOptions = [...opcjeLazarProducent];
+
+    // Warunek, który naprawia kolejność kolumn TYLKO dla klimatyzacji.
+    // Dane źródłowe dla AC mają format: [Lp, Nazwa, J.m., Ilość, Opis]
+    // Oczekiwany format przez funkcję rysującą to: [Lp, Nazwa, Opis, J.m., Ilość]
+    if (isAc) {
+        mainTableData = mainTableData.map(row => {
+            const [lp, name, description, unit, quantity,] = row;
+            // Zwraca wiersz w nowej, poprawnej kolejności
+            return [lp, name, unit, description, quantity];
+        });
     }
 
-    if (producerOptions) {
+    let extrasTableData = isKotel ? [...opcjeDlaKotlow] : [...opcjeDlaPompCiepla];
+
+    // Dodawanie opcji od producentów kotłów
+    const kotlospawDeviceTypes = ["Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid"];
+    if (kotlospawDeviceTypes.includes(deviceType)) {
         extrasTableData.push({ type: 'separator', title: 'WYPOSAŻENIE UZUPEŁNIAJĄCE (OPCJONALNIE) OD PRODUCENTA' });
-        extrasTableData.push(...producerOptions);
+        extrasTableData.push(...opcjeKotlospawProducent);
+    } else if (deviceType === 'LAZAR') {
+        extrasTableData.push({ type: 'separator', title: 'WYPOSAŻENIE UZUPEŁNIAJĄCE (OPCJONALNIE) OD PRODUCENTA' });
+        extrasTableData.push(...opcjeLazarProducent);
     }
-    
+
+    // Obsługa niestandardowej ilości jednostek dla pomp ciepła
     if (!isKotel && !isAc && quantityOptions.isCustom) {
         const outdoorUnitIndex = mainTableData.findIndex(row => row[1] && row[1].toLowerCase().includes('jednostka zew'));
-        if (outdoorUnitIndex !== -1) { mainTableData[outdoorUnitIndex][3] = String(quantityOptions.outdoor); }
+        if (outdoorUnitIndex !== -1) mainTableData[outdoorUnitIndex][4] = String(quantityOptions.outdoor);
+        
         const indoorUnitIndex = mainTableData.findIndex(row => row[1] && (row[1].toLowerCase().includes('hydrobox') || row[1].toLowerCase().includes('cylinder')));
-        if (indoorUnitIndex !== -1) { mainTableData[indoorUnitIndex][3] = String(quantityOptions.indoor); }
+        if (indoorUnitIndex !== -1) mainTableData[indoorUnitIndex][4] = String(quantityOptions.indoor);
     }
 
+    // Przenoszenie opcji (demontaż, podbudowa, wentylator) z tabeli dodatków do tabeli głównej
     const movableItems = [
+        { key: 'podbudowa', name: 'Wykonanie podbudowy pod jednostkę zewnętrzną', applicable: () => !isKotel && !isAc },
         { key: 'demontaz', name: 'Demontaż starego źródła ciepła', applicable: () => !isAc },
-        { key: 'podbudowa', name: 'Wykonanie podbudowy pod jednostkę zewnętrzną', applicable: () => !isAc && !isKotel },
         { key: 'exhaustFan', name: 'Wentylator wyciągowy', applicable: () => isKotel },
     ];
     
     movableItems.forEach(item => {
         if (offerOptions[item.key] && item.applicable()) {
             let itemIndexInExtras = extrasTableData.findIndex(row => row[1] && row[1].includes(item.name));
-            
             if (itemIndexInExtras > -1) {
                 const [itemRow] = extrasTableData.splice(itemIndexInExtras, 1);
-                // Struktura opcji dodatkowych: [lp, nazwa, opis, j.m, cena]
-                // Struktura tabeli głównej: [lp, nazwa, j.m, ilość, opis]
-                const itemRowForMainTable = ['', itemRow[1], itemRow[3], '1', itemRow[2]];
+                // Format wiersza dla tabeli głównej: [lp, nazwa, opis, jm, ilość]
+                const itemRowForMainTable = ['', itemRow[1], itemRow[2], itemRow[3], '1'];
                 
-                const insertionKeywords = ["Podłączenie kominowe", "Montaż systemu grzewczego"];
-                let insertAtIndex = mainTableData.findIndex(row => insertionKeywords.some(keyword => row[1] && row[1].includes(keyword)));
+                let insertAtIndex = mainTableData.findIndex(row => row[1] && row[1].includes("Dokumentacja powykonawcza"));
                 if (insertAtIndex === -1) {
-                    insertAtIndex = mainTableData.findIndex(row => row[1].includes("Kocioł"));
-                    insertAtIndex = insertAtIndex > -1 ? insertAtIndex + 1 : 1;
-                } else {
-                    insertAtIndex += 1;
+                    insertAtIndex = mainTableData.length > 2 ? mainTableData.length - 2 : 1;
                 }
+                
                 mainTableData.splice(insertAtIndex, 0, itemRowForMainTable);
             }
         }
     });
-    
+
+    // Usunięcie wiersza o dotacji, jeśli opcja jest odznaczona
     if (offerOptions.dotacja === false) {
         mainTableData = mainTableData.filter(row => !row[1] || !row[1].includes('Pomoc w uzyskaniu dotacji'));
     }
 
-    mainTableData = mainTableData.map((row, index) => {
+    // Ponowne numerowanie wierszy w tabeli głównej
+    mainTableData.forEach((row, index) => {
         row[0] = String(index + 1);
-        return row;
     });
 
     return { mainTableData, extrasTableData };
 }
 
+/**
+ * Główna funkcja generująca dokument PDF oferty.
+ */
 export async function generateOfferPDF(
-  cena,
-  userName,
-  deviceType,
-  model,
-  tankCapacity,
-  bufferCapacity,
-  systemType,
-  offerOptions,
-  isNettoPrice,
-  quantityOptions,
-  showPrice
+  cena, userName, deviceType, model, tankCapacity, bufferCapacity, systemType,
+  offerOptions, isNettoPrice, quantityOptions, showPrice
 ) {
     if (!userName?.trim()) {
         alert('Uzupełnij pole Imię i Nazwisko!');
         return null;
     }
 
+    // Definicje typów urządzeń
     const kotlyDeviceTypes = ["LAZAR", "Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid"];
-    const acDeviceTypes = ['MITSUBISHI AY', 'MITSUBISHI HR', 'VIVAX Y-Design', 'VIVAX H-Design', 'VIVAX Q-Design', 'VIVAX N-Design'];
+    const acDeviceTypes = ['MITSUBISHI AY', 'MITSUBISHI HR', 'VIVAX Y-Design', 'VIVAX H-Design', 'VIVAX M-Design', 'VIVAX Q-Design', 'VIVAX N-Design'];
     const isKotel = kotlyDeviceTypes.includes(deviceType);
     const isAc = acDeviceTypes.includes(deviceType);
-    const kotlospawDeviceTypes = ["Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid"];
 
     try {
+        // Asynchroniczne ładowanie zasobów (szablony, fonty, logo)
         const selectedTemplatePaths = getTemplatePathsForDevice(deviceType);
         const assetPaths = [ ...selectedTemplatePaths, '/fonts/OpenSans-Bold.ttf', '/fonts/OpenSans-Regular.ttf', '/logos/kaman_logo.png' ];
         const assetBuffers = await Promise.all(assetPaths.map(path => fetch(path).then(res => res.ok ? res.arrayBuffer() : null).catch(() => null)));
@@ -341,20 +344,24 @@ export async function generateOfferPDF(
         const boldFontBytes = assetBuffers.pop();
         const templatePdfBuffers = assetBuffers;
 
+        // Inicjalizacja dokumentu PDF
         const finalPdfDoc = await PDFDocument.create();
         finalPdfDoc.registerFontkit(fontkit);
         const boldFont = await finalPdfDoc.embedFont(boldFontBytes);
         const regularFont = await finalPdfDoc.embedFont(regularFontBytes);
+        const fonts = { regular: regularFont, bold: boldFont };
         
         let kamanLogoImage = null;
         if (kamanLogoBytes) kamanLogoImage = await finalPdfDoc.embedPng(kamanLogoBytes);
 
+        // Dodawanie strony tytułowej z szablonu
         if (templatePdfBuffers[0]) {
             const okladkaDoc = await PDFDocument.load(templatePdfBuffers[0]);
             const [copiedPage] = await finalPdfDoc.copyPages(okladkaDoc, [0]);
             finalPdfDoc.addPage(copiedPage);
         }
 
+        // Dodawanie strony dynamicznej z tabelą
         const dynamicPage = finalPdfDoc.addPage();
         const { width: pageWidth, height: pageHeight } = dynamicPage.getSize();
         
@@ -363,7 +370,6 @@ export async function generateOfferPDF(
         );
         
         let currentY = pageHeight - 35;
-        
         if (kamanLogoImage) {
             const logoDims = kamanLogoImage.scale(0.03); 
             dynamicPage.drawImage(kamanLogoImage, { x: (pageWidth - logoDims.width) / 2, y: currentY - logoDims.height, width: logoDims.width, height: logoDims.height });
@@ -375,20 +381,13 @@ export async function generateOfferPDF(
         const userNameTextWidth = boldFont.widthOfTextAtSize(userNameText, userNameFontSize);
         dynamicPage.drawText(userNameText, { x: (pageWidth - userNameTextWidth) / 2, y: currentY, size: userNameFontSize, font: boldFont, color: rgb(0.7, 0, 0.16) });
         currentY -= (userNameFontSize + 20);
-        
-        let tableConfigOverrides = {};
-        if (mainTableData.length > 16) {
-            tableConfigOverrides = {
-                contentFontSize: 7.5,
-                descriptionFontSize: 7,
-                lineHeight: 1.25,
-            };
-        }
 
-        const tableResult = drawTable(finalPdfDoc, dynamicPage, { regular: regularFont, bold: boldFont }, mainTableData, currentY, tableConfigOverrides);
+        // Rysowanie tabeli głównej
+        const tableResult = await drawTable(finalPdfDoc, dynamicPage, fonts, mainTableData, currentY);
         let lastContentPage = tableResult.finalPage;
         let lastYPosAfterTable = tableResult.finalY;
 
+        // Dodawanie ceny końcowej
         if (showPrice) {
             const priceSuffix = isNettoPrice ? 'PLN netto' : 'PLN brutto';
             const priceString = `Cena końcowa: ${cena} ${priceSuffix}`;
@@ -404,25 +403,18 @@ export async function generateOfferPDF(
             lastContentPage.drawText(priceString, { x: (lastContentPage.getWidth() - priceTextWidth) / 2, y: lastYPosAfterTable, size: priceFontSize, font: boldFont, color: rgb(0.7, 0, 0.16) });
         }
         
-        if (!isAc) {
-            let finalExtrasData = [...extrasTableData];
-            
-            if (finalExtrasData.some(row => row.type !== 'separator' && row[1] && !row[1].includes('Wentylator wyciągowy'))) {
-                let lpCounter = 1;
-                const numberedExtrasData = finalExtrasData.map(row => {
-                    if (row.type === 'separator') return row;
-                    const newRow = [...row];
-                    newRow[0] = String(lpCounter++);
-                    return newRow;
-                });
-                
-                if (numberedExtrasData.length > 0) {
-                    const extrasPage = finalPdfDoc.addPage();
-                    drawExtrasPage(extrasPage, {regular: regularFont, bold: boldFont}, numberedExtrasData, 'WYPOSAŻENIE UZUPEŁNIAJĄCE (OPCJONALNIE)');
-                }
-            }
+        // Dodawanie strony z opcjami dodatkowymi (jeśli dotyczy)
+        if (!isAc && extrasTableData.some(row => row.type !== 'separator')) {
+            let lpCounter = 1;
+            const numberedExtrasData = extrasTableData.map(row => {
+                if (row.type === 'separator') return row;
+                return [String(lpCounter++), ...row.slice(1)];
+            });
+            const extrasPage = finalPdfDoc.addPage();
+            drawExtrasPage(extrasPage, fonts, numberedExtrasData, 'WYPOSAŻENIE UZUPEŁNIAJĄCE (OPCJONALNIE)');
         }
 
+        // Dodawanie pozostałych stron z szablonów
         for (let i = 1; i < templatePdfBuffers.length; i++) {
             if (templatePdfBuffers[i] && templatePdfBuffers[i].byteLength > 0) {
                 try {
@@ -435,6 +427,7 @@ export async function generateOfferPDF(
             }
         }
 
+        // Zapisanie dokumentu i zwrócenie jako Blob
         const pdfBytes = await finalPdfDoc.save();
         return new Blob([pdfBytes], { type: 'application/pdf' });
 
