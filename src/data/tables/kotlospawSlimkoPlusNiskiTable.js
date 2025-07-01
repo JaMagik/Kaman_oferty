@@ -52,11 +52,19 @@ const slimkoPlus_30kW_base = slimkoPlus_12kW_base.map(row =>
     ? ['1', 'Kocioł na pellet Kotłospaw Slimko Plus 30 kW z podajnikiem bocznym', 'szt.', '1', 'Automatyczny kocioł 5 klasy z palnikiem EASY ROT i zasobnikiem pelletu montowanym na boku.', 'common']
     : [...row]
 );
+const slimkoPlus_8kW_base = slimkoPlus_12kW_base.map(row => 
+  row[0] === '1'
+    ? ['1', 'Kocioł na pellet Kotłospaw Slimko Plus 8 kW z podajnikiem bocznym', 'szt.', '1', 'Automatyczny kocioł 5 klasy z palnikiem EASY ROT i zasobnikiem pelletu montowanym na boku.', 'common']
+    : [...row]
+);
+
 
 
 export const kotlospawSlimkoPlusNiskiBaseTables = {
   // ... (ewentualne inne wpisy dla Atlantic, np. 'ATLANTIC' dla Extensa AI Duo, jeśli nadal potrzebne)
-  'Kotlospaw slimko plus niski': { // Klucz odpowiadający 'deviceType' dla M-Duo
+  'Kotlospaw slimko plus niski': {
+         '8 kW': slimkoPlus_8kW_base,
+ // Klucz odpowiadający 'deviceType' dla M-Duo
      '12 kW': slimkoPlus_12kW_base,
 '16 kW': slimkoPlus_16kW_base,
 '20 kW': slimkoPlus_20kW_base,

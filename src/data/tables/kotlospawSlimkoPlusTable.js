@@ -33,6 +33,11 @@ const slimkoPlus_16kW_base = slimkoPlus_12kW_base.map(row =>
     ? ['1', 'Kocioł na pellet Kotłospaw Slimko Plus 16 kW', 'szt.', '1', 'Automatyczny kocioł 5 klasy z palnikiem EASY ROT i zasobnikiem pelletu montowanym na górze.', 'common'] 
     : [...row]
 );
+const slimkoPlus_8kW_base = slimkoPlus_12kW_base.map(row => 
+  row[0] === '1' 
+    ? ['1', 'Kocioł na pellet Kotłospaw Slimko Plus 8 kW', 'szt.', '1', 'Automatyczny kocioł 5 klasy z palnikiem EASY ROT i zasobnikiem pelletu montowanym na górze.', 'common'] 
+    : [...row]
+);
 
 // 20 kW
 const slimkoPlus_20kW_base = slimkoPlus_12kW_base.map(row => 
@@ -59,6 +64,8 @@ const slimkoPlus_30kW_base = slimkoPlus_12kW_base.map(row =>
 // Eksport mapy
 export const kotlospawSlimkoPlusBaseTables = {
   'Kotlospaw Slimko Plus': {
+        '8 kW': slimkoPlus_8kW_base,
+
     '12 kW': slimkoPlus_12kW_base,
     '16 kW': slimkoPlus_16kW_base,
     '20 kW': slimkoPlus_20kW_base,
