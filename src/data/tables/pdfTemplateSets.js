@@ -368,7 +368,7 @@ export const pdfTemplateSets = {
     commonContactPage,
   ],
   'VIVAX M-Design': [
-    '/pdf_templates/vivax/1_okladka_q_design.pdf',
+    '/pdf_templates/vivax/1_okladka_M_design.pdf',
     '/pdf_templates/vivax/Karta katalogowa M-Design.pdf',
     oNas,
     groupPage,

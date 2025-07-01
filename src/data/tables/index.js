@@ -72,8 +72,8 @@ export function getTableData(deviceType, model, tankCapacity, bufferCapacity, sy
         const vivaxModelInfo = vivaxAcModels[deviceType]?.[model];
         if (!vivaxModelInfo) return [];
 
-        const indoorRow = ['1', vivaxModelInfo.indoor, 'Ścienna jednostka klimatyzacyjna o wysokiej wydajności, z funkcją filtracji i jonizacji powietrza.', 'szt.', '1'];
-        const outdoorRow = ['2', vivaxModelInfo.outdoor, 'Jednostka sprężarkowa inwerterowa przystosowana do pracy całorocznej.', 'szt.', '1'];
+        const indoorRow = ['1', vivaxModelInfo.indoor, 'szt.', '1', 'Ścienna jednostka klimatyzacyjna o wysokiej wydajności, z funkcją filtracji i jonizacji powietrza.',];
+        const outdoorRow = ['2', vivaxModelInfo.outdoor, 'szt.', '1','Jednostka sprężarkowa inwerterowa przystosowana do pracy całorocznej.', ];
         
         const fullAcScope = [indoorRow, outdoorRow, ...acScopeTemplate];
         
