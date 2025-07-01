@@ -39,6 +39,11 @@ export const vivaxAcModels = {
     '2.6 kW': { indoor: 'Jednostka wew. N-Design 2.6 kW (AENI)', outdoor: 'Jednostka zew. N-Design 2.6 kW (ACP-09CH25AENI)' },
     '3.5 kW': { indoor: 'Jednostka wew. N-Design 3.5 kW (AENI)', outdoor: 'Jednostka zew. N-Design 3.5 kW (ACP-12CH35AENI)' },
     '5.3 kW': { indoor: 'Jednostka wew. N-Design 5.3 kW (AENI)', outdoor: 'Jednostka zew. N-Design 5.3 kW (ACP-18CH50AENI)' }
+  },
+  'VIVAX M-Design': {
+    '2.6 kW': { indoor: 'Jednostka wew. N-Design 2.6 kW (AENI)', outdoor: 'Jednostka zew. N-Design 2.6 kW (ACP-09CH25AENI)' },
+    '3.5 kW': { indoor: 'Jednostka wew. N-Design 3.5 kW (AENI)', outdoor: 'Jednostka zew. N-Design 3.5 kW (ACP-12CH35AENI)' },
+    '5.3 kW': { indoor: 'Jednostka wew. N-Design 5.3 kW (AENI)', outdoor: 'Jednostka zew. N-Design 5.3 kW (ACP-18CH50AENI)' }
   }
 };
 

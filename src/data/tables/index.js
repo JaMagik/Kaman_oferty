@@ -54,6 +54,7 @@ return [' ', data.name, 'szt.', '1', data.description, 'common'];  }
       '140L': { name: 'Bufor 140 L z osprzętem', description: 'Zbiornik buforowy 140L, który zwiększa zład wody w instalacji.' },
       '200L': { name: 'Bufor 200 L z osprzętem', description: 'Zbiornik buforowy 200L, zalecany dla bardziej rozbudowanych instalacji.' },
       '300L': { name: 'Bufor 300 L z osprzętem', description: 'Zbiornik buforowy 300L do magazynowania nadmiaru ciepła.'},
+     
     };
     const bufferKey = bufferCapacity.includes('Sprzęgło') ? 'sprzeglo' : bufferCapacity;
     const data = bufferDescriptions[bufferKey];
@@ -62,7 +63,7 @@ return [' ', data.name, 'szt.', '1', data.description, 'common'];  }
 return [' ', data.name, 'szt.', '1', data.description, 'common'];  }
 
 export function getTableData(deviceType, model, tankCapacity, bufferCapacity, systemType, isAc = false) {
-  const acDeviceTypes = ['MITSUBISHI AY', 'MITSUBISHI HR', 'VIVAX Y-Design', 'VIVAX H-Design', 'VIVAX Q-Design', 'VIVAX N-Design'];
+  const acDeviceTypes = ['MITSUBISHI AY', 'MITSUBISHI HR', 'VIVAX Y-Design', 'VIVAX M-Design','VIVAX H-Design', 'VIVAX Q-Design', 'VIVAX N-Design'];
 
   if (acDeviceTypes.includes(deviceType)) {
     if (deviceType.includes('VIVAX')) {

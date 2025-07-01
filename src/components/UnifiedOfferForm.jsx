@@ -36,7 +36,7 @@ const allDevicesData = {
 const boilerDeviceTypes = [ "LAZAR", "Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid" ];
 const heatPumpBufferOptions = [ { value: "sprzeglo", label: "Sprzęgło hydrauliczne z osprzętem" }, { value: "none", label: "Bufor niewymagany" }, { value: "40-100L", label: "Bufor 40-100 L + osprzęt" }, { value: "200L", label: "Bufor 200 L + osprzęt" }, { value: "300L", label: "Bufor 300 L + osprzęt" }, ];
 const boilerBufferOptions = [ { value: "sprzeglo", label: "Sprzęgło hydrauliczne z osprzętem" }, { value: "none", label: "Bufor niewymagany" }, { value: "zawor-4d", label: "Zawór czterodrożny z siłownikiem" }, { value: "100L", label: "Bufor 100 L + osprzęt" }, { value: "120L", label: "Bufor 120 L + osprzęt" }, { value: "140L", label: "Bufor 140 L + osprzęt" }, { value: "200L", label: "Bufor 200 L + osprzęt" }, ];
-const acDeviceTypes = ['MITSUBISHI AY', 'MITSUBISHI HR', 'VIVAX Y-Design', 'VIVAX H-Design', 'VIVAX Q-Design', 'VIVAX N-Design'];
+const acDeviceTypes = ['MITSUBISHI AY', 'MITSUBISHI HR', 'VIVAX Y-Design', 'VIVAX H-Design', 'VIVAX M-Design', 'VIVAX Q-Design', 'VIVAX N-Design'];
 
 export default function UnifiedOfferForm() {
   const [userName, setUserName] = useState("");
@@ -191,6 +191,8 @@ export default function UnifiedOfferForm() {
             <option value="VIVAX H-Design">VIVAX H+ Design</option>
             <option value="VIVAX Q-Design">VIVAX Q-Design</option>
             <option value="VIVAX N-Design">VIVAX N-Design</option>
+                        <option value="VIVAX M-Design">VIVAX M-Design</option>
+
         </optgroup>
         <optgroup label="Kotły na Pellet">
           <option value="LAZAR">Lazar</option>

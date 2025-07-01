@@ -367,6 +367,14 @@ export const pdfTemplateSets = {
     groupPage2,
     commonContactPage,
   ],
+  'VIVAX M-Design': [
+    '/pdf_templates/vivax/1_okladka_q_design.pdf',
+    '/pdf_templates/vivax/Karta katalogowa M-Design.pdf',
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
   'VIVAX N-Design': [
     '/pdf_templates/vivax/1_okladka_n_design.pdf',
     '/pdf_templates/vivax/Karta katalogowa N-Design-1.pdf',
@@ -378,6 +386,7 @@ export const pdfTemplateSets = {
     commonContactPage,
   ],
 };
+
 
 export function getTemplatePathsForDevice(deviceType) {
   // Zwraca zdefiniowany zestaw ścieżek lub domyślny, jeśli klucz nie zostanie znaleziony
