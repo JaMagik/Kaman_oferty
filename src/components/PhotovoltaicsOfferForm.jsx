@@ -16,7 +16,6 @@ export default function PhotovoltaicsOfferForm() {
   const [showPrice, setShowPrice] = useState(true);
   const [installationType, setInstallationType] = useState('dach');
   
-  // --- ZMIANA 1: Dodanie nowego stanu dla montażu na ekierkach ---
   const [isBracketMount, setIsBracketMount] = useState(false);
   
   const [panelTypeKey, setPanelTypeKey] = useState('CANADIAN_SOLAR_455');
@@ -29,6 +28,11 @@ export default function PhotovoltaicsOfferForm() {
   const [storageTypeKey, setStorageTypeKey] = useState('DEYE_STORAGE_LV');
   const [storageModules, setStorageModules] = useState(1);
   
+  // Stany dla oferty niestandardowej
+  const [selectCustomPanels, setSelectCustomPanels] = useState(true);
+  const [selectCustomInverter, setSelectCustomInverter] = useState(true);
+  const [selectCustomStorage, setSelectCustomStorage] = useState(false);
+
   const [customPanelName, setCustomPanelName] = useState('');
   const [customPanelQuantity, setCustomPanelQuantity] = useState(10);
   const [customPanelPower, setCustomPanelPower] = useState(455);
@@ -36,7 +40,6 @@ export default function PhotovoltaicsOfferForm() {
   const [customInverterName, setCustomInverterName] = useState('');
   const [customInverterQuantity, setCustomInverterQuantity] = useState(1);
   const [customInverterDatasheet, setCustomInverterDatasheet] = useState(null);
-  const [customIncludeStorage, setCustomIncludeStorage] = useState(false);
   const [customStorageName, setCustomStorageName] = useState('');
   const [customStorageQuantity, setCustomStorageQuantity] = useState(1);
   const [customStorageDatasheet, setCustomStorageDatasheet] = useState(null);
@@ -94,7 +97,6 @@ export default function PhotovoltaicsOfferForm() {
             inverterQuantity: isCustomInverterQuantity ? inverterQuantity : 1,
             storageDetails: includeStorage ? storageTypesData[storageTypeKey] : null,
             storageModules: includeStorage ? storageModules : 0,
-            // --- ZMIANA 3: Przekazanie stanu checkboxa ---
             isBracketMount: isBracketMount,
         };
         pdfBlob = await generatePhotovoltaicsOfferPDF(formData);
@@ -102,9 +104,9 @@ export default function PhotovoltaicsOfferForm() {
     } else {
         const formData = {
             clientName: userName, price, isNetto, installationType, showPrice,
-            panel: { name: customPanelName, quantity: customPanelQuantity, power: customPanelPower, datasheet: customPanelDatasheet },
-            inverter: { name: customInverterName, quantity: customInverterQuantity, datasheet: customInverterDatasheet },
-            storage: customIncludeStorage ? { name: customStorageName, quantity: customStorageQuantity, datasheet: customStorageDatasheet } : null,
+            panel: selectCustomPanels ? { name: customPanelName, quantity: customPanelQuantity, power: customPanelPower, datasheet: customPanelDatasheet } : null,
+            inverter: selectCustomInverter ? { name: customInverterName, quantity: customInverterQuantity, datasheet: customInverterDatasheet } : null,
+            storage: selectCustomStorage ? { name: customStorageName, quantity: customStorageQuantity, datasheet: customStorageDatasheet } : null,
         };
         pdfBlob = await generateCustomOfferPDF(formData);
     }
@@ -169,7 +171,6 @@ export default function PhotovoltaicsOfferForm() {
                     </select>
                 </div>
                 
-                {/* --- ZMIANA 2: Dodanie checkboxa do formularza --- */}
                 {installationType === 'dach' && (
                   <div className="input-group-inline" style={{ paddingLeft: '10px', marginTop: '5px' }}>
                     <input
@@ -250,53 +251,69 @@ export default function PhotovoltaicsOfferForm() {
                         <option value="grunt">Gruntowa</option>
                     </select>
                 </div>
-                <fieldset className="component-fieldset">
-                    <legend>Panele Fotowoltaiczne</legend>
-                    <label htmlFor="customPanelName">Nazwa i model paneli</label>
-                    <input id="customPanelName" type="text" placeholder="np. Jinko Solar 470Wp" value={customPanelName} onChange={e => setCustomPanelName(e.target.value)} required />
-                    <div className="inline-inputs">
-                        <div className="input-group">
-                            <label htmlFor="customPanelQuantity">Ilość (szt.)</label>
-                            <input id="customPanelQuantity" type="number" value={customPanelQuantity} onChange={e => setCustomPanelQuantity(Number(e.target.value))} required />
-                        </div>
-                        <div className="input-group">
-                           <label htmlFor="customPanelPower">Moc 1 szt. (Wp)</label>
-                           <input id="customPanelPower" type="number" value={customPanelPower} onChange={e => setCustomPanelPower(Number(e.target.value))} required/>
-                        </div>
-                    </div>
-                    <label htmlFor="customPanelDatasheet">Karta katalogowa paneli (PDF)</label>
-                    <input id="customPanelDatasheet" type="file" accept=".pdf" onChange={handleFileChange(setCustomPanelDatasheet)} />
-                </fieldset>
-                <fieldset className="component-fieldset">
-                    <legend>Falownik / Inwerter</legend>
-                    <label htmlFor="customInverterName">Nazwa i model falownika</label>
-                    <input id="customInverterName" type="text" placeholder="np. Falownik hybrydowy DEYE 10kW" value={customInverterName} onChange={e => setCustomInverterName(e.target.value)} required />
-                     <div className="input-group">
-                        <label htmlFor="customInverterQuantity">Ilość (szt.)</label>
-                        <input id="customInverterQuantity" type="number" placeholder="1" value={customInverterQuantity} onChange={e => setCustomInverterQuantity(Number(e.target.value))} required />
-                    </div>
-                    <label htmlFor="customInverterDatasheet">Karta katalogowa falownika (PDF)</label>
-                    <input id="customInverterDatasheet" type="file" accept=".pdf" onChange={handleFileChange(setCustomInverterDatasheet)} />
-                </fieldset>
+
                 <div className="options-box">
                     <div className="option-row">
-                        <input type="checkbox" id="customIncludeStorage" checked={customIncludeStorage} onChange={e => setCustomIncludeStorage(e.target.checked)} />
-                        <label htmlFor="customIncludeStorage">Dodaj magazyn energii (opcjonalnie)</label>
+                        <input type="checkbox" id="selectCustomPanels" checked={selectCustomPanels} onChange={e => setSelectCustomPanels(e.target.checked)} />
+                        <label htmlFor="selectCustomPanels">Dołącz panele</label>
                     </div>
-                    {customIncludeStorage && (
-                        <fieldset className="component-fieldset nested">
-                            <legend>Magazyn Energii</legend>
-                            <label htmlFor="customStorageName">Nazwa i model magazynu</label>
-                            <input id="customStorageName" type="text" placeholder="np. DEYE 5.12kWh" value={customStorageName} onChange={e => setCustomStorageName(e.target.value)} required={customIncludeStorage}/>
-                            <div className="input-group">
-                                <label htmlFor="customStorageQuantity">Ilość modułów/sztuk</label>
-                                <input id="customStorageQuantity" type="number" value={customStorageQuantity} onChange={e => setCustomStorageQuantity(Number(e.target.value))} required={customIncludeStorage}/>
-                            </div>
-                            <label htmlFor="customStorageDatasheet">Karta katalogowa magazynu (PDF)</label>
-                            <input id="customStorageDatasheet" type="file" accept=".pdf" onChange={handleFileChange(setCustomStorageDatasheet)} />
-                        </fieldset>
-                    )}
+                     <div className="option-row">
+                        <input type="checkbox" id="selectCustomInverter" checked={selectCustomInverter} onChange={e => setSelectCustomInverter(e.target.checked)} />
+                        <label htmlFor="selectCustomInverter">Dołącz inwerter/falownik</label>
+                    </div>
+                    <div className="option-row">
+                        <input type="checkbox" id="selectCustomStorage" checked={selectCustomStorage} onChange={e => setSelectCustomStorage(e.target.checked)} />
+                        <label htmlFor="selectCustomStorage">Dołącz magazyn energii</label>
+                    </div>
                 </div>
+
+                {selectCustomPanels && (
+                    <fieldset className="component-fieldset">
+                        <legend>Panele Fotowoltaiczne</legend>
+                        <label htmlFor="customPanelName">Nazwa i model paneli</label>
+                        <input id="customPanelName" type="text" placeholder="np. Jinko Solar 470Wp" value={customPanelName} onChange={e => setCustomPanelName(e.target.value)} required={selectCustomPanels} />
+                        <div className="inline-inputs">
+                            <div className="input-group">
+                                <label htmlFor="customPanelQuantity">Ilość (szt.)</label>
+                                <input id="customPanelQuantity" type="number" value={customPanelQuantity} onChange={e => setCustomPanelQuantity(Number(e.target.value))} required={selectCustomPanels} />
+                            </div>
+                            <div className="input-group">
+                               <label htmlFor="customPanelPower">Moc 1 szt. (Wp)</label>
+                               <input id="customPanelPower" type="number" value={customPanelPower} onChange={e => setCustomPanelPower(Number(e.target.value))} required={selectCustomPanels} />
+                            </div>
+                        </div>
+                        <label htmlFor="customPanelDatasheet">Karta katalogowa paneli (PDF)</label>
+                        <input id="customPanelDatasheet" type="file" accept=".pdf" onChange={handleFileChange(setCustomPanelDatasheet)} />
+                    </fieldset>
+                )}
+
+                {selectCustomInverter && (
+                    <fieldset className="component-fieldset">
+                        <legend>Falownik / Inwerter</legend>
+                        <label htmlFor="customInverterName">Nazwa i model falownika</label>
+                        <input id="customInverterName" type="text" placeholder="np. Falownik hybrydowy DEYE 10kW" value={customInverterName} onChange={e => setCustomInverterName(e.target.value)} required={selectCustomInverter} />
+                         <div className="input-group">
+                            <label htmlFor="customInverterQuantity">Ilość (szt.)</label>
+                            <input id="customInverterQuantity" type="number" placeholder="1" value={customInverterQuantity} onChange={e => setCustomInverterQuantity(Number(e.target.value))} required={selectCustomInverter} />
+                        </div>
+                        <label htmlFor="customInverterDatasheet">Karta katalogowa falownika (PDF)</label>
+                        <input id="customInverterDatasheet" type="file" accept=".pdf" onChange={handleFileChange(setCustomInverterDatasheet)} />
+                    </fieldset>
+                )}
+
+                {selectCustomStorage && (
+                    <fieldset className="component-fieldset">
+                        <legend>Magazyn Energii</legend>
+                        <label htmlFor="customStorageName">Nazwa i model magazynu</label>
+                        <input id="customStorageName" type="text" placeholder="np. DEYE 5.12kWh" value={customStorageName} onChange={e => setCustomStorageName(e.target.value)} required={selectCustomStorage}/>
+                        <div className="input-group">
+                            <label htmlFor="customStorageQuantity">Ilość modułów/sztuk</label>
+                            <input id="customStorageQuantity" type="number" value={customStorageQuantity} onChange={e => setCustomStorageQuantity(Number(e.target.value))} required={selectCustomStorage}/>
+                        </div>
+                        <label htmlFor="customStorageDatasheet">Karta katalogowa magazynu (PDF)</label>
+                        <input id="customStorageDatasheet" type="file" accept=".pdf" onChange={handleFileChange(setCustomStorageDatasheet)} />
+                    </fieldset>
+                )}
             </>
         )}
 
