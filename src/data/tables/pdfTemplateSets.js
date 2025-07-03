@@ -145,16 +145,17 @@ export const pdfTemplateSets = {
 
   // --- MITSUBISHI (Klimatyzatory) ---
   'MITSUBISHI AY': [
-    '/pdf_templates/mitsubishi-klima/ay/1_okladka.pdf',
-    '/pdf_templates/mitsubishi-klima/ay/3_katalog.pdf',
+        '/pdf_templates/mitsubishi/ay/1_okladka.pdf',
+    '/pdf_templates/mitsubishi/ay/ay_datasheet_1.pdf',
+    '/pdf_templates/mitsubishi/ay/ay_datasheet_2.pdf',
      oNas,
       groupPage,
     groupPage2,
     commonContactPage,
   ],
   'MITSUBISHI HR': [
-    '/pdf_templates/mitsubishi-klima/hr/1_okladka.pdf',
-    '/pdf_templates/mitsubishi-klima/hr/3_katalog.pdf',
+    '/pdf_templates/mitsubishi/hr/1_okladka.pdf',
+    '/pdf_templates/mitsubishi/hr/karta-katalogowa-mitsubishi-hr.pdf',
      oNas,
       groupPage,
     groupPage2,

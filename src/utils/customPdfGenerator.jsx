@@ -1,6 +1,5 @@
 import { PDFDocument, rgb } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
-// ZMIANA: Import dodatkowego zakresu prac dla magazynów energii
 import { pvOfferCommons, pvRoofMountScope, pvGroundMountScope, pvStorageScope } from '../data/tables/photovoltaicsData';
 import { drawTable, drawHeaderBlock } from './pdfUtils'; 
 
@@ -18,8 +17,15 @@ export async function generateCustomOfferPDF(formData) {
     let kamanLogoImage = null;
     if (kamanLogoBytes) kamanLogoImage = await pdfDoc.embedPng(kamanLogoBytes);
 
-    const coverPdfBytes = await fetch(pvOfferCommons.coverPage).then(res => res.arrayBuffer());
-    const contactPdfBytes = await fetch(pvOfferCommons.contactPage).then(res => res.arrayBuffer());
+    // ZMIANA: Dodano sprawdzanie poprawności odpowiedzi HTTP
+    const coverPdfBytes = await fetch(pvOfferCommons.coverPage).then(res => {
+        if (!res.ok) throw new Error(`Nie udało się wczytać pliku okładki: ${pvOfferCommons.coverPage}. Sprawdź, czy plik istnieje w folderze 'public'.`);
+        return res.arrayBuffer();
+    });
+    const contactPdfBytes = await fetch(pvOfferCommons.contactPage).then(res => {
+        if (!res.ok) throw new Error(`Nie udało się wczytać pliku strony kontaktowej: ${pvOfferCommons.contactPage}.`);
+        return res.arrayBuffer();
+    });
 
     const inverterDatasheetBytes = inverter?.datasheet ? await inverter.datasheet.arrayBuffer() : null;
     const panelDatasheetBytes = panel?.datasheet ? await panel.datasheet.arrayBuffer() : null;
@@ -68,22 +74,18 @@ export async function generateCustomOfferPDF(formData) {
     
     let mainTableData = [];
     
-    // Dodawanie komponentów
     if(panel) mainTableData.push(['', panel.name, `Moc jednostkowa: ${panel.power} Wp`, 'szt.', String(panel.quantity)]);
     if(inverter) mainTableData.push(['', inverter.name, 'Falownik niestandardowy', 'szt.', String(inverter.quantity)]);
     if (storage) {
         mainTableData.push(['', storage.name, 'Magazyn niestandardowy', 'szt.', String(storage.quantity)]);
     }
     
-    // Dodawanie zakresu prac
     if(panel || inverter) {
         const scopeData = installationType === 'grunt' ? pvGroundMountScope : pvRoofMountScope;
         mainTableData.push(...scopeData);
     }
     
-    // ZMIANA: Inteligentne dodawanie zakresu prac dla magazynu
     if (storage) {
-        // Filtrujemy, aby nie duplikować pozycji samego urządzenia, którą już dodaliśmy
         const storageScopeToAdd = pvStorageScope.filter(row => !row[1].includes('Zestaw magazynowania energii'));
         mainTableData.push(...storageScopeToAdd);
     }

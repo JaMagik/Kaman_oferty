@@ -15,7 +15,7 @@ import { kotlospawDrewkoPlusBaseTables } from "../data/tables/kotlospawDrewkoPlu
 import { kotlospawDrewkoHybridBaseTables } from "../data/tables/kotlospawDrewkoHybridTable";
 import { toshiba1fBaseTables } from '../data/tables/toshiba1fTable';
 import { kaisaiHydroboxBaseTables } from '../data/tables/kaisaiTable';
-import { vivaxAcBaseTables } from '../data/tables/acData';
+import { acBaseTables } from '../data/tables/acData';
 
 
 const allDevicesData = {
@@ -30,7 +30,7 @@ const allDevicesData = {
   ...kotlospawDrewkoHybridBaseTables,
   ...toshiba1fBaseTables,
   ...kaisaiHydroboxBaseTables,
-  ...vivaxAcBaseTables,
+  ...acBaseTables,
 };
 
 const boilerDeviceTypes = [ "LAZAR", "Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid" ];
@@ -58,13 +58,11 @@ export default function UnifiedOfferForm() {
   const [generatedPdfData, setGeneratedPdfData] = useState(null);
   const [systemType, setSystemType] = useState('zamkniety');
   
-  // --- ZMIANA 1: Dodanie stanu dla wentylatora wyciągowego ---
   const [includeExhaustFan, setIncludeExhaustFan] = useState(false);
 
   const isBoiler = boilerDeviceTypes.includes(deviceType);
   const isAcDevice = acDeviceTypes.includes(deviceType);
   
-  // --- ZMIANA 2: Sprawdzenie, czy wybrany kocioł to Kotłospaw ---
   const isKotlospaw = deviceType.toLowerCase().includes('kotlospaw');
 
   const formatPriceForDisplay = (value) => {
@@ -109,12 +107,11 @@ export default function UnifiedOfferForm() {
     }
     setGeneratedPdfData(null);
     
-    // --- ZMIANA 3: Przekazanie nowej opcji do generatora ---
     const offerOptions = {
       demontaz: includeDemontaz,
       podbudowa: includePodbudowa,
       dotacja: includeDotacja,
-      exhaustFan: isKotlospaw && includeExhaustFan, // Przekazuj tylko dla Kotłospaw
+      exhaustFan: isKotlospaw && includeExhaustFan,
     };
 
     const pdfData = await generateOfferPDF(
@@ -250,7 +247,6 @@ export default function UnifiedOfferForm() {
                 <label htmlFor="includePodbudowa">Uwzględnij podbudowę pod pompę ciepła w ofercie</label>
               </div>
             )}
-             {/* --- ZMIANA 4: Dodanie warunkowego checkboxa dla Kotłospaw --- */}
              {isKotlospaw && (
               <div className="option-row">
                 <input

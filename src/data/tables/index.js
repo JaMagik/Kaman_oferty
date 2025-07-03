@@ -12,18 +12,16 @@ import { kotlospawDrewkoPlusBaseTables } from "./kotlospawDrewkoPlusTable";
 import { kotlospawDrewkoHybridBaseTables } from "./kotlospawDrewkoHybridTable";
 import { kaisaiHydroboxBaseTables } from './kaisaiTable';
 import { opcjeDlaPompCiepla, opcjeDlaKotlow } from './opcjeDodatkowe.js';
-// POPRAWIONY IMPORT
-import { vivaxAcModels, acScopeTemplate, vivaxAcBaseTables } from './acData';
+import { acModels, acScopeTemplate, acBaseTables } from './acData';
 
 const allDeviceTables = {
     ...mitsubishiBaseTables, ...atlanticBaseTables, ...lazarBaseTables,
     ...viessmannBaseTables, ...kotlospawSlimkoPlusBaseTables,...kotlospawSlimkoPlusNiskiBaseTables,
     ...qmpellBaseTables, ...kotlospawDrewkoPlusBaseTables, ...kotlospawDrewkoHybridBaseTables,...toshiba1fBaseTables,
     ...kaisaiHydroboxBaseTables,
-    ...vivaxAcBaseTables, // Poprawnie dodane dane
+    ...acBaseTables,
 };
 
-// ... (funkcje getTankRowData i getBufferRowData bez zmian) ...
 function getTankRowData(tankCapacity) {
     if (!tankCapacity || ['none', 'integrated', 'Brak zasobnika CWU', 'Brak zasobnika CWU / Zintegrowany'].includes(tankCapacity)) return null;
     const tankDescriptions = {
@@ -37,10 +35,10 @@ function getTankRowData(tankCapacity) {
     };
     const data = tankDescriptions[tankCapacity];
     if (!data) return null;
-// NOWA WERSJA
-return [' ', data.name, 'szt.', '1', data.description, 'common'];  }
+    return [' ', data.name, 'szt.', '1', data.description, 'common'];
+}
   
-  function getBufferRowData(bufferCapacity) {
+function getBufferRowData(bufferCapacity) {
     if (!bufferCapacity || bufferCapacity === 'none' || bufferCapacity === 'Brak bufora') return null;
     const bufferDescriptions = {
       'sprzeglo': { name: 'Sprzęgło hydrauliczne z osprzętem', description: 'Kompaktowe sprzęgło hydrauliczne zapewniające separację obiegu źródła ciepła od obiegów grzewczych.' },
@@ -55,38 +53,28 @@ return [' ', data.name, 'szt.', '1', data.description, 'common'];  }
       '200L': { name: 'Bufor 200 L z osprzętem', description: 'Zbiornik buforowy 200L, zalecany dla bardziej rozbudowanych instalacji.' },
       '300L': { name: 'Bufor 300 L z osprzętem', description: 'Zbiornik buforowy 300L do magazynowania nadmiaru ciepła.'},
       '500L': { name: 'Bufor 500 L z osprzętem', description: 'Zbiornik buforowy 500L do magazynowania nadmiaru ciepła.'},
-            '800L': { name: 'Bufor 800 L z osprzętem', description: 'Zbiornik buforowy 800L do magazynowania nadmiaru ciepła.'},
+      '800L': { name: 'Bufor 800 L z osprzętem', description: 'Zbiornik buforowy 800L do magazynowania nadmiaru ciepła.'},
       '1000L': { name: 'Bufor 1000 L z osprzętem', description: 'Zbiornik buforowy 1000L do magazynowania nadmiaru ciepła.' },
     };
     const bufferKey = bufferCapacity.includes('Sprzęgło') ? 'sprzeglo' : bufferCapacity;
     const data = bufferDescriptions[bufferKey];
     if (!data) return null;
-// NOWA WERSJA
-return [' ', data.name, 'szt.', '1', data.description, 'common'];  }
+    return [' ', data.name, 'szt.', '1', data.description, 'common'];
+}
 
 export function getTableData(deviceType, model, tankCapacity, bufferCapacity, systemType, isAc = false) {
-  const acDeviceTypes = ['MITSUBISHI AY', 'MITSUBISHI HR', 'VIVAX Y-Design', 'VIVAX M-Design','VIVAX H-Design', 'VIVAX Q-Design', 'VIVAX N-Design'];
+  const acDeviceTypes = Object.keys(acModels);
 
   if (acDeviceTypes.includes(deviceType)) {
-    if (deviceType.includes('VIVAX')) {
-        const vivaxModelInfo = vivaxAcModels[deviceType]?.[model];
-        if (!vivaxModelInfo) return [];
+    const modelInfo = acModels[deviceType]?.[model];
+    if (!modelInfo) return [];
 
-        const indoorRow = ['1', vivaxModelInfo.indoor, 'szt.', '1', 'Ścienna jednostka klimatyzacyjna o wysokiej wydajności, z funkcją filtracji i jonizacji powietrza.',];
-        const outdoorRow = ['2', vivaxModelInfo.outdoor, 'szt.', '1','Jednostka sprężarkowa inwerterowa przystosowana do pracy całorocznej.', ];
-        
-        const fullAcScope = [indoorRow, outdoorRow, ...acScopeTemplate];
-        
-        return fullAcScope.map((row, index) => {
-            const newRow = [...row];
-            newRow[0] = String(index + 1);
-            return newRow;
-        });
-    }
+    const indoorRow = ['1', modelInfo.indoor, 'szt.', '1', 'Ścienna jednostka klimatyzacyjna o wysokiej wydajności, z funkcją filtracji i jonizacji powietrza.',];
+    const outdoorRow = ['2', modelInfo.outdoor, 'szt.', '1','Jednostka sprężarkowa inwerterowa przystosowana do pracy całorocznej.', ];
     
-    // Generyczna obsługa dla Mitsubishi AC
-    const baseScope = allDeviceTables[deviceType]?.[model] || [];
-    return baseScope.map((row, index) => {
+    const fullAcScope = [indoorRow, outdoorRow, ...acScopeTemplate];
+    
+    return fullAcScope.map((row, index) => {
         const newRow = [...row];
         newRow[0] = String(index + 1);
         return newRow;
@@ -110,7 +98,6 @@ export function getTableData(deviceType, model, tankCapacity, bufferCapacity, sy
     }
   }
   
-// POPRAWNA WERSJA
 let workingTable = isBoiler
     ? baseTableData.filter(row => row[5] === 'common' || row[5] === (systemType || 'zamkniety'))
     : baseTableData;

@@ -16,7 +16,18 @@ export const acScopeTemplate = [
   ['13', 'Szkolenie użytkownika', 'szt.', '1', 'Przekazanie zasad eksploatacji, omówienie czynności konserwacyjnych oraz trybów pracy urządzenia.'],
 ];
 
-export const vivaxAcModels = {
+export const acModels = {
+    'MITSUBISHI AY': {
+        '2.5 kW': { indoor: 'Jednostka wew. AY 2.5 kW', outdoor: 'Jednostka zew. AY 2.5 kW' },
+        '3.5 kW': { indoor: 'Jednostka wew. AY 3.5 kW', outdoor: 'Jednostka zew. AY 3.5 kW' },
+        '4.2 kW': { indoor: 'Jednostka wew. AY 4.2 kW', outdoor: 'Jednostka zew. AY 4.2 kW' },
+        '5.0 kW': { indoor: 'Jednostka wew. AY 5.0 kW', outdoor: 'Jednostka zew. AY 5.0 kW' },
+    },
+    'MITSUBISHI HR': {
+        '2.5 kW': { indoor: 'Jednostka wew. HR 2.5 kW', outdoor: 'Jednostka zew. HR 2.5 kW' },
+        '3.5 kW': { indoor: 'Jednostka wew. HR 3.5 kW', outdoor: 'Jednostka zew. HR 3.5 kW' },
+        '5.0 kW': { indoor: 'Jednostka wew. HR 5.0 kW', outdoor: 'Jednostka zew. HR 5.0 kW' },
+    },
   'VIVAX Y-Design': {
     '3.5 kW': {
       indoor: 'Jednostka wew. Y-Design 3.5 kW (AEVI)',
@@ -47,15 +58,10 @@ export const vivaxAcModels = {
   }
 };
 
-
-// === NOWY, BRAKUJĄCY EKSPORT ===
-export const vivaxAcBaseTables = {};
-for (const series in vivaxAcModels) {
-    vivaxAcBaseTables[series] = {};
-    for (const model in vivaxAcModels[series]) {
-        vivaxAcBaseTables[series][model] = []; // Pusta tablica, bo dane są budowane dynamicznie w index.js
+export const acBaseTables = {};
+for (const series in acModels) {
+    acBaseTables[series] = {};
+    for (const model in acModels[series]) {
+        acBaseTables[series][model] = acScopeTemplate;
     }
 }
-// Dodajemy też generyczny zakres dla Mitsubishi AC
-vivaxAcBaseTables['MITSUBISHI AY'] = {'2.5-5.0 kW': acScopeTemplate};
-vivaxAcBaseTables['MITSUBISHI HR'] = {'2.5-5.0 kW': acScopeTemplate};
