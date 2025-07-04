@@ -1,13 +1,18 @@
-// Nowy plik: src/utils/recuperationPdfGenerator.jsx
+// src/utils/recuperationPdfGenerator.jsx
 
 import { PDFDocument, rgb } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 import { drawTable, drawHeaderBlock } from './pdfUtils'; 
-import { recuperationScopes } from '../data/tables/recuperationData';
+import { 
+    recuperationDevices,
+    installationSystems, 
+    otherElements,
+    recuperationBaseScope
+} from '../data/tables/recuperationData';
 import { pvOfferCommons } from '../data/tables/photovoltaicsData';
 
 export async function generateRecuperationOfferPDF(formData) {
-  const { userName, price, isNetto, showPrice, offerMode, deviceKey, surfaceArea } = formData;
+  const { userName, price, isNetto, showPrice, offerMode, deviceKey, surfaceArea, installationSystemKey, otherElementsKey } = formData;
 
   try {
     const pdfDoc = await PDFDocument.create();
@@ -42,15 +47,35 @@ export async function generateRecuperationOfferPDF(formData) {
     
     currentY = drawHeaderBlock(offerPage, { regular: regularFont, bold: boldFont }, kamanLogoImage, offerDetails, currentY);
     
-    // Pobranie odpowiedniego zakresu prac na podstawie wybranego urządzenia
-    const scopeTableData = (recuperationScopes[deviceKey] || []).map((row, index) => {
+    // ZMIANA: Budowanie tabeli z wybranych komponentów i stałego zakresu prac
+    let mainTableData = [];
+    
+    // 1. Dodaj wybrane komponenty
+    const selectedDevice = recuperationDevices[deviceKey];
+    const selectedSystem = installationSystems[installationSystemKey];
+    const selectedOther = otherElements[otherElementsKey];
+
+    if (selectedDevice) {
+        mainTableData.push(['', selectedDevice.name, selectedDevice.description, 'szt.', '1']);
+    }
+    if (selectedSystem) {
+        mainTableData.push(['', selectedSystem.name, selectedSystem.description, 'kpl.', '1']);
+    }
+    if (selectedOther) {
+        mainTableData.push(['', selectedOther.name, selectedOther.description, 'kpl.', '1']);
+    }
+
+    // 2. Dołącz stały zakres prac
+    mainTableData.push(...recuperationBaseScope);
+    
+    mainTableData = mainTableData.map((row, index) => {
       const newRow = [...row];
       newRow[0] = String(index + 1);
       return newRow;
     });
     
     currentY -= 15;
-    let tableResult = await drawTable(pdfDoc, offerPage, { regular: regularFont, bold: boldFont }, scopeTableData, currentY, "Zakres prac i komponenty systemu");
+    let tableResult = await drawTable(pdfDoc, offerPage, { regular: regularFont, bold: boldFont }, mainTableData, currentY, "Zakres prac i komponenty systemu");
     lastContentPage = tableResult.finalPage;
 
     if (showPrice) {

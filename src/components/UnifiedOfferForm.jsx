@@ -107,9 +107,10 @@ export default function UnifiedOfferForm() {
     }
     setGeneratedPdfData(null);
     
+    // ZMIANA: Logika warunkowa dla opcji
     const offerOptions = {
-      demontaz: includeDemontaz,
-      podbudowa: includePodbudowa,
+      demontaz: !isAcDevice && includeDemontaz,
+      podbudowa: !isAcDevice && includePodbudowa,
       dotacja: includeDotacja,
       exhaustFan: isKotlospaw && includeExhaustFan,
     };

@@ -1,14 +1,15 @@
-// Nowy plik: src/components/RecuperationOfferForm.jsx
+// src/components/RecuperationOfferForm.jsx
 
 import React, { useState, useEffect } from 'react';
-import { recuperationDevices, getRecommendedRecuperator } from '../data/tables/recuperationData';
+// ZMIANA: Poprawiono import z 'otherElementsOptions' na 'otherElements'
+import { 
+    recuperationDevices, 
+    getRecommendedRecuperator, 
+    installationSystems, 
+    otherElements 
+} from '../data/tables/recuperationData';
 import { generateRecuperationOfferPDF } from '../utils/recuperationPdfGenerator';
 import TrelloActions from './TrelloActions';
-
-const deviceOptions = Object.keys(recuperationDevices).map(key => ({
-  key: key,
-  name: recuperationDevices[key].name,
-}));
 
 export default function RecuperationOfferForm() {
   const [isProcessing, setIsProcessing] = useState(false);
@@ -17,34 +18,24 @@ export default function RecuperationOfferForm() {
   const [isNetto, setIsNetto] = useState(false);
   const [showPrice, setShowPrice] = useState(true);
   const [generatedPdfData, setGeneratedPdfData] = useState(null);
-
-  const [offerMode, setOfferMode] = useState('dobor'); // 'dobor' or 'wycena'
+  
+  const [offerMode, setOfferMode] = useState('dobor');
   const [surfaceArea, setSurfaceArea] = useState('100');
-  const [selectedDevice, setSelectedDevice] = useState(deviceOptions[0].key);
+  
+  const [installationSystemKey, setInstallationSystemKey] = useState(Object.keys(installationSystems)[0]);
+  // ZMIANA: Użycie poprawnej nazwy zmiennej 'otherElements'
+  const [otherElementsKey, setOtherElementsKey] = useState(Object.keys(otherElements)[0]);
+  const [selectedDevice, setSelectedDevice] = useState(Object.keys(recuperationDevices)[0]);
 
-  // Efekt do automatycznego doboru urządzenia po zmianie powierzchni
   useEffect(() => {
     if (offerMode === 'dobor') {
       const recommendedKey = getRecommendedRecuperator(surfaceArea);
-      if (recommendedKey && recuperationDevices[recommendedKey]) {
+      if (recommendedKey) {
         setSelectedDevice(recommendedKey);
       }
     }
   }, [surfaceArea, offerMode]);
   
-  // Resetowanie wyboru przy zmianie trybu
-  useEffect(() => {
-    if (offerMode === 'wycena') {
-        setSelectedDevice(deviceOptions[0].key);
-    } else {
-        // Ponowne uruchomienie logiki doboru
-        const recommendedKey = getRecommendedRecuperator(surfaceArea);
-        if (recommendedKey && recuperationDevices[recommendedKey]) {
-            setSelectedDevice(recommendedKey);
-        }
-    }
-  }, [offerMode]);
-
   const handleGenerateAndSetPdf = async (e) => {
     e.preventDefault();
     if (showPrice && !price.trim()) {
@@ -55,10 +46,11 @@ export default function RecuperationOfferForm() {
     setGeneratedPdfData(null); 
 
     const formData = {
-      userName, price, isNetto, showPrice,
-      offerMode,
+      userName, price, isNetto, showPrice, offerMode,
       deviceKey: selectedDevice,
       surfaceArea: surfaceArea,
+      installationSystemKey,
+      otherElementsKey,
     };
     
     const pdfBlob = await generateRecuperationOfferPDF(formData);
@@ -117,16 +109,36 @@ export default function RecuperationOfferForm() {
           />
         </div>
       )}
-
-      <div className="input-group">
-        <label htmlFor="rekuDevice">Urządzenie:</label>
-        <select id="rekuDevice" value={selectedDevice} onChange={(e) => setSelectedDevice(e.target.value)}>
-          {deviceOptions.map(device => (
-            <option key={device.key} value={device.key}>{device.name}</option>
-          ))}
-        </select>
-        {offerMode === 'dobor' && <small>Urządzenie dobrane automatycznie. Możesz je zmienić.</small>}
-      </div>
+      
+      <fieldset className="component-fieldset">
+        <legend>Konfiguracja systemu</legend>
+        <div className="input-group">
+            <label htmlFor="installationSystem">System przewodów elastycznych:</label>
+            <select id="installationSystem" value={installationSystemKey} onChange={(e) => setInstallationSystemKey(e.target.value)}>
+                {Object.keys(installationSystems).map(key => (
+                    <option key={key} value={key}>{installationSystems[key].name}</option>
+                ))}
+            </select>
+        </div>
+        <div className="input-group">
+            <label htmlFor="otherElements">Instalacja Czerpni/Wyrzutni:</label>
+            <select id="otherElements" value={otherElementsKey} onChange={(e) => setOtherElementsKey(e.target.value)}>
+                {/* ZMIANA: Użycie poprawnej nazwy zmiennej 'otherElements' */}
+                {Object.keys(otherElements).map(key => (
+                    <option key={key} value={key}>{otherElements[key].name}</option>
+                ))}
+            </select>
+        </div>
+        <div className="input-group">
+            <label htmlFor="rekuDevice">Jednostka centralna:</label>
+            <select id="rekuDevice" value={selectedDevice} onChange={(e) => setSelectedDevice(e.target.value)}>
+                {Object.keys(recuperationDevices).map(key => (
+                    <option key={key} value={key}>{recuperationDevices[key].name}</option>
+                ))}
+            </select>
+            {offerMode === 'dobor' && <small>Urządzenie dobrane automatycznie. Możesz je zmienić.</small>}
+        </div>
+      </fieldset>
 
       <hr/>
 

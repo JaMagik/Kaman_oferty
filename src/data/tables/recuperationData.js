@@ -1,31 +1,31 @@
-// Pełna, zaktualizowana zawartość pliku: src/data/tables/recuperationData.js
+// src/data/tables/recuperationData.js
 
-// 1. Definicja dostępnych urządzeń - ROZSZERZONA
-export const recuperationDevices = {
-  // AERIS
-  AERIS_350: { name: 'Rekuperator AERIS next 350 VV' },
-  AERIS_450: { name: 'Rekuperator AERIS next 450 VV' },
-  AERIS_600: { name: 'Rekuperator AERIS next 600 VV' },
-
-  // DRAFTON
-  DRAFTON_P150: { name: 'Rekuperator DRAFTON P150' },
-  DRAFTON_P200: { name: 'Rekuperator DRAFTON P200' },
-  DRAFTON_P300: { name: 'Rekuperator DRAFTON P300' },
-  DRAFTON_V300: { name: 'Rekuperator DRAFTON V300' },
-  
-  // DRAFTON Professional
-  DRAFTON_PRO_225: { name: 'Rekuperator DRAFTON Professional 225' },
-  DRAFTON_PRO_325: { name: 'Rekuperator DRAFTON Professional 325' },
-  DRAFTON_PRO_400: { name: 'Rekuperator DRAFTON Professional 400' },
-  DRAFTON_PRO_450: { name: 'Rekuperator DRAFTON Professional 450' },
-  DRAFTON_PRO_600: { name: 'Rekuperator DRAFTON Professional 600' },
+// 1. Definicje wybieralnych komponentów
+export const installationSystems = {
+  'R_VENT_GOLD': { name: 'Elementy instalacji R-VENT Flex 63 (NeoFlex GOLD)', description: 'Elastyczne kanały z mikro-srebrem (właściwości przeciwgrzybiczne), gładkie wnętrze klasy L1.' },
+  'NEO_FLEX_PRO': { name: 'Elementy instalacji NEO FLEX DN63 (NeoFLEX PRO)', description: 'Elastyczny system przewodów wentylacyjnych z powłoką antybakteryjną, zapewniający cichą i wydajną pracę.' },
+  'NEO_FLEX_STD': { name: 'Elementy instalacji NEO Flex DN 75 (Neoflex STD)', description: 'Standardowy, ekonomiczny system dystrybucji powietrza oparty na przewodach elastycznych o średnicy 75mm.' },
 };
 
-// 2. Logika doboru na podstawie powierzchni - ZAKTUALIZOWANA
+export const otherElements = {
+    'SPIRO_GWC': { name: 'Elementy instalacji Stal SPIRO z GWC', description: 'Prowadzenie kanałów czerpni i wyrzutni, podłączenie rozdzielaczy, siłownik do GWC i cały osprzęt.' },
+    'CRD_PREMIUM': { name: 'Elementy instalacji CRD (Premium)', description: 'Najwyższa szczelność i wyciszenie instalacji (prowadzenie kanałów czerpni i wyrzutni oraz podłączenie rozdzielaczy).' }
+};
+
+export const recuperationDevices = {
+  AERIS_350: { name: 'Rekuperator AERIS next 350 VV', description: 'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła > 90%.' },
+  AERIS_450: { name: 'Rekuperator AERIS next 450 VV', description: 'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła > 90%.' },
+  AERIS_600: { name: 'Rekuperator AERIS next 600 VV', description: 'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła > 90%.' },
+  DRAFTON_PRO_225: { name: 'Rekuperator DRAFTON Professional 225', description: 'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła > 90%.' },
+  DRAFTON_PRO_325: { name: 'Rekuperator DRAFTON Professional 325', description: 'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła > 90%.' },
+  DRAFTON_PRO_450: { name: 'Rekuperator DRAFTON Professional 450', description: 'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła > 90%.' },
+  DRAFTON_PRO_600: { name: 'Rekuperator DRAFTON Professional 600', description: 'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła > 90%.' },
+};
+
+// 2. Logika doboru urządzenia
 export const getRecommendedRecuperator = (area) => {
   const surface = Number(area);
-  if (isNaN(surface) || surface <= 0) return null;
-  
+  if (isNaN(surface) || surface <= 0) return 'AERIS_350';
   if (surface <= 100) return 'DRAFTON_PRO_225'; 
   if (surface <= 120) return 'AERIS_350';
   if (surface <= 140) return 'DRAFTON_PRO_325';
@@ -33,41 +33,27 @@ export const getRecommendedRecuperator = (area) => {
   if (surface <= 180) return 'DRAFTON_PRO_450';
   if (surface <= 220) return 'AERIS_600';
   if (surface > 220) return 'DRAFTON_PRO_600';
-  
-  return 'AERIS_350'; // Fallback
+  return 'AERIS_350';
 };
 
-// 3. Generyczny szablon zakresu prac
-const createScope = (deviceName) => [
-    ['', `Centrala wentylacyjna ${deviceName}`, 'Nowoczesna centrala wentylacyjna z wysokosprawnym wymiennikiem ciepła, zapewniająca stały dopływ świeżego powietrza.', 'kpl.', '1'],
-    ['', 'Zestaw montażowy centrali', 'Kompletny zestaw zawierający stelaż montażowy, syfon, taśmy uszczelniające oraz elementy tłumiące drgania.', 'kpl.', '1'],
-    ['', 'Rozdzielacze powietrza nawiewnego i wywiewnego', 'Stalowe, izolowane rozdzielacze systemowe zapewniające równomierny przepływ powietrza do wszystkich pomieszczeń.', 'szt.', '2'],
-    ['', 'Skrzynki rozprężne z tworzywa antybakteryjnego', 'Skrzynki montowane pod sufitem lub w ścianach, służące do podłączenia anemostatów.', 'kpl.', '1'],
-    ['', 'Rury wentylacyjne PE-FLEX®', 'Antystatyczne i antygrzybiczne przewody wentylacyjne o średnicy 75mm, prowadzone w izolacji stropu lub w zabudowach g-k.', 'kpl.', '1'],
-    ['', 'Czerpnia i wyrzutnia ścienna', 'Zewnętrzne elementy systemu wykonane ze stali nierdzewnej, zapewniające estetyczne i trwałe zakończenie instalacji.', 'kpl.', '1'],
-    ['', 'Tłumiki akustyczne', 'Elementy instalowane na głównych kanałach wentylacyjnych w celu maksymalnego wyciszenia pracy systemu.', 'szt.', '2'],
-    ['', 'Montaż i regulacja systemu', 'Profesjonalny montaż wszystkich komponentów, pomiary anemometryczne, regulacja przepływów i uruchomienie systemu.', 'kpl.', '1'],
-    ['', 'Szkolenie z obsługi', 'Przekazanie instrukcji dotyczących obsługi, konserwacji i wymiany filtrów w centrali wentylacyjnej.', 'szt.', '1'],
+// 3. STAŁA tabela z zakresem prac montażowych
+export const recuperationBaseScope = [
+    ['', 'Uchwyt montażowy centrali', 'Konsola ścienno-stropowa, kotwy, tłumiki drgań', 'kpl.', '1'],
+    ['', 'Skrzynki rozprężne', 'Skrzynki DN125 - obniżenie ciśnienia i hałasu, równomierny rozdział strumieni', 'szt.', 'wg projektu'],
+    ['', 'Rozdzielacze powietrza', 'DN63 lub DN75 (zależnie od projektu), liczba króćców wg projektu', 'szt.', '2'],
+    ['', 'Tłumiki akustyczne', 'Tłumiki Ø125 - Ø200 mm, redukcja hałasu ≥ 10 dB', 'kpl.', '2'],
+    ['', 'Przewody główne Spiro', 'Kanały stalowe Ø125 - Ø200 mm (czerpnia, wyrzutnia, centrala)', 'mb', 'wg projektu'],
+    ['', 'Izolacja wełna + folie alu', 'Wełna 30 - 50 mm (dobierana do temperatury powietrza, zapobiega kondensacji)', 'mb', 'wg projektu'],
+    ['', 'Czerpnia / wyrzutnia + redukcje', 'Stal nierdzewna, redukcje w izolacji dla zmniejszenia hałasu', 'szt.', '2'],
+    ['', 'Sterownik rekuperatora', 'Urządzenie do zarządzania pracą systemu (tryby, harmonogramy, serwis)', 'szt.', '1'],
+    ['', 'Akcesoria montażowe', 'Obejmy, taśmy, uszczelniacze, zawiesia, złączki', 'kpl.', '1'],
+    ['', 'Wiercenie otworów koroną', 'Otwory Ø125 - Ø350 mm w stropach/ścianach, zgodnie z projektem', 'kpl.', '1'],
+    ['', 'Montaż kanałów (Flex + Spiro)', 'Rozprowadzenie przewodów; dobór długości i średnic dla minimalnych oporów', 'usł.', '1'],
+    ['', 'Montaż skrzynek + kanałów czerpni/wyrzutni + izolacja', 'Osadzenie skrzynek, prowadzenie kanałów do elewacji/dachu, pełne zaizolowanie', 'usł.', '1'],
+    ['', 'Montaż rekuperatora', 'Poziomowanie, podłączenie kondensatu i obejść serwisowych', 'usł.', '1'],
+    ['', 'Podłączenie elektryczne / komunikacyjne', 'Zasilanie centrali, podłączenie sterownika, integracja z automatyką (jeśli przewidziano)', 'usł.', '1'],
+    ['', 'Uruchomienie i kalibracja', 'Pomiary nawiewu/wywiewu, ustawienie bilansu, protokół rozruchu', 'usł.', '1'],
+    ['', 'Szkolenie użytkownika', 'Obsługa sterownika, wymiana filtrów, harmonogramy serwisowe', 'usł.', '1'],
+    ['', 'Dokumentacja powykonawcza', 'Schemat instalacji, karta gwarancyjna, raport pomiarów', 'kpl.', '1'],
+    ['', 'Gwarancja i serwis', '5 lat na centralę (po rejestracji), 2 lata na montaż, opcjonalne przeglądy roczne', 'usł.', '1'],
 ];
-
-
-// 4. Szczegółowy zakres prac dla każdego urządzenia
-export const recuperationScopes = {
-  // AERIS
-  AERIS_350: createScope('AERIS next 350 VV'),
-  AERIS_450: createScope('AERIS next 450 VV'),
-  AERIS_600: createScope('AERIS next 600 VV'),
-
-  // DRAFTON
-  DRAFTON_P150: createScope('DRAFTON P150'),
-  DRAFTON_P200: createScope('DRAFTON P200'),
-  DRAFTON_P300: createScope('DRAFTON P300'),
-  DRAFTON_V300: createScope('DRAFTON V300'),
-  
-  // DRAFTON Professional
-  DRAFTON_PRO_225: createScope('DRAFTON Professional 225'),
-  DRAFTON_PRO_325: createScope('DRAFTON Professional 325'),
-  DRAFTON_PRO_400: createScope('DRAFTON Professional 400'),
-  DRAFTON_PRO_450: createScope('DRAFTON Professional 450'),
-  DRAFTON_PRO_600: createScope('DRAFTON Professional 600'),
-};
