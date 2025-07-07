@@ -376,6 +376,70 @@ export const pdfTemplateSets = {
     groupPage2,
     commonContactPage,
   ],
+  'AERIS_350': [
+    '/pdf_templates/recuperation/aeris/1_okladka.pdf',
+        '/pdf_templates/recuperation/aeris/Aeris_ds1.pdf',
+    '/pdf_templates/recuperation/aeris/Aeris_ds2.pdf',
+      oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+  'AERIS_450': [
+     '/pdf_templates/recuperation/aeris/1_okladka.pdf',
+        '/pdf_templates/recuperation/aeris/Aeris_ds1.pdf',
+    '/pdf_templates/recuperation/aeris/Aeris_ds2.pdf',
+      oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+  'AERIS_600': [
+    '/pdf_templates/recuperation/aeris/1_okladka.pdf',
+        '/pdf_templates/recuperation/aeris/Aeris_ds1.pdf',
+    '/pdf_templates/recuperation/aeris/Aeris_ds2.pdf',
+
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+  'DRAFTON_PRO_225': [
+   '/pdf_templates/recuperation/drafton/1_okladka.pdf',
+    '/pdf_templates/recuperation/drafton/ds_drafton_1.pdf',
+    '/pdf_templates/recuperation/drafton/ds_drafton_2.pdf',
+   oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+  'DRAFTON_PRO_325': [
+    '/pdf_templates/recuperation/drafton/1_okladka.pdf',
+    '/pdf_templates/recuperation/drafton/ds_drafton_1.pdf',
+    '/pdf_templates/recuperation/drafton/ds_drafton_2.pdf',
+   oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+  'DRAFTON_PRO_450': [
+    '/pdf_templates/recuperation/drafton/1_okladka.pdf',
+    '/pdf_templates/recuperation/drafton/ds_drafton_1.pdf',
+    '/pdf_templates/recuperation/drafton/ds_drafton_2.pdf',
+   oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+  'DRAFTON_PRO_600': [
+    '/pdf_templates/recuperation/drafton/1_okladka.pdf',
+    '/pdf_templates/recuperation/drafton/ds_drafton_1.pdf',
+    '/pdf_templates/recuperation/drafton/ds_drafton_2.pdf',
+   oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
   'VIVAX N-Design': [
     '/pdf_templates/vivax/1_okladka_n_design.pdf',
     '/pdf_templates/vivax/Karta katalogowa N-Design-1.pdf',
@@ -387,6 +451,7 @@ export const pdfTemplateSets = {
     commonContactPage,
   ],
 };
+
 
 
 export function getTemplatePathsForDevice(deviceType) {
