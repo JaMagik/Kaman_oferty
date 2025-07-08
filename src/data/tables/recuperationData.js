@@ -20,12 +20,18 @@ export const recuperationDevices = {
   DRAFTON_PRO_325: { name: 'Rekuperator DRAFTON Professional 325', description: 'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła > 90%.' },
   DRAFTON_PRO_450: { name: 'Rekuperator DRAFTON Professional 450', description: 'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła > 90%.' },
   DRAFTON_PRO_600: { name: 'Rekuperator DRAFTON Professional 600', description: 'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła > 90%.' },
+  PRANA_ORIGAMI_150: { name: 'Rekuperator PRANA Origami 150 (do 70 m³/h)', description: 'Decentralizowany, ścienny, z miedzianym wymiennikiem ciepła. Idealny do pojedynczych pomieszczeń.' },
+  PRANA_ORIGAMI_200G: { name: 'Rekuperator PRANA Origami 200G (do 85 m³/h)', description: 'Decentralizowany, ścienny, z miedzianym wymiennikiem ciepła. Zwiększona wydajność.' },
+  PRANA_ORIGAMI_200C: { name: 'Rekuperator PRANA Origami 200C (do 140 m³/h)', description: 'Decentralizowany, ścienny, z miedzianym wymiennikiem ciepła. Najwyższa wydajność w serii.' },
 };
 
 // 2. Logika doboru urządzenia
 export const getRecommendedRecuperator = (area) => {
   const surface = Number(area);
   if (isNaN(surface) || surface <= 0) return 'AERIS_350';
+   if (surface <= 70) return 'PRANA_ORIGAMI_150';
+  if (surface <= 90) return 'PRANA_ORIGAMI_200G';
+  if (surface <= 110) return 'PRANA_ORIGAMI_200C';
   if (surface <= 100) return 'DRAFTON_PRO_225'; 
   if (surface <= 120) return 'AERIS_350';
   if (surface <= 140) return 'DRAFTON_PRO_325';
@@ -39,11 +45,11 @@ export const getRecommendedRecuperator = (area) => {
 // 3. STAŁA tabela z zakresem prac montażowych
 export const recuperationBaseScope = [
     ['', 'Uchwyt montażowy centrali', 'Konsola ścienno-stropowa, kotwy, tłumiki drgań', 'kpl.', '1'],
-    ['', 'Skrzynki rozprężne', 'Skrzynki DN125 - obniżenie ciśnienia i hałasu, równomierny rozdział strumieni', 'szt.', 'wg projektu'],
+    ['', 'Skrzynki rozprężne', 'Skrzynki DN125 - obniżenie ciśnienia i hałasu, równomierny rozdział strumieni', 'szt.', 'projekt'],
     ['', 'Rozdzielacze powietrza', 'DN63 lub DN75 (zależnie od projektu), liczba króćców wg projektu', 'szt.', '2'],
     ['', 'Tłumiki akustyczne', 'Tłumiki Ø125 - Ø200 mm, redukcja hałasu ≥ 10 dB', 'kpl.', '2'],
-    ['', 'Przewody główne Spiro', 'Kanały stalowe Ø125 - Ø200 mm (czerpnia, wyrzutnia, centrala)', 'mb', 'wg projektu'],
-    ['', 'Izolacja wełna + folie alu', 'Wełna 30 - 50 mm (dobierana do temperatury powietrza, zapobiega kondensacji)', 'mb', 'wg projektu'],
+    ['', 'Przewody główne Spiro', 'Kanały stalowe Ø125 - Ø200 mm (czerpnia, wyrzutnia, centrala)', 'mb', 'projekt'],
+    ['', 'Izolacja wełna + folie alu', 'Wełna 30 - 50 mm (dobierana do temperatury powietrza, zapobiega kondensacji)', 'mb', 'projekt'],
     ['', 'Czerpnia / wyrzutnia + redukcje', 'Stal nierdzewna, redukcje w izolacji dla zmniejszenia hałasu', 'szt.', '2'],
     ['', 'Sterownik rekuperatora', 'Urządzenie do zarządzania pracą systemu (tryby, harmonogramy, serwis)', 'szt.', '1'],
     ['', 'Akcesoria montażowe', 'Obejmy, taśmy, uszczelniacze, zawiesia, złączki', 'kpl.', '1'],

@@ -440,6 +440,35 @@ export const pdfTemplateSets = {
     groupPage2,
     commonContactPage,
   ],
+   'PRANA_ORIGAMI_150': [
+    '/pdf_templates/recuperation/drafton/1_okladka.pdf', // Można podmienić na dedykowaną okładkę Prana
+    '/pdf_templates/recuperation/drafton/Katalog-produktow-prana-1.pdf',
+        '/pdf_templates/recuperation/drafton/Katalog-produktow-prana-2.pdf', // Przykładowa karta
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+  'PRANA_ORIGAMI_200G': [
+    '/pdf_templates/recuperation/prana/1_okladka.pdf', // Można podmienić na dedykowaną okładkę Prana
+    '/pdf_templates/recuperation/prana/Katalog-produktow-prana-1.pdf',
+        '/pdf_templates/recuperation/prana/Katalog-produktow-prana-2.pdf', // Przykładowa karta
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+  'PRANA_ORIGAMI_200C': [
+    '/pdf_templates/recuperation/prana/1_okladka.pdf', // Można podmienić na dedykowaną okładkę Prana
+    '/pdf_templates/recuperation/prana/Katalog-produktow-prana-1.pdf',
+        '/pdf_templates/recuperation/prana/Katalog-produktow-prana-2.pdf', // Przykładowa karta
+ // Przykładowa karta
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+  
   'VIVAX N-Design': [
     '/pdf_templates/vivax/1_okladka_n_design.pdf',
     '/pdf_templates/vivax/Karta katalogowa N-Design-1.pdf',
