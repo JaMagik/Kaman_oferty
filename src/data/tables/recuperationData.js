@@ -13,26 +13,26 @@ export const otherElements = {
 };
 
 export const recuperationDevices = {
-  AERIS_350: { name: 'Rekuperator AERIS next 350 VV', description: 'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła > 90%.' },
-  AERIS_450: { name: 'Rekuperator AERIS next 450 VV', description: 'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła > 90%.' },
-  AERIS_600: { name: 'Rekuperator AERIS next 600 VV', description: 'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła > 90%.' },
-  DRAFTON_PRO_225: { name: 'Rekuperator DRAFTON Professional 225', description: 'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła > 90%.' },
-  DRAFTON_PRO_325: { name: 'Rekuperator DRAFTON Professional 325', description: 'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła > 90%.' },
-  DRAFTON_PRO_450: { name: 'Rekuperator DRAFTON Professional 450', description: 'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła > 90%.' },
-  DRAFTON_PRO_600: { name: 'Rekuperator DRAFTON Professional 600', description: 'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła > 90%.' },
-  PRANA_ORIGAMI_150: { name: 'Rekuperator PRANA Origami 150 (do 70 m³/h)', description: 'Decentralizowany, ścienny, z miedzianym wymiennikiem ciepła. Idealny do pojedynczych pomieszczeń.' },
-  PRANA_ORIGAMI_200G: { name: 'Rekuperator PRANA Origami 200G (do 85 m³/h)', description: 'Decentralizowany, ścienny, z miedzianym wymiennikiem ciepła. Zwiększona wydajność.' },
-  PRANA_ORIGAMI_200C: { name: 'Rekuperator PRANA Origami 200C (do 140 m³/h)', description: 'Decentralizowany, ścienny, z miedzianym wymiennikiem ciepła. Najwyższa wydajność w serii.' },
+  AERIS_350: { name: 'Rekuperator AERIS next 350 VV', description: 'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła > 90%.', type: 'central' },
+  AERIS_450: { name: 'Rekuperator AERIS next 450 VV', description: 'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła > 90%.', type: 'central' },
+  AERIS_600: { name: 'Rekuperator AERIS next 600 VV', description: 'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła > 90%.', type: 'central' },
+  DRAFTON_PRO_225: { name: 'Rekuperator DRAFTON Professional 225', description: 'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła > 90%.', type: 'central' },
+  DRAFTON_PRO_325: { name: 'Rekuperator DRAFTON Professional 325', description: 'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła > 90%.', type: 'central' },
+  DRAFTON_PRO_450: { name: 'Rekuperator DRAFTON Professional 450', description: 'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła > 90%.', type: 'central' },
+  DRAFTON_PRO_600: { name: 'Rekuperator DRAFTON Professional 600', description: 'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła > 90%.', type: 'central' },
+  PRANA_ORIGAMI_150: { name: 'Rekuperator PRANA Origami 150 (do 70 m³/h)', description: 'Decentralizowany, ścienny, z miedzianym wymiennikiem ciepła. Idealny do pojedynczych pomieszczeń.', type: 'decentral' },
+  PRANA_ORIGAMI_200G: { name: 'Rekuperator PRANA Origami 200G (do 85 m³/h)', description: 'Decentralizowany, ścienny, z miedzianym wymiennikiem ciepła. Zwiększona wydajność.', type: 'decentral' },
+  PRANA_ORIGAMI_200C: { name: 'Rekuperator PRANA Origami 200C (do 140 m³/h)', description: 'Decentralizowany, ścienny, z miedzianym wymiennikiem ciepła. Najwyższa wydajność w serii.', type: 'decentral' },
 };
 
 // 2. Logika doboru urządzenia
 export const getRecommendedRecuperator = (area) => {
   const surface = Number(area);
   if (isNaN(surface) || surface <= 0) return 'AERIS_350';
-   if (surface <= 70) return 'PRANA_ORIGAMI_150';
+    if (surface <= 70) return 'PRANA_ORIGAMI_150';
   if (surface <= 90) return 'PRANA_ORIGAMI_200G';
   if (surface <= 110) return 'PRANA_ORIGAMI_200C';
-  if (surface <= 100) return 'DRAFTON_PRO_225'; 
+  if (surface <= 100) return 'DRAFTON_PRO_225';
   if (surface <= 120) return 'AERIS_350';
   if (surface <= 140) return 'DRAFTON_PRO_325';
   if (surface <= 160) return 'AERIS_450';
@@ -42,8 +42,10 @@ export const getRecommendedRecuperator = (area) => {
   return 'AERIS_350';
 };
 
-// 3. STAŁA tabela z zakresem prac montażowych
-export const recuperationBaseScope = [
+// 3. STAŁE tabele z zakresem prac montażowych
+
+// Tabela dla rekuperacji CENTRALNEJ
+export const centralRecuperationBaseScope = [
     ['', 'Uchwyt montażowy centrali', 'Konsola ścienno-stropowa, kotwy, tłumiki drgań', 'kpl.', '1'],
     ['', 'Skrzynki rozprężne', 'Skrzynki DN125 - obniżenie ciśnienia i hałasu, równomierny rozdział strumieni', 'szt.', 'projekt'],
     ['', 'Rozdzielacze powietrza', 'DN63 lub DN75 (zależnie od projektu), liczba króćców wg projektu', 'szt.', '2'],
@@ -62,4 +64,15 @@ export const recuperationBaseScope = [
     ['', 'Szkolenie użytkownika', 'Obsługa sterownika, wymiana filtrów, harmonogramy serwisowe', 'usł.', '1'],
     ['', 'Dokumentacja powykonawcza', 'Schemat instalacji, karta gwarancyjna, raport pomiarów', 'kpl.', '1'],
     ['', 'Gwarancja i serwis', '5 lat na centralę (po rejestracji), 2 lata na montaż, opcjonalne przeglądy roczne', 'usł.', '1'],
+];
+
+// Tabela dla rekuperacji PUNKTOWEJ (decentralnej)
+export const decentralRecuperationBaseScope = [
+    ['', 'Przygotowanie otworu w ścianie', 'Wiercenie koroną diamentową otworu w ścianie zewnętrznej', 'szt.', '1'],
+    ['', 'Montaż rekuperatora', 'Osadzenie urządzenia w przygotowanym otworze i uszczelnienie', 'usł.', '1'],
+    ['', 'Podłączenie elektryczne', 'Doprowadzenie zasilania do urządzenia z najbliższego punktu', 'usł.', '1'],
+    ['', 'Montaż panelu sterującego', 'Instalacja ściennego panelu do obsługi rekuperatora', 'szt.', '1'],
+    ['', 'Uruchomienie i kalibracja', 'Pierwsze uruchomienie, sprawdzenie poprawności działania trybów', 'usł.', '1'],
+    ['', 'Szkolenie użytkownika', 'Obsługa panelu, wymiana filtrów, podstawowa konserwacja', 'usł.', '1'],
+    ['', 'Gwarancja', 'Gwarancja na urządzenie i wykonany montaż', 'usł.', '1'],
 ];

@@ -441,9 +441,9 @@ export const pdfTemplateSets = {
     commonContactPage,
   ],
    'PRANA_ORIGAMI_150': [
-    '/pdf_templates/recuperation/drafton/1_okladka.pdf', // Można podmienić na dedykowaną okładkę Prana
-    '/pdf_templates/recuperation/drafton/Katalog-produktow-prana-1.pdf',
-        '/pdf_templates/recuperation/drafton/Katalog-produktow-prana-2.pdf', // Przykładowa karta
+    '/pdf_templates/recuperation/prana/1_okladka.pdf', // Można podmienić na dedykowaną okładkę Prana
+    '/pdf_templates/recuperation/prana/Katalog-produktow-prana-1.pdf',
+        '/pdf_templates/recuperation/prana/Katalog-produktow-prana-2.pdf', // Przykładowa karta
     oNas,
     groupPage,
     groupPage2,
