@@ -80,12 +80,13 @@ export const storageTypesData = {
   },
   'SOLPLANET_AI_HB_G2': {
     name: 'Magazyn energii Solplanet Ai-HB G2',
-    capacity: 2.56, // Pojemność jednego modułu baterii HB051050A
+    capacity: 2.56,          // kWh na 1 moduł HB051050A
     brand: 'Solplanet',
-    description: 'Wysokonapięciowy system magazynowania energii oparty na bezpiecznej technologii LiFePO₄ (LFP).',
+    description:
+      'Modułowy, wysokonapięciowy system (LFP) o pojemności od 7,68 do 20,48 kWh – 3-8 modułów w szafie.',
     datasheets: [
-      '/pdf_templates/photovoltaics/storage/solplanet/Wysokonapieciowy-magazyn-energii-Solplanet-Ai-HB-G2.pdf'
-    ]
+      '/pdf_templates/photovoltaics/storage/solplanet/Wysokonapieciowy-magazyn-energii-Solplanet-Ai-HB-G2.pdf',
+    ],
   },
 };
 export const pvRoofMountScope = [
