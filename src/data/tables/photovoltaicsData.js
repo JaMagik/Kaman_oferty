@@ -33,6 +33,15 @@ export const inverterTypesData = {
       '/pdf_templates/photovoltaics/inverters/deye/DEYE_HYBRID_DS2.pdf',
     ]
   },
+  'SOLPLANET_AI_HB_G2': {
+    name: 'Solplanet Zestaw magazynowania energii Ai-HB G2',
+    type: 'AC Charger',
+    isHybrid: true,
+    description: 'Modułowy, wysokonapięciowy system magazynowania energii z wbudowanym systemem zarządzania baterią (BMS). Przeznaczony do zwiększania autokonsumpcji i zapewnienia zasilania awaryjnego.',
+    datasheets: [
+      '/pdf_templates/photovoltaics/storage/solplanet/Wysokonapieciowy-magazyn-energii-Solplanet-Ai-HB-G2.pdf'
+    ]
+  },
   // Ładowarki AC (Retrofit)
   'FOXESS_AC3': {
     name: 'Ładowarka AC FoxESS AC3 (Retrofit)',
@@ -66,6 +75,16 @@ export const storageTypesData = {
       'pdf_templates/photovoltaics/storage/deye/DEYE_STORAGE_LV_DS1.pdf',
       'pdf_templates/photovoltaics/storage/deye/DEYE_STORAGE_LV_DS2.pdf',
       'pdf_templates/photovoltaics/storage/deye/DEYE_STORAGE_LV_DS3.pdf',
+    ]
+    
+  },
+  'SOLPLANET_AI_HB_G2': {
+    name: 'Magazyn energii Solplanet Ai-HB G2',
+    capacity: 2.56, // Pojemność jednego modułu baterii HB051050A
+    brand: 'Solplanet',
+    description: 'Wysokonapięciowy system magazynowania energii oparty na bezpiecznej technologii LiFePO₄ (LFP).',
+    datasheets: [
+      '/pdf_templates/photovoltaics/storage/solplanet/Wysokonapieciowy-magazyn-energii-Solplanet-Ai-HB-G2.pdf'
     ]
   },
 };
