@@ -20,9 +20,9 @@ export const recuperationDevices = {
   DRAFTON_PRO_325: { name: 'Rekuperator DRAFTON Professional 325', description: 'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła > 90%.', type: 'central' },
   DRAFTON_PRO_450: { name: 'Rekuperator DRAFTON Professional 450', description: 'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła > 90%.', type: 'central' },
   DRAFTON_PRO_600: { name: 'Rekuperator DRAFTON Professional 600', description: 'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła > 90%.', type: 'central' },
-  PRANA_ORIGAMI_150: { name: 'Rekuperator PRANA Origami 150 (do 70 m³/h)', description: 'Decentralizowany, ścienny, z miedzianym wymiennikiem ciepła. Idealny do pojedynczych pomieszczeń.', type: 'decentral' },
-  PRANA_ORIGAMI_200G: { name: 'Rekuperator PRANA Origami 200G (do 85 m³/h)', description: 'Decentralizowany, ścienny, z miedzianym wymiennikiem ciepła. Zwiększona wydajność.', type: 'decentral' },
-  PRANA_ORIGAMI_200C: { name: 'Rekuperator PRANA Origami 200C (do 140 m³/h)', description: 'Decentralizowany, ścienny, z miedzianym wymiennikiem ciepła. Najwyższa wydajność w serii.', type: 'decentral' },
+  PRANA_ORIGAMI_150: { name: 'Rekuperator PRANA Origami 150 (do 70 m³/h)', description: 'Decentralizowany, ścienny, z miedzianym wymiennikiem ciepła. Idealny do pojedynczych pomieszczeń z funkcją STOP SMOG.', type: 'decentral' },
+  PRANA_ORIGAMI_200G: { name: 'Rekuperator PRANA Origami 200G (do 85 m³/h)', description: 'Decentralizowany, ścienny, z miedzianym wymiennikiem ciepła zfunkcją STOP SMOG. Zwiększona wydajność.', type: 'decentral' },
+  PRANA_ORIGAMI_200C: { name: 'Rekuperator PRANA Origami 200C (do 140 m³/h)', description: 'Decentralizowany, ścienny, z miedzianym wymiennikiem ciepła z unkcją STOP SMOG. Najwyższa wydajność w serii.', type: 'decentral' },
 };
 
 // 2. Logika doboru urządzenia
