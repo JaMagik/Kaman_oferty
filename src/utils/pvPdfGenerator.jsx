@@ -1,161 +1,313 @@
-// Pełna, zaktualizowana zawartość pliku: src/utils/pvPdfGenerator.jsx
-
+// src/utils/pvPdfGenerator.js
 import { PDFDocument, rgb } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
-import { inverterTypesData, pvOfferCommons, pvRoofMountScope, pvGroundMountScope, pvStorageScope, panelTypesData } from '../data/tables/photovoltaicsData';
-import { drawTable, drawHeaderBlock } from './pdfUtils'; 
+import {
+  pvOfferCommons,
+  pvRoofMountScope,
+  pvGroundMountScope,
+  pvStorageScope,
+} from '../data/tables/photovoltaicsData';
+import { drawTable, drawHeaderBlock } from './pdfUtils';
+
+/* ------------------------------------------------------------------ */
+/* helper: gwarantuje pojedynczy wiersz magazynu energii w tabeli      */
+const applyStorageRowFix = (scopeArr, storageDetails, storageModules) => {
+  if (!storageDetails) return scopeArr;
+
+  const idx = scopeArr.findIndex(
+    (row) =>
+      Array.isArray(row) &&
+      typeof row[1] === 'string' &&
+      row[1].toLowerCase().includes('zestaw magazynowania energii')
+  );
+
+  const totalCap = (storageDetails.capacity * storageModules).toFixed(2);
+  const newRow = [
+    '', // lp – uzupełniane później
+    `Zestaw magazynowania energii ${storageDetails.name} ${totalCap} kWh`,
+    storageDetails.description,
+    'kpl.',
+    '1',
+  ];
+
+  if (idx !== -1) scopeArr[idx] = newRow;
+  else scopeArr.unshift(newRow);
+
+  return scopeArr;
+};
+/* ------------------------------------------------------------------ */
 
 export async function generatePhotovoltaicsOfferPDF(formData) {
-  // --- ZMIANA 1: Odczytanie nowego parametru ---
-  const { userName, price, isNetto, installationType, panelDetails, inverterDetails, inverterQuantity, storageDetails, storageModules, showPrice, isBracketMount } = formData;
+  const {
+    userName,
+    price,
+    isNetto,
+    installationType,
+    showPrice,
+    panelDetails,
+    inverterDetails, // może być null
+    inverterQuantity,
+    storageDetails,  // może być null
+    storageModules,
+    isBracketMount,
+  } = formData;
 
   try {
+    /* === przygotowanie dokumentu === */
     const pdfDoc = await PDFDocument.create();
     pdfDoc.registerFontkit(fontkit);
-    const regularFontBytes = await fetch('/fonts/OpenSans-Regular.ttf').then(res => res.arrayBuffer());
-    const boldFontBytes = await fetch('/fonts/OpenSans-Bold.ttf').then(res => res.arrayBuffer());
+
+    const [regularFontBytes, boldFontBytes] = await Promise.all([
+      fetch('/fonts/OpenSans-Regular.ttf').then((r) => r.arrayBuffer()),
+      fetch('/fonts/OpenSans-Bold.ttf').then((r) => r.arrayBuffer()),
+    ]);
     const regularFont = await pdfDoc.embedFont(regularFontBytes);
     const boldFont = await pdfDoc.embedFont(boldFontBytes);
-    const kamanLogoBytes = await fetch('/logos/kaman_logo.png').then(res => res.ok ? res.arrayBuffer() : null).catch(() => null);
-    let kamanLogoImage = null;
-    if (kamanLogoBytes) kamanLogoImage = await pdfDoc.embedPng(kamanLogoBytes);
 
+    const logoBytes = await fetch('/logos/kaman_logo.png').then((r) =>
+      r.ok ? r.arrayBuffer() : null
+    );
+    const logoImg = logoBytes ? await pdfDoc.embedPng(logoBytes) : null;
+
+    /* === kolejność szablonów PDF === */
     const pdfOrder = [
-        pvOfferCommons.coverPage,
-        ...(inverterDetails?.datasheets || []),
-        ...(panelDetails?.datasheets || []),
-        ...(storageDetails?.datasheets || []),
-        pvOfferCommons.contactPage,
+      pvOfferCommons.coverPage,
+      ...(inverterDetails ? inverterDetails.datasheets : []),
+      ...(panelDetails ? panelDetails.datasheets : []),
+      ...(storageDetails ? storageDetails.datasheets : []),
+      pvOfferCommons.contactPage,
     ].filter(Boolean);
 
-    const loadedTemplatePDFs = [];
+    const templates = [];
     for (const path of pdfOrder) {
-        try {
-            const response = await fetch(path);
-            if (!response.ok) { console.error(`Nie udało się pobrać pliku: ${path}. Plik pominięty.`); continue; }
-            const pdfBytes = await response.arrayBuffer();
-            try { loadedTemplatePDFs.push({doc: await PDFDocument.load(pdfBytes), path}); } 
-            catch (parsingError) { console.error(`Błąd parsowania PDF: ${path}. Plik pominięty.`); }
-        } catch (fetchError) { console.error(`Błąd sieci: ${path}. Plik pominięty.`); }
-    }
-    
-    const findAndAddPage = async (pathFragment) => {
-        const index = loadedTemplatePDFs.findIndex(p => p.path.includes(pathFragment));
-        if (index > -1) {
-            const pdfToCopy = loadedTemplatePDFs.splice(index, 1)[0];
-            if (pdfToCopy) {
-                const [copiedPage] = await pdfDoc.copyPages(pdfToCopy.doc, [0]);
-                pdfDoc.addPage(copiedPage);
-            }
-        }
-    };
-    
-    await findAndAddPage(pvOfferCommons.coverPage);
-
-    const offerPage = pdfDoc.addPage();
-    let lastContentPage = offerPage;
-    const { width, height } = offerPage.getSize();
-    let currentY = height - 55;
-    
-    const isStorageOnly = installationType === 'only-storage';
-    const mainTitle = isStorageOnly ? "OFERTA NA MODERNIZACJĘ O MAGAZYN ENERGII" : "OFERTA INSTALACJI FOTOWOLTAICZNEJ";
-    
-    const mainOfferDetails = [
-        { type: 'title', value: mainTitle },
-        { label: 'Klient:', value: userName.toUpperCase() },
-        { label: 'Moc instalacji:', value: !isStorageOnly && panelDetails ? `${panelDetails.totalPower.toFixed(2)} kWp` : null },
-        { label: 'Typ instalacji:', value: isStorageOnly ? 'Modernizacja (Retrofit)' : (installationType === 'dach' ? 'Dachowa' : 'Gruntowa') },
-        { label: 'Panele:', value: panelDetails?.name },
-        { label: 'Falownik/Ładowarka:', value: inverterDetails?.name }
-    ];
-    currentY = drawHeaderBlock(offerPage, { regular: regularFont, bold: boldFont }, kamanLogoImage, mainOfferDetails, currentY);
-    
-    let mainTableData = [];
-    if (!isStorageOnly) {
-        mainTableData.push(['', panelDetails.name, panelDetails.description, 'szt.', panelDetails.count]);
-        mainTableData.push(['', inverterDetails.name, inverterDetails.description, 'szt.', String(inverterQuantity)]);
-        if (storageDetails) {
-            const totalCapacity = (storageDetails.capacity * storageModules).toFixed(2);
-            mainTableData.push(['', `${storageDetails.name} ${totalCapacity} kWh`, storageDetails.description, 'kpl.', '1']);
-        }
-        
-        // --- ZMIANA 2: Warunkowa modyfikacja zakresu prac ---
-        let scopeData;
-        if (installationType === 'grunt') {
-            scopeData = JSON.parse(JSON.stringify(pvGroundMountScope));
-        } else { // Dach
-            scopeData = JSON.parse(JSON.stringify(pvRoofMountScope));
-            if (isBracketMount) {
-                const systemRowIndex = scopeData.findIndex(row => row[1].includes('Dostarczenie systemu montażowego'));
-                if (systemRowIndex > -1) {
-                    scopeData[systemRowIndex][1] = 'Dostarczenie systemu montażowego na ekierkach';
-                    scopeData[systemRowIndex][2] = 'Kompletny, certyfikowany zestaw konstrukcyjny na ekierkach, przeznaczony do montażu na dachu płaskim lub o niewielkim spadku.';
-                }
-            }
-        }
-        mainTableData.push(...scopeData);
-        // --------------------------------------------------
-
-    } else {
-        mainTableData = JSON.parse(JSON.stringify(pvStorageScope));
-        mainTableData.unshift(['', inverterDetails.name, inverterDetails.description, 'szt.', String(inverterQuantity)]);
-        const storageRowIndex = mainTableData.findIndex(row => row[1].includes('Zestaw magazynowania energii'));
-        if(storageRowIndex > -1) {
-            const totalCapacity = (storageDetails.capacity * storageModules).toFixed(2);
-            mainTableData.splice(storageRowIndex, 0, ['', `${storageDetails.name} (${totalCapacity} kWh)`, storageDetails.description, 'kpl.', '1']);
-            mainTableData.splice(storageRowIndex + 1, 1);
-        }
-    }
-    
-    mainTableData = mainTableData.map((row, index) => { row[0] = String(index + 1); return row; });
-    
-    currentY -= 10; 
-    let tableResult = await drawTable(pdfDoc, offerPage, { regular: regularFont, bold: boldFont }, mainTableData, currentY, "Komponenty i zakres prac");
-    lastContentPage = tableResult.finalPage;
-
-    if (storageDetails && !isStorageOnly) {
-        const storageScopePage = pdfDoc.addPage();
-        lastContentPage = storageScopePage;
-        let scopeY = height - 60;
-        const totalCapacity = (storageDetails.capacity * storageModules).toFixed(2);
-        const storageDetailsList = [
-            { type: 'title', value: "Zakres prac – instalacja magazynu energii" },
-            { label: 'Klient:', value: userName.toUpperCase() },
-            { label: 'Pojemność magazynu:', value: `${totalCapacity} kWh` },
-            { label: 'Moc ładowania/rozł.:', value: `${(storageDetails.capacity * storageModules / 2).toFixed(2)} kW` },
-        ];
-        scopeY = drawHeaderBlock(storageScopePage, { regular: regularFont, bold: boldFont }, kamanLogoImage, storageDetailsList, scopeY);
-        let scopeTableData = JSON.parse(JSON.stringify(pvStorageScope));
-        scopeTableData[1][4] = String(storageModules);
-        scopeTableData = scopeTableData.map((row, index) => { row[0] = String(index + 1); return row; });
-        scopeY -= 20;
-        tableResult = await drawTable(pdfDoc, storageScopePage, { regular: regularFont, bold: boldFont }, scopeTableData, scopeY, "Szczegółowy zakres prac");
-        lastContentPage = tableResult.finalPage;
-    }
-    
-    if (showPrice) {
-        const priceSuffix = isNetto ? 'PLN netto' : 'PLN brutto (VAT 8%)';
-        const priceText = `CENA KOŃCOWA: ${price} ${priceSuffix}`;
-        const priceTextWidth = boldFont.widthOfTextAtSize(priceText, 14);
-        lastContentPage.drawText(priceText, { x: width - priceTextWidth - 50, y: 50, font: boldFont, size: 14, color: rgb(0.6, 0, 0.15) });
-    }
-    lastContentPage.drawText(`Oferta ważna 14 dni.`, { x: 50, y: 50, font: regularFont, size: 9, color: rgb(0.4, 0.4, 0.4) });
-    
-    for (const templateDoc of loadedTemplatePDFs) {
-      const pageIndices = templateDoc.doc.getPageIndices();
-      for (const pageIndex of pageIndices) {
-        const [copiedPage] = await pdfDoc.copyPages(templateDoc.doc, [pageIndex]);
-        pdfDoc.addPage(copiedPage);
+      try {
+        const buf = await fetch(path).then((r) => r.arrayBuffer());
+        templates.push({ path, doc: await PDFDocument.load(buf) });
+      } catch {
+        console.error(`Nie można otworzyć ${path} – pomijam.`);
       }
     }
 
-    // NOWA WERSJA
-const pdfBytes = await pdfDoc.save({ useObjectStreams: false });
-    return new Blob([pdfBytes], { type: 'application/pdf' });
+    /* === okładka === */
+    const coverIdx = templates.findIndex((t) =>
+      t.path.includes(pvOfferCommons.coverPage)
+    );
+    if (coverIdx > -1) {
+      const [cover] = await pdfDoc.copyPages(templates[coverIdx].doc, [0]);
+      pdfDoc.addPage(cover);
+      templates.splice(coverIdx, 1);
+    }
 
-  } catch (error) {
-    console.error('Błąd podczas generowania PDF dla fotowoltaiki:', error);
-    alert(`Wystąpił błąd podczas generowania oferty PV: ${error.message}.`);
+    /* === strona oferty === */
+    const offerPage = pdfDoc.addPage();
+    let lastPage = offerPage;
+    const { width, height } = offerPage.getSize();
+    let y = height - 55;
+
+    const isStorageOnly = installationType === 'only-storage';
+    const title = isStorageOnly
+      ? 'OFERTA NA MODERNIZACJĘ O MAGAZYN ENERGII'
+      : 'OFERTA INSTALACJI FOTOWOLTAICZNEJ';
+
+    const headerLines = [
+      { type: 'title', value: title },
+      { label: 'Klient:', value: userName.toUpperCase() },
+      {
+        label: 'Moc instalacji:',
+        value:
+          !isStorageOnly && panelDetails
+            ? `${panelDetails.totalPower.toFixed(2)} kWp`
+            : null,
+      },
+      {
+        label: 'Typ instalacji:',
+        value: isStorageOnly
+          ? 'Modernizacja (Retrofit)'
+          : installationType === 'dach'
+          ? 'Dachowa'
+          : 'Gruntowa',
+      },
+      { label: 'Panele:', value: panelDetails?.name },
+      { label: 'Falownik/Ładowarka:', value: inverterDetails?.name },
+    ];
+    y = drawHeaderBlock(
+      offerPage,
+      { regular: regularFont, bold: boldFont },
+      logoImg,
+      headerLines,
+      y
+    );
+
+    /* === tabela główna === */
+    let table = [];
+
+    /* komponenty */
+    if (panelDetails)
+      table.push([
+        '',
+        panelDetails.name,
+        panelDetails.description,
+        'szt.',
+        panelDetails.count,
+      ]);
+
+    if (inverterDetails)
+      table.push([
+        '',
+        inverterDetails.name,
+        inverterDetails.description,
+        'szt.',
+        String(inverterQuantity || 1),
+      ]);
+
+    if (storageDetails) {
+      const cap = (storageDetails.capacity * storageModules).toFixed(2);
+      table.push([
+        '',
+        `${storageDetails.name} ${cap} kWh`,
+        storageDetails.description,
+        'kpl.',
+        '1',
+      ]);
+    }
+
+    /* zakres prac */
+    if (!isStorageOnly) {
+      const baseScope =
+        installationType === 'grunt'
+          ? JSON.parse(JSON.stringify(pvGroundMountScope))
+          : JSON.parse(JSON.stringify(pvRoofMountScope));
+
+      if (installationType === 'dach' && isBracketMount) {
+        const idx = baseScope.findIndex((r) =>
+          r[1].includes('Dostarczenie systemu montażowego')
+        );
+        if (idx > -1) {
+          baseScope[idx][1] = 'Dostarczenie systemu montażowego na ekierkach';
+          baseScope[idx][2] =
+            'Kompletny, certyfikowany zestaw na ekierkach do dachu płaskiego.';
+        }
+      }
+      table.push(...baseScope);
+    } else {
+      /* gałąź modernizacji */
+      table = JSON.parse(JSON.stringify(pvStorageScope));
+      table = applyStorageRowFix(table, storageDetails, storageModules);
+      if (inverterDetails)
+        table.unshift([
+          '',
+          inverterDetails.name,
+          inverterDetails.description,
+          'szt.',
+          String(inverterQuantity || 1),
+        ]);
+    }
+
+    /* numeracja Lp. */
+    table = table.map((r, i) => {
+      r[0] = String(i + 1);
+      return r;
+    });
+
+    y -= 10;
+    const res = await drawTable(
+      pdfDoc,
+      offerPage,
+      { regular: regularFont, bold: boldFont },
+      table,
+      y,
+      'Komponenty i zakres prac'
+    );
+    lastPage = res.finalPage;
+
+    /* === osobna strona zakresu magazynu (tylko w nowych instalacjach) === */
+    if (storageDetails && !isStorageOnly) {
+      const page = pdfDoc.addPage();
+      lastPage = page;
+      let sy = height - 60;
+
+      const totalCap = (storageDetails.capacity * storageModules).toFixed(2);
+
+      sy = drawHeaderBlock(
+        page,
+        { regular: regularFont, bold: boldFont },
+        logoImg,
+        [
+          { type: 'title', value: 'Zakres prac – instalacja magazynu energii' },
+          { label: 'Klient:', value: userName.toUpperCase() },
+          { label: 'Pojemność magazynu:', value: `${totalCap} kWh` },
+          {
+            label: 'Moc ładowania/rozł.:',
+            value: `${(
+              (storageDetails.capacity * storageModules) /
+              2
+            ).toFixed(2)} kW`,
+          },
+        ],
+        sy
+      );
+
+      let scope = JSON.parse(JSON.stringify(pvStorageScope));
+      scope = applyStorageRowFix(scope, storageDetails, storageModules);
+
+      const verIdx = scope.findIndex(
+        (r) =>
+          typeof r[1] === 'string' &&
+          r[1].toLowerCase().includes('weryfikacja możliwości')
+      );
+      if (verIdx !== -1) scope[verIdx][4] = String(storageModules);
+
+      scope = scope.map((r, i) => {
+        r[0] = String(i + 1);
+        return r;
+      });
+
+      sy -= 20;
+      await drawTable(
+        pdfDoc,
+        page,
+        { regular: regularFont, bold: boldFont },
+        scope,
+        sy,
+        'Szczegółowy zakres prac'
+      );
+    }
+
+    /* === cena końcowa + stopka === */
+    if (showPrice) {
+      const label = isNetto ? 'PLN netto' : 'PLN brutto (VAT 8%)';
+      const txt = `CENA KOŃCOWA: ${price} ${label}`;
+      const w = boldFont.widthOfTextAtSize(txt, 14);
+      lastPage.drawText(txt, {
+        x: width - w - 50,
+        y: 50,
+        font: boldFont,
+        size: 14,
+        color: rgb(0.6, 0, 0.15),
+      });
+    }
+    lastPage.drawText('Oferta ważna 14 dni.', {
+      x: 50,
+      y: 50,
+      font: regularFont,
+      size: 9,
+      color: rgb(0.4, 0.4, 0.4),
+    });
+
+    /* === doczep pozostałe szablony (datasheety + kontakt) === */
+    for (const t of templates) {
+      for (const pIdx of t.doc.getPageIndices()) {
+        const [p] = await pdfDoc.copyPages(t.doc, [pIdx]);
+        pdfDoc.addPage(p);
+      }
+    }
+
+    /* === save === */
+    const bytes = await pdfDoc.save({ useObjectStreams: false });
+    return new Blob([bytes], { type: 'application/pdf' });
+  } catch (err) {
+    console.error('Błąd PDF PV:', err);
+    alert(`Błąd generowania oferty PV: ${err.message}`);
     return null;
   }
 }
