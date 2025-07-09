@@ -1,149 +1,334 @@
-import React, { useState } from 'react';
-import { inverterTypesData, storageTypesData } from '../data/tables/photovoltaicsData';
+// Pełna, zaktualizowana zawartość pliku: src/components/PhotovoltaicsOfferForm.jsx
 
-// Załóżmy, że masz jakiś styl CSS dla formularza, np. w pliku FormStyles.css
-// import './FormStyles.css';
+import React, { useState, useEffect } from 'react';
+import { generatePhotovoltaicsOfferPDF } from '../utils/pvPdfGenerator'; 
+import { generateCustomOfferPDF } from '../utils/customPdfGenerator';
+import { panelTypesData, inverterTypesData, storageTypesData } from '../data/tables/photovoltaicsData';
+import TrelloActions from './TrelloActions';
 
-const PhotovoltaicsOfferForm = ({ onFormSubmit }) => {
+export default function PhotovoltaicsOfferForm() {
+  // Stany formularza
+  const [offerMode, setOfferMode] = useState('standard');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [userName, setUserName] = useState('');
+  const [price, setPrice] = useState('');
+  const [isNetto, setIsNetto] = useState(false);
+  const [showPrice, setShowPrice] = useState(true);
+  const [installationType, setInstallationType] = useState('dach');
+  
+  const [isBracketMount, setIsBracketMount] = useState(false);
+  
+  const [panelTypeKey, setPanelTypeKey] = useState('CANADIAN_SOLAR_455');
+  const [powerInput, setPowerInput] = useState('4.550');
+  const [numberOfPanels, setNumberOfPanels] = useState(10);
   const [inverterTypeKey, setInverterTypeKey] = useState(Object.keys(inverterTypesData)[0]);
-  const [panelPower, setPanelPower] = useState(455);
-  const [panelCount, setPanelCount] = useState(10);
+  const [isCustomInverterQuantity, setIsCustomInverterQuantity] = useState(false);
+  const [inverterQuantity, setInverterQuantity] = useState(1);
   const [includeStorage, setIncludeStorage] = useState(false);
+  const [storageTypeKey, setStorageTypeKey] = useState('DEYE_STORAGE_LV');
   const [storageModules, setStorageModules] = useState(1);
-  const [customerData, setCustomerData] = useState({ name: '', address: '' });
+  
+  // Stany dla oferty niestandardowej
+  const [selectCustomPanels, setSelectCustomPanels] = useState(true);
+  const [selectCustomInverter, setSelectCustomInverter] = useState(true);
+  const [selectCustomStorage, setSelectCustomStorage] = useState(false);
 
-  const handleInverterChange = (e) => {
-    const newInverterKey = e.target.value;
-    setInverterTypeKey(newInverterKey);
+  const [customPanelName, setCustomPanelName] = useState('');
+  const [customPanelQuantity, setCustomPanelQuantity] = useState(10);
+  const [customPanelPower, setCustomPanelPower] = useState(455);
+  const [customPanelDatasheet, setCustomPanelDatasheet] = useState(null);
+  const [customInverterName, setCustomInverterName] = useState('');
+  const [customInverterQuantity, setCustomInverterQuantity] = useState(1);
+  const [customInverterDatasheet, setCustomInverterDatasheet] = useState(null);
+  const [customStorageName, setCustomStorageName] = useState('');
+  const [customStorageQuantity, setCustomStorageQuantity] = useState(1);
+  const [customStorageDatasheet, setCustomStorageDatasheet] = useState(null);
 
-    // Resetuj moduły magazynu do domyślnych wartości przy zmianie falownika
-    if (newInverterKey === 'SOLPLANET_AI_HB_G2') {
-      setStorageModules(3); // Minimalna wartość dla Solplanet
-    } else {
-      setStorageModules(1); // Domyślna wartość dla innych
+  const [generatedPdfData, setGeneratedPdfData] = useState(null);
+
+  useEffect(() => {
+    if (offerMode === 'standard') {
+      const isStorageOnly = installationType === 'only-storage';
+      setIncludeStorage(isStorageOnly);
+      if (isStorageOnly) {
+        const firstRetrofitKey = Object.keys(inverterTypesData).find(key => inverterTypesData[key].type === 'AC Charger');
+        setInverterTypeKey(firstRetrofitKey || '');
+      }
+    }
+  }, [installationType, offerMode]);
+
+  useEffect(() => {
+    if (offerMode === 'standard' && installationType !== 'only-storage') {
+      const selectedPanelData = panelTypesData[panelTypeKey];
+      if (selectedPanelData && powerInput) {
+        const calculatedPanels = Math.ceil(parseFloat(powerInput) / selectedPanelData.power);
+        setNumberOfPanels(isNaN(calculatedPanels) || calculatedPanels < 0 ? 0 : calculatedPanels);
+      }
+    }
+  }, [powerInput, panelTypeKey, installationType, offerMode]);
+
+  const handleFileChange = (setter) => (event) => {
+    if (event.target.files && event.target.files[0]) {
+      if (event.target.files[0].type === "application/pdf") {
+        setter(event.target.files[0]);
+      } else {
+        alert("Proszę wybrać plik PDF.");
+        event.target.value = null;
+        setter(null);
+      }
     }
   };
 
-  const handleStorageModulesChange = (e) => {
-    const newModules = Number(e.target.value);
-    setStorageModules(newModules);
+  const handleGenerateAndSetPdf = async (e) => {
+    e.preventDefault();
+    if (showPrice && !price.trim()) {
+        alert('Uzupełnij pole Ceny lub odznacz opcję pokazywania jej w ofercie.');
+        return;
+    }
+    setIsProcessing(true);
+    setGeneratedPdfData(null);
+
+    let pdfBlob;
+    if (offerMode === 'standard') {
+        const formData = {
+            userName, price, isNetto, installationType, showPrice,
+            panelDetails: installationType !== 'only-storage' ? { ...panelTypesData[panelTypeKey], count: numberOfPanels, totalPower: parseFloat(powerInput) } : null,
+            inverterDetails: inverterTypesData[inverterTypeKey],
+            inverterQuantity: isCustomInverterQuantity ? inverterQuantity : 1,
+            storageDetails: includeStorage ? storageTypesData[storageTypeKey] : null,
+            storageModules: includeStorage ? storageModules : 0,
+            isBracketMount: isBracketMount,
+        };
+        pdfBlob = await generatePhotovoltaicsOfferPDF(formData);
+
+    } else {
+        const formData = {
+            clientName: userName, price, isNetto, installationType, showPrice,
+            panel: selectCustomPanels ? { name: customPanelName, quantity: customPanelQuantity, power: customPanelPower, datasheet: customPanelDatasheet } : null,
+            inverter: selectCustomInverter ? { name: customInverterName, quantity: customInverterQuantity, datasheet: customInverterDatasheet } : null,
+            storage: selectCustomStorage ? { name: customStorageName, quantity: customStorageQuantity, datasheet: customStorageDatasheet } : null,
+        };
+        pdfBlob = await generateCustomOfferPDF(formData);
+    }
+    
+    if (pdfBlob) {
+        setGeneratedPdfData(pdfBlob);
+    }
+
+    setIsProcessing(false);
   };
   
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const formData = {
-        inverterTypeKey,
-        panelPower,
-        panelCount,
-        includeStorage,
-        storageModules,
-        customerData
-    };
-    onFormSubmit(formData);
+  const handleDownloadPdf = () => {
+    if (!generatedPdfData) return;
+    const url = URL.createObjectURL(generatedPdfData);
+    const a = document.createElement('a');
+    a.download = `Oferta_PV_KAMAN_${userName.replace(/ /g, '_')}.pdf`;
+    a.href = url;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
-
-  const renderStorageOptions = () => {
-    if (!includeStorage) return null;
-    
-    const isSolplanet = inverterTypeKey === 'SOLPLANET_AI_HB_G2';
-    const minModules = isSolplanet ? 3 : 1;
-    const maxModules = isSolplanet ? 8 : 4; // Załóżmy 4 dla innych jako domyślne
-    const options = [];
-    for (let i = minModules; i <= maxModules; i++) {
-        options.push(<option key={i} value={i}>{i} moduły</option>);
-    }
-
-    return (
-        <div className="input-group" style={{paddingLeft: '15px', marginTop: '10px'}}>
-            <label htmlFor="storageModules">
-                {isSolplanet 
-                    ? `Ilość modułów magazynu (${minModules}-${maxModules}):`
-                    : 'Ilość modułów magazynu:'
-                }
-            </label>
-            <select 
-                id="storageModules" 
-                value={storageModules} 
-                onChange={handleStorageModulesChange}
-            >
-                {options}
-            </select>
-            {isSolplanet && storageModules < minModules &&
-                <small style={{color: 'red'}}>Dla Solplanet Ai-HB G2 wymagane są co najmniej 3 moduły.</small>
-            }
-        </div>
-    );
-  };
-
-
+  
   return (
-    <form onSubmit={handleSubmit} className="offer-form">
-      <h2>Formularz oferty fotowoltaicznej</h2>
-
-      <div className="input-group">
-        <label htmlFor="inverterType">Typ falownika:</label>
-        <select id="inverterType" value={inverterTypeKey} onChange={handleInverterChange}>
-          {Object.entries(inverterTypesData).map(([key, data]) => (
-            <option key={key} value={key}>{data.name}</option>
-          ))}
-        </select>
-      </div>
-
-      <div className="input-group">
-        <label htmlFor="panelPower">Moc paneli (Wp):</label>
-        <input 
-            type="number" 
-            id="panelPower" 
-            value={panelPower}
-            onChange={e => setPanelPower(Number(e.target.value))}
-        />
-      </div>
-
-      <div className="input-group">
-        <label htmlFor="panelCount">Liczba paneli:</label>
-        <input 
-            type="number" 
-            id="panelCount" 
-            value={panelCount}
-            onChange={e => setPanelCount(Number(e.target.value))}
-        />
-      </div>
-
-      <div className="input-group checkbox-group">
-        <input 
-            type="checkbox" 
-            id="includeStorage" 
-            checked={includeStorage}
-            onChange={e => setIncludeStorage(e.target.checked)}
-        />
-        <label htmlFor="includeStorage">Dołącz magazyn energii</label>
-      </div>
-
-      {renderStorageOptions()}
-
-      <div className="input-group">
-        <label htmlFor="customerName">Imię i nazwisko klienta:</label>
-        <input 
-            type="text" 
-            id="customerName" 
-            value={customerData.name}
-            onChange={e => setCustomerData({...customerData, name: e.target.value})}
-        />
-      </div>
-
-       <div className="input-group">
-        <label htmlFor="customerAddress">Adres instalacji:</label>
-        <input 
-            type="text" 
-            id="customerAddress" 
-            value={customerData.address}
-            onChange={e => setCustomerData({...customerData, address: e.target.value})}
-        />
-      </div>
+    <form className="form-container photovoltaics-generator" onSubmit={handleGenerateAndSetPdf}>
+        <div className="form-mode-switcher">
+            <button type="button" className={offerMode === 'standard' ? 'active' : ''} onClick={() => setOfferMode('standard')}>
+                Oferta Standardowa
+            </button>
+            <button type="button" className={offerMode === 'custom' ? 'active' : ''} onClick={() => setOfferMode('custom')}>
+                Oferta Niestandardowa
+            </button>
+        </div>
       
-      <button type="submit" className="submit-btn">Wygeneruj ofertę</button>
+        <h2>Generator Fotowoltaika</h2>
+
+        <div className="input-group">
+            <label htmlFor="pv_userName">Imię i Nazwisko Klienta:</label>
+            <input type="text" id="pv_userName" value={userName} onChange={(e) => setUserName(e.target.value)} placeholder="Podaj imię i nazwisko" required />
+        </div>
+        <div className="input-group">
+            <label htmlFor="pv_pricePV">Cena Końcowa (PLN):</label>
+            <input type="text" id="pv_pricePV" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Podaj cenę" />
+        </div>
+        <div className="input-group-inline">
+            <input type="checkbox" id="isNettoPricePV" checked={isNetto} onChange={(e) => setIsNetto(e.target.checked)} />
+            <label htmlFor="isNettoPricePV">Pokaż cenę jako netto</label>
+        </div>
+        <div className="input-group-inline">
+            <input type="checkbox" id="pv_showPrice" checked={showPrice} onChange={(e) => setShowPrice(e.target.checked)} />
+            <label htmlFor="pv_showPrice">Dołącz cenę do oferty</label>
+        </div>
+
+        {offerMode === 'standard' && (
+            <>
+                <div className="input-group">
+                    <label htmlFor="pv_installationType">Typ oferty:</label>
+                    <select id="pv_installationType" value={installationType} onChange={(e) => setInstallationType(e.target.value)}>
+                        <option value="dach">Nowa instalacja - Dach</option>
+                        <option value="grunt">Nowa instalacja - Grunt</option>
+                        <option value="only-storage">Modernizacja o magazyn energii</option>
+                    </select>
+                </div>
+                
+                {installationType === 'dach' && (
+                  <div className="input-group-inline" style={{ paddingLeft: '10px', marginTop: '5px' }}>
+                    <input
+                      type="checkbox"
+                      id="isBracketMount"
+                      checked={isBracketMount}
+                      onChange={(e) => setIsBracketMount(e.target.checked)}
+                    />
+                    <label htmlFor="isBracketMount">Zastosuj montaż na ekierkach (dach płaski)</label>
+                  </div>
+                )}
+                
+                {installationType !== 'only-storage' && (
+                <>
+                    <div className="input-group">
+                    <label htmlFor="pv_panelType">Rodzaj paneli:</label>
+                    <select id="pv_panelType" value={panelTypeKey} onChange={(e) => setPanelTypeKey(e.target.value)}>
+                        {Object.keys(panelTypesData).map(key => (<option key={key} value={key}>{panelTypesData[key].name}</option>))}
+                    </select>
+                    </div>
+                    <div className="input-group">
+                    <label htmlFor="pv_powerInput">Moc instalacji (kWp):</label>
+                    <input type="number" id="pv_powerInput" value={powerInput} onChange={(e) => setPowerInput(e.target.value)} step="0.001" />
+                    </div>
+                    <div id="pv_panelCountMessage" className="input-group">Sugerowana liczba paneli: {numberOfPanels}</div>
+                </>
+                )}
+                <div className="input-group">
+                    <label htmlFor="pv_inverterType">Falownik / Ładowarka AC:</label>
+                    <select id="pv_inverterType" value={inverterTypeKey} onChange={(e) => setInverterTypeKey(e.target.value)}>
+                    {Object.keys(inverterTypesData).map(key => (<option key={key} value={key}>{inverterTypesData[key].name}</option>))}
+                    </select>
+                </div>
+                <div className="options-box">
+                    <div className="option-row">
+                        <input type="checkbox" id="isCustomInverterQuantity" checked={isCustomInverterQuantity} onChange={(e) => setIsCustomInverterQuantity(e.target.checked)} />
+                        <label htmlFor="isCustomInverterQuantity">Niestandardowa ilość falowników</label>
+                    </div>
+                    {isCustomInverterQuantity && (
+                        <div className="custom-quantity-inputs">
+                            <div className="input-group">
+                                <label htmlFor="inverterQty">Ilość falowników:</label>
+                                <input id="inverterQty" type="number" value={inverterQuantity} onChange={e => setInverterQuantity(Number(e.target.value))} min="1" step="1" />
+                            </div>
+                        </div>
+                    )}
+                </div>
+                <div className="options-box">
+                    <div className="option-row">
+                        <input type="checkbox" id="pv_includeStorage" checked={includeStorage} onChange={(e) => setIncludeStorage(e.target.checked)} />
+                        <label htmlFor="pv_includeStorage">Dołącz magazyn energii</label>
+                    </div>
+                    {includeStorage && (
+                        <div className="input-group" style={{paddingLeft: '15px', marginTop: '10px'}}>
+                            <label htmlFor="storageModules">Ilość modułów magazynu (1-4):</label>
+                            <select id="storageModules" value={storageModules} onChange={e => setStorageModules(Number(e.target.value))}>
+                            <option value={1}>1 moduł</option>
+                            <option value={2}>2 moduły</option>
+                            <option value={3}>3 moduły</option>
+                            <option value={4}>4 moduły</option>
+                            <option value={5}>5 modułów</option>
+                            <option value={6}>6 modułów</option>
+                            <option value={7}>7 modułów</option> 
+                            <option value={8}>8 modułów</option>
+                            </select>
+                        </div>
+                    )}
+                </div>
+            </>
+        )}
+
+        {offerMode === 'custom' && (
+             <>
+                <div className="input-group">
+                    <label>Typ instalacji (wpływa na zakres prac w tabeli)</label>
+                    <select value={installationType} onChange={e => setInstallationType(e.target.value)}>
+                        <option value="dach">Dachowa</option>
+                        <option value="grunt">Gruntowa</option>
+                    </select>
+                </div>
+
+                <div className="options-box">
+                    <div className="option-row">
+                        <input type="checkbox" id="selectCustomPanels" checked={selectCustomPanels} onChange={e => setSelectCustomPanels(e.target.checked)} />
+                        <label htmlFor="selectCustomPanels">Dołącz panele</label>
+                    </div>
+                     <div className="option-row">
+                        <input type="checkbox" id="selectCustomInverter" checked={selectCustomInverter} onChange={e => setSelectCustomInverter(e.target.checked)} />
+                        <label htmlFor="selectCustomInverter">Dołącz inwerter/falownik</label>
+                    </div>
+                    <div className="option-row">
+                        <input type="checkbox" id="selectCustomStorage" checked={selectCustomStorage} onChange={e => setSelectCustomStorage(e.target.checked)} />
+                        <label htmlFor="selectCustomStorage">Dołącz magazyn energii</label>
+                    </div>
+                </div>
+
+                {selectCustomPanels && (
+                    <fieldset className="component-fieldset">
+                        <legend>Panele Fotowoltaiczne</legend>
+                        <label htmlFor="customPanelName">Nazwa i model paneli</label>
+                        <input id="customPanelName" type="text" placeholder="np. Jinko Solar 470Wp" value={customPanelName} onChange={e => setCustomPanelName(e.target.value)} required={selectCustomPanels} />
+                        <div className="inline-inputs">
+                            <div className="input-group">
+                                <label htmlFor="customPanelQuantity">Ilość (szt.)</label>
+                                <input id="customPanelQuantity" type="number" value={customPanelQuantity} onChange={e => setCustomPanelQuantity(Number(e.target.value))} required={selectCustomPanels} />
+                            </div>
+                            <div className="input-group">
+                               <label htmlFor="customPanelPower">Moc 1 szt. (Wp)</label>
+                               <input id="customPanelPower" type="number" value={customPanelPower} onChange={e => setCustomPanelPower(Number(e.target.value))} required={selectCustomPanels} />
+                            </div>
+                        </div>
+                        <label htmlFor="customPanelDatasheet">Karta katalogowa paneli (PDF)</label>
+                        <input id="customPanelDatasheet" type="file" accept=".pdf" onChange={handleFileChange(setCustomPanelDatasheet)} />
+                    </fieldset>
+                )}
+
+                {selectCustomInverter && (
+                    <fieldset className="component-fieldset">
+                        <legend>Falownik / Inwerter</legend>
+                        <label htmlFor="customInverterName">Nazwa i model falownika</label>
+                        <input id="customInverterName" type="text" placeholder="np. Falownik hybrydowy DEYE 10kW" value={customInverterName} onChange={e => setCustomInverterName(e.target.value)} required={selectCustomInverter} />
+                         <div className="input-group">
+                            <label htmlFor="customInverterQuantity">Ilość (szt.)</label>
+                            <input id="customInverterQuantity" type="number" placeholder="1" value={customInverterQuantity} onChange={e => setCustomInverterQuantity(Number(e.target.value))} required={selectCustomInverter} />
+                        </div>
+                        <label htmlFor="customInverterDatasheet">Karta katalogowa falownika (PDF)</label>
+                        <input id="customInverterDatasheet" type="file" accept=".pdf" onChange={handleFileChange(setCustomInverterDatasheet)} />
+                    </fieldset>
+                )}
+
+                {selectCustomStorage && (
+                    <fieldset className="component-fieldset">
+                        <legend>Magazyn Energii</legend>
+                        <label htmlFor="customStorageName">Nazwa i model magazynu</label>
+                        <input id="customStorageName" type="text" placeholder="np. DEYE 5.12kWh" value={customStorageName} onChange={e => setCustomStorageName(e.target.value)} required={selectCustomStorage}/>
+                        <div className="input-group">
+                            <label htmlFor="customStorageQuantity">Ilość modułów/sztuk</label>
+                            <input id="customStorageQuantity" type="number" value={customStorageQuantity} onChange={e => setCustomStorageQuantity(Number(e.target.value))} required={selectCustomStorage}/>
+                        </div>
+                        <label htmlFor="customStorageDatasheet">Karta katalogowa magazynu (PDF)</label>
+                        <input id="customStorageDatasheet" type="file" accept=".pdf" onChange={handleFileChange(setCustomStorageDatasheet)} />
+                    </fieldset>
+                )}
+            </>
+        )}
+
+      <button type="submit" disabled={isProcessing}>{isProcessing ? 'Przetwarzanie...' : 'Generuj PDF'}</button>
+
+      {generatedPdfData && (
+        <button type="button" onClick={handleDownloadPdf} style={{ marginTop: '10px', background: '#555' }}>
+          Pobierz wygenerowany PDF
+        </button>
+      )}
+
+      <TrelloActions 
+        generatedPdfData={generatedPdfData}
+        userName={userName}
+      />
     </form>
   );
-};
-
-export default PhotovoltaicsOfferForm;
+}
