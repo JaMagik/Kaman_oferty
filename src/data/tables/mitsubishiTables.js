@@ -535,8 +535,8 @@ const mitsubishiEcoinverter_6kW_base = [
 
 
 const mitsubishiEcoinverter_8kW_base = [
-  ['1', 'Pompa ciepła – jednostka zewnętrzna 8 kW 1F (SUZ‑SWM80VA)', 'szt.', '1', 'Mitsubishi SUZ‑SWM80VA – Split, moc 8,0 kW, zasilanie 230 V, R32; seria Ecoinverter o wysokiej sprawności energetycznej.'],
-  ['2', 'Hydrobox – jednostka wewnętrzna', 'szt.', '1', 'EHSD‑YM9D – grzałka 6/9 kW, naczynie 10 l. Zarządza obiegiem grzewczym i CWU.'],
+  ['1', 'Pompa ciepła – jednostka zewnętrzna 8 kW 1F (SUZ‑SWM80VA2)', 'szt.', '1', 'Mitsubishi SUZ‑SWM80VA2 – Split, moc 8,0 kW, zasilanie 230 V, R32; seria Ecoinverter o wysokiej sprawności energetycznej.'],
+  ['2', 'Hydrobox – jednostka wewnętrzna', 'szt.', '1', 'ERSD-YM9E – grzałka 6/9 kW, naczynie 10 l. Zarządza obiegiem grzewczym i CWU.'],
   ...mitsubishiEcoinverter_6kW_base.slice(2)
 ];
 
@@ -562,8 +562,8 @@ const mitsubishiEcoinverterHydrobox_6kW_base = [
 
 
 const mitsubishiEcoinverterHydrobox_8kW_base = [
-  ['1', 'Pompa ciepła – jednostka zewnętrzna 8 kW 1F (SUZ-SWM80VA)', 'szt.', '1', 'Mitsubishi SUZ-SWM80VA – Split, moc 8,0 kW, zasilanie 230 V, R32; seria Ecoinverter o wysokiej sprawności.'],
-  ['2', 'Hydrobox – jednostka wewnętrzna', 'szt.', '1', 'EHSD-YM9D – grzałka 6/9 kW, naczynie 10 l. Steruje obiegiem grzewczym i CWU.'],
+  ['1', 'Pompa ciepła – jednostka zewnętrzna 8 kW 1F (SUZ-SWM80VA2)', 'szt.', '1', 'Mitsubishi SUZ-SWM80VA2 – Split, moc 8,0 kW, zasilanie 230 V, R32; seria Ecoinverter o wysokiej sprawności.'],
+  ['2', 'Hydrobox – jednostka wewnętrzna', 'szt.', '1', 'ERSD-YM9E – grzałka 6/9 kW, naczynie 10 l. Steruje obiegiem grzewczym i CWU.'],
   ...mitsubishiEcoinverterHydrobox_6kW_base.slice(2)
 ];
 
