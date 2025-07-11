@@ -107,7 +107,7 @@ const mitsubishiCylinder_standard_14kW_base = [
 
 // --- Mitsubishi Cylinder PUZ (3-fazowy) ---
 const mitsubishiCylinderPUZ_6kW_base = [
-  ['1', 'Pompa ciepła – jednostka zewnętrzna 6kW (PUZ-SHWM60YAA)', 'szt.', '1', 'Mitsubishi PUZ-SHWM60YAA – Split, moc 6,0 kW, zasilanie 3x400V, czynnik chłodniczy R32, technologia Zubadan zapewniająca stabilną pracę nawet przy niskich temperaturach.'],
+  ['1', 'Pompa ciepła – jednostka zewnętrzna 6kW (PUZ-SHWM60VAA)', 'szt.', '1', 'Mitsubishi PUZ-SHWM60VAA – Split, moc 6,0 kW, zasilanie 3x400V, czynnik chłodniczy R32, technologia Zubadan zapewniająca stabilną pracę nawet przy niskich temperaturach.'],
   ['2', 'Moduł wewnętrzny Cylinder (ERST20F-YM9ED)', 'szt.', '1', 'Ecodan | Cylinder | Split | grzałka 6/9 kW, 3x400V, naczynie wzbiorcze 10L, zintegrowany zasobnik CWU.'],
  ['3', 'Pompa obiegowa CO IBO PRO', 'szt.', '1', 'Zapewnia prawidłowy obieg czynnika grzewczego w instalacji.'],
 
@@ -301,7 +301,7 @@ const mitsubishiCylinderPUZ_1F_12kW_base = [
 // Format: [Lp., Nazwa główna, Jednostka, Ilość, Opis szczegółowy (opcjonalnie)]
 
 const mitsubishiHydrobox_standard_6kW_base = [
-  ['1', 'Pompa ciepła – jednostka zewnętrzna 6kW', 'szt.', '1', 'Mitsubishi PUD-SHWM60YAA – Split, moc 6,0 kW, zasilanie 3x400V, czynnik chłodniczy R32, technologia Zubadan zapewniająca stabilną pracę nawet przy niskich temperaturach.'],
+  ['1', 'Pompa ciepła – jednostka zewnętrzna 6kW', 'szt.', '1', 'Mitsubishi PUD-SHWM60VCAA – Split, moc 6,0 kW, zasilanie 3x400V, czynnik chłodniczy R32, technologia Zubadan zapewniająca stabilną pracę nawet przy niskich temperaturach.'],
   ['2', 'Hydrobox – jednostka wewnętrzna', 'szt.', '1', 'Mitsubishi ERSD-YM9E – z grzałką elektryczną 6/9 kW oraz wbudowanym naczyniem wzbiorczym 10 litrów. Odpowiada za zarządzanie obiegiem grzewczym.'],
  ['3', 'Pompa obiegowa CO IBO PRO', 'szt.', '1', 'Zapewnia prawidłowy obieg czynnika grzewczego w instalacji.'],
 
@@ -401,7 +401,7 @@ const mitsubishiHydrobox_standard_14kW_base = [
 
 
 const mitsubishiHydroboxPUZ_6kW_base = [
-  ['1', 'Pompa ciepła – jednostka zewnętrzna 6 kW (PUZ‑SHWM60YAA)', 'szt.', '1', 'Mitsubishi PUZ‑SHWM60YAA – Split, moc 6,0 kW, zasilanie 3×400 V, czynnik chłodniczy R32; technologia Zubadan zapewnia stabilną pracę nawet przy bardzo niskich temperaturach.'],
+  ['1', 'Pompa ciepła – jednostka zewnętrzna 6 kW (PUZ‑SHWM60VAA)', 'szt.', '1', 'Mitsubishi PUZ‑SHWM60VAA – Split, moc 6,0 kW, zasilanie 3×400 V, czynnik chłodniczy R32; technologia Zubadan zapewnia stabilną pracę nawet przy bardzo niskich temperaturach.'],
   ['2', 'Hydrobox – jednostka wewnętrzna', 'szt.', '1', 'ERSF‑YM9E – grzałka elektryczna 6/9 kW oraz wbudowane naczynie wzbiorcze 10 l. Odpowiada za zarządzanie obiegiem grzewczym i współpracę z CWU.'],
   ['3', 'Pompa obiegowa CO IBO PRO', 'szt.', '1', 'Zapewnia prawidłowy obieg czynnika grzewczego w instalacji.'],
 
