@@ -45,10 +45,11 @@ export async function generatePhotovoltaicsOfferPDF(formData) {
     installationType,
     showPrice,
     panelDetails,
-    inverterDetails, // może być null
+    inverterDetails,     // może być null
     inverterQuantity,
-    storageDetails,  // może być null
+    storageDetails,      // może być null
     storageModules,
+    storageChargePower,  // może być null
     isBracketMount,
   } = formData;
 
@@ -98,7 +99,7 @@ export async function generatePhotovoltaicsOfferPDF(formData) {
       templates.splice(coverIdx, 1);
     }
 
-    /* === strona oferty === */
+    /* === strona oferty (druga strona) === */
     const offerPage = pdfDoc.addPage();
     let lastPage = offerPage;
     const { width, height } = offerPage.getSize();
@@ -108,6 +109,21 @@ export async function generatePhotovoltaicsOfferPDF(formData) {
     const title = isStorageOnly
       ? 'OFERTA NA MODERNIZACJĘ O MAGAZYN ENERGII'
       : 'OFERTA INSTALACJI FOTOWOLTAICZNEJ';
+
+    /* obliczenia parametrów magazynu */
+    let storageTotalCap = null;
+    let storageTotalPower = null;
+    if (storageDetails) {
+      storageTotalCap = (storageDetails.capacity * storageModules).toFixed(2);
+
+      // kolejność priorytetów: formData → maxPower z tabeli → przybliżenie (capacity/2)
+      const perModulePower =
+        storageChargePower ??
+        storageDetails.maxPower ??
+        storageDetails.capacity / 2;
+
+      storageTotalPower = (perModulePower * storageModules).toFixed(2);
+    }
 
     const headerLines = [
       { type: 'title', value: title },
@@ -129,7 +145,16 @@ export async function generatePhotovoltaicsOfferPDF(formData) {
       },
       { label: 'Panele:', value: panelDetails?.name },
       { label: 'Falownik/Ładowarka:', value: inverterDetails?.name },
-    ];
+      storageDetails && {
+        label: 'Pojemność magazynu:',
+        value: `${storageTotalCap} kWh`,
+      },
+      storageDetails && {
+        label: 'Moc ładowania/rozł.:',
+        value: `${storageTotalPower} kW`,
+      },
+    ].filter(Boolean);
+
     y = drawHeaderBlock(
       offerPage,
       { regular: regularFont, bold: boldFont },
@@ -161,10 +186,9 @@ export async function generatePhotovoltaicsOfferPDF(formData) {
       ]);
 
     if (storageDetails) {
-      const cap = (storageDetails.capacity * storageModules).toFixed(2);
       table.push([
         '',
-        `${storageDetails.name} ${cap} kWh`,
+        `${storageDetails.name} ${storageTotalCap} kWh`,
         storageDetails.description,
         'kpl.',
         '1',
@@ -226,8 +250,6 @@ export async function generatePhotovoltaicsOfferPDF(formData) {
       lastPage = page;
       let sy = height - 60;
 
-      const totalCap = (storageDetails.capacity * storageModules).toFixed(2);
-
       sy = drawHeaderBlock(
         page,
         { regular: regularFont, bold: boldFont },
@@ -235,13 +257,10 @@ export async function generatePhotovoltaicsOfferPDF(formData) {
         [
           { type: 'title', value: 'Zakres prac – instalacja magazynu energii' },
           { label: 'Klient:', value: userName.toUpperCase() },
-          { label: 'Pojemność magazynu:', value: `${totalCap} kWh` },
+          { label: 'Pojemność magazynu:', value: `${storageTotalCap} kWh` },
           {
             label: 'Moc ładowania/rozł.:',
-            value: `${(
-              (storageDetails.capacity * storageModules) /
-              2
-            ).toFixed(2)} kW`,
+            value: `${storageTotalPower} kW`,
           },
         ],
         sy
