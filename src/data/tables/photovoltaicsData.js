@@ -66,6 +66,27 @@ export const inverterTypesData = {
 };
 
 export const storageTypesData = {
+
+  'FOXESS_EP11': {
+    name: 'Magazyn energii Foxess EP 11 kWh',
+    capacity: 11.0, // Pojemność w kWh
+    brand: 'FoxESS',
+    description: 'Wysokonapięciowy, modułowy magazyn energii w technologii LiFePO₄, zapewniający bezpieczeństwo i długą żywotność.',
+    datasheets: [
+      // UWAGA: Uzupełnij poprawną ścieżkę do karty katalogowej!
+      '/pdf_templates/photovoltaics/storage/Foxess/Karta-katalogowa-FoxESS-EP11.pdf'
+    ]
+  },
+  'FOXESS_EP5': {
+    name: 'Magazyn energii Foxess EP 5 kWh',
+    capacity: 5.0, // Pojemność w kWh
+    brand: 'FoxESS',
+    description: 'Kompaktowy, wysokonapięciowy magazyn energii w technologii LiFePO₄, idealny do mniejszych instalacji domowych.',
+    datasheets: [
+      // UWAGA: Uzupełnij poprawną ścieżkę do karty katalogowej!
+      '/pdf_templates/photovoltaics/storage/Foxess/Karta-katalogowa-FoxESS-EP5.pdf'
+    ]
+  },
   'DEYE_STORAGE_LV': {
     name: 'Magazyn energii DEYE LV Series',
     capacity: 5.11,
