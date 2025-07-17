@@ -96,7 +96,7 @@ export const pdfTemplateSets = {
     commonContactPage,
   ],
   'Mitsubishi-hydrobox-PUZ-1F': [
-    '/pdf_templates/mitsubishi/zubadan-hydrobox-1f/1_okladka.pdf',
+    '/pdf_templates/mitsubishi/zubadan-hydrobox/1_okladka.pdf',
       
 
     '/pdf_templates/mitsubishi/zubadan-hydrobox-1f/3_katalog_PUZ-1.pdf',
