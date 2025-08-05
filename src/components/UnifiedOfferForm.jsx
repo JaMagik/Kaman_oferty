@@ -179,19 +179,12 @@ export default function UnifiedOfferForm() {
           <option value="ATLANTIC-M-DUO">Atlantic S-TRI hydrobox</option>
           <option value="ATLANTIC-S">Atlantic S-TRI-Duo cylinder</option>
           <option value="ATLANTIC-EXCELIA">Atlantic EXCELIA AI TRI hydrobox</option>
-        </optgroup>
-        <optgroup label="Klimatyzatory Mitsubishi">
-          <option value="MITSUBISHI AY">Mitsubishi AY</option>
-          <option value="MITSUBISHI HR">Mitsubishi HR</option>
-        </optgroup>
-        <optgroup label="Klimatyzatory VIVAX">
-            <option value="VIVAX Y-Design">VIVAX Y-Design</option>
-            <option value="VIVAX H-Design">VIVAX H+ Design</option>
-            <option value="VIVAX Q-Design">VIVAX Q-Design</option>
-            <option value="VIVAX N-Design">VIVAX N-Design</option>
-                        <option value="VIVAX M-Design">VIVAX M-Design</option>
+                    <option value="ATLANTIC-EXTENSA">Atlantic EXTENSA hydrobox</option>
+                                        <option value="ATLANTIC-EXTENSA-CYLINDER">Atlantic EXTENSA cylinder</option>
+
 
         </optgroup>
+      
         <optgroup label="Kotły na Pellet">
           <option value="LAZAR">Lazar</option>
           <option value="QMPELL">QMPell EVO</option>
@@ -207,6 +200,18 @@ export default function UnifiedOfferForm() {
         </optgroup>
         <optgroup label="Pompy Ciepła Kaisai">
             <option value="Kaisai">Kaisai</option>
+        </optgroup>
+          <optgroup label="Klimatyzatory Mitsubishi">
+          <option value="MITSUBISHI AY">Mitsubishi AY</option>
+          <option value="MITSUBISHI HR">Mitsubishi HR</option>
+        </optgroup>
+        <optgroup label="Klimatyzatory VIVAX">
+            <option value="VIVAX Y-Design">VIVAX Y-Design</option>
+            <option value="VIVAX H-Design">VIVAX H+ Design</option>
+            <option value="VIVAX Q-Design">VIVAX Q-Design</option>
+            <option value="VIVAX N-Design">VIVAX N-Design</option>
+                        <option value="VIVAX M-Design">VIVAX M-Design</option>
+
         </optgroup>
       </select>
 

@@ -201,6 +201,23 @@ export const pdfTemplateSets = {
     groupPage2,
     commonContactPage,
   ],
+  'ATLANTIC-EXTENSA': [ // Atlantic Excelia AI Hydrobox
+    '/pdf_templates/atlantic/extensa-hydrobox/1_okladka.pdf',
+    '/pdf_templates/atlantic/extensa-hydrobox/atlantic_extensa_hydrobox.pdf',
+     oNas,
+      groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+   'ATLANTIC-EXTENSA-CYLINDER': [ // Atlantic Excelia AI Hydrobox
+    '/pdf_templates/atlantic/extensa-cylinder/1_okladka.pdf',
+    '/pdf_templates/atlantic/extensa-cylinder/EXTENSA-AI-DUO-R32-KARTA-KATALOGOWA-1.pdf',
+    '/pdf_templates/atlantic/extensa-cylinder/EXTENSA-AI-DUO-R32-KARTA-KATALOGOWA-2.pdf',
+     oNas,
+      groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
   'ATLANTIC-M-DUO': [ // Atlantic M-Duo
     
     '/pdf_templates/atlantic/s-tri-duo/1_okladka.pdf',
