@@ -16,6 +16,7 @@ import { kotlospawDrewkoHybridBaseTables } from "../data/tables/kotlospawDrewkoH
 import { toshiba1fBaseTables } from '../data/tables/toshiba1fTable';
 import { kaisaiHydroboxBaseTables } from '../data/tables/kaisaiTable';
 import { acBaseTables } from '../data/tables/acData';
+import { panasonicBaseTables } from '../data/tables/panasonicTables';
 
 
 const allDevicesData = {
@@ -31,6 +32,7 @@ const allDevicesData = {
   ...toshiba1fBaseTables,
   ...kaisaiHydroboxBaseTables,
   ...acBaseTables,
+  ...panasonicBaseTables,
 };
 
 const boilerDeviceTypes = [ "LAZAR", "Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid" ];
@@ -200,6 +202,18 @@ export default function UnifiedOfferForm() {
         </optgroup>
         <optgroup label="Pompy Ciepła Kaisai">
             <option value="Kaisai">Kaisai</option>
+        </optgroup>
+        <optgroup label="Pompy Ciepła Panasonic">
+            <option value="Panasonic-HP-cylinder-1f">Panasonic Aquarea (HP) cylinder 1F</option>
+            <option value="Panasonic-HP-cylinder-3f">Panasonic Aquarea (HP) cylinder 3F</option>
+
+            <option value="Panasonic-K-cylinder-1f">Panasonic Aquarea T-CAP cylinder 1F</option>
+            <option value="Panasonic-K-cylinder-3f">Panasonic Aquarea T-CAP cylinder 3F</option>
+
+            <option value="Panasonic-HP-hydrobox-1f">Panasonic Aquarea (HP) hydrobox 1F</option>
+            <option value="Panasonic-HP-hydrobox-3f">Panasonic Aquarea (HP) hydrobox 3F</option>
+            <option value="Panasonic-K-hydrobox-1f">Panasonic Aquarea T-CAP hydrobox 1F</option>
+            <option value="Panasonic-K-hydrobox-3f">Panasonic Aquarea T-CAP hydrobox 3F</option>
         </optgroup>
           <optgroup label="Klimatyzatory Mitsubishi">
           <option value="MITSUBISHI AY">Mitsubishi AY</option>

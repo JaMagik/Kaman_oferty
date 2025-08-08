@@ -354,6 +354,93 @@ export const pdfTemplateSets = {
     commonContactPage,
   ],
 
+  'Panasonic-HP-cylinder-1f': [
+    '/pdf_templates/Panasonic/Seria-HP-cylinder-1f/1_okladka.pdf',
+    '/pdf_templates/Panasonic/Seria-HP-cylinder-1f/Ulotka Panasonic Aquarea serii K-1.pdf',
+    '/pdf_templates/Panasonic/Seria-HP-cylinder-1f/Ulotka Panasonic Aquarea serii K-2.pdf',
+    '/pdf_templates/Panasonic/Seria-HP-cylinder-1f/Ulotka Panasonic Aquarea serii K-3.pdf',
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+
+  'Panasonic-HP-cylinder-3f': [
+    '/pdf_templates/Panasonic/Seria-HP-cylinder-3f/1_okladka.pdf',
+    '/pdf_templates/Panasonic/Seria-HP-cylinder-3f/Ulotka Panasonic Aquarea serii K-1.pdf',
+    '/pdf_templates/Panasonic/Seria-HP-cylinder-3f/Ulotka Panasonic Aquarea serii K-2.pdf',
+    '/pdf_templates/Panasonic/Seria-HP-cylinder-3f/Ulotka Panasonic Aquarea serii K-3.pdf',
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+
+  'Panasonic-HP-hydrobox-1f': [
+    '/pdf_templates/Panasonic/Seria-HP-hydrobox-1f/1_okladka.pdf',
+    '/pdf_templates/Panasonic/Seria-HP-hydrobox-1f/Ulotka Panasonic Aquarea serii K-1.pdf',
+    '/pdf_templates/Panasonic/Seria-HP-hydrobox-1f/Ulotka Panasonic Aquarea serii K-2.pdf',
+    '/pdf_templates/Panasonic/Seria-HP-hydrobox-1f/Ulotka Panasonic Aquarea serii K-3.pdf',
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+
+  'Panasonic-HP-hydrobox-3f': [
+    '/pdf_templates/Panasonic/Seria-HP-hydrobox-3f/1_okladka.pdf',
+    '/pdf_templates/Panasonic/Seria-HP-hydrobox-3f/Ulotka Panasonic Aquarea serii K-1.pdf',
+    '/pdf_templates/Panasonic/Seria-HP-hydrobox-3f/Ulotka Panasonic Aquarea serii K-2.pdf',
+    '/pdf_templates/Panasonic/Seria-HP-hydrobox-3f/Ulotka Panasonic Aquarea serii K-3.pdf',
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+
+  'Panasonic-K-cylinder-1f': [
+    '/pdf_templates/Panasonic/Seria-K-cylinder-1f/1_okladka.pdf',
+    '/pdf_templates/Panasonic/Seria-K-cylinder-1f/Ulotka Panasonic Aquarea serii K-1.pdf',
+    '/pdf_templates/Panasonic/Seria-K-cylinder-1f/Ulotka Panasonic Aquarea serii K-2.pdf',
+    '/pdf_templates/Panasonic/Seria-K-cylinder-1f/Ulotka Panasonic Aquarea serii K-3.pdf',
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+
+  'Panasonic-K-cylinder-3f': [
+    '/pdf_templates/Panasonic/Seria-K-cylinder-3f/1_okladka.pdf',
+    '/pdf_templates/Panasonic/Seria-K-cylinder-3f/Ulotka Panasonic Aquarea serii K-1.pdf',
+    '/pdf_templates/Panasonic/Seria-K-cylinder-3f/Ulotka Panasonic Aquarea serii K-2.pdf',
+    '/pdf_templates/Panasonic/Seria-K-cylinder-3f/Ulotka Panasonic Aquarea serii K-3.pdf',
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+
+  'Panasonic-K-hydrobox-1f': [
+    '/pdf_templates/Panasonic/Seria-K-hydrobox-1f/1_okladka.pdf',
+    '/pdf_templates/Panasonic/Seria-K-hydrobox-1f/Ulotka Panasonic Aquarea serii K-1.pdf',
+    '/pdf_templates/Panasonic/Seria-K-hydrobox-1f/Ulotka Panasonic Aquarea serii K-2.pdf',
+    '/pdf_templates/Panasonic/Seria-K-hydrobox-1f/Ulotka Panasonic Aquarea serii K-3.pdf',
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+
+  'Panasonic-K-hydrobox-3f': [
+    '/pdf_templates/Panasonic/Seria-K-hydrobox-3f/1_okladka.pdf',
+    '/pdf_templates/Panasonic/Seria-K-hydrobox-3f/Ulotka Panasonic Aquarea serii K-1.pdf',
+    '/pdf_templates/Panasonic/Seria-K-hydrobox-3f/Ulotka Panasonic Aquarea serii K-2.pdf',
+    '/pdf_templates/Panasonic/Seria-K-hydrobox-3f/Ulotka Panasonic Aquarea serii K-3.pdf',
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
 
    'VIVAX Y-Design': [
     '/pdf_templates/vivax/1_okladka_y_design.pdf',
