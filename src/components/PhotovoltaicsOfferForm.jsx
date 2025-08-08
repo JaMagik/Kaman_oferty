@@ -24,21 +24,20 @@ export default function PhotovoltaicsOfferForm() {
   const [installationType, setInstallationType] = useState('dach');
   const [isBracketMount, setIsBracketMount] = useState(false);
 
-  /* Panele */
+  /* Panele (standard) */
   const [panelTypeKey, setPanelTypeKey] = useState('CANADIAN_SOLAR_455');
-  const [powerInput, setPowerInput] = useState('4.550');
-  const [numberOfPanels, setNumberOfPanels] = useState(10);
+  const [powerInput, setPowerInput] = useState('');
+  const [numberOfPanels, setNumberOfPanels] = useState(0);
 
-  /* Falownik / ładowarka AC (opcjonalny) */
-  const [includeInverter, setIncludeInverter] = useState(true);
+  /* Falownik (standard) */
+  const [includeInverter, setIncludeInverter] = useState(false);
   const [inverterTypeKey, setInverterTypeKey] = useState(
     Object.keys(inverterTypesData)[0]
   );
-  const [isCustomInverterQuantity, setIsCustomInverterQuantity] =
-    useState(false);
   const [inverterQuantity, setInverterQuantity] = useState(1);
+  const [isCustomInverterQuantity, setIsCustomInverterQuantity] = useState(false);
 
-  /* Magazyn energii */
+  /* Magazyn (standard) */
   const [includeStorage, setIncludeStorage] = useState(false);
   const [storageTypeKey, setStorageTypeKey] = useState(
     Object.keys(storageTypesData)[0]
@@ -67,23 +66,17 @@ export default function PhotovoltaicsOfferForm() {
   const [generatedPdfData, setGeneratedPdfData] = useState(null);
 
   /* ---------- EFFECTS ---------- */
-  /* 1. „Modernizacja o magazyn” = automatyczne zaznaczenie magazynu */
   useEffect(() => {
+    // automatyka dla „modernizacji o magazyn” w trybie standard
     if (offerMode === 'standard') {
       const isStorageOnly = installationType === 'only-storage';
-      setIncludeStorage(isStorageOnly);
-      /* nie narzucamy falownika – użytkownik zdecyduje checkboxem */
-      if (isStorageOnly) {
-        const firstRetrofitKey = Object.keys(inverterTypesData).find(
-          (key) => inverterTypesData[key].type === 'AC Charger'
-        );
-        setInverterTypeKey(firstRetrofitKey || '');
-      }
+      setIncludeInverter(!isStorageOnly); // przy modernizacji falownik zwykle zostaje
+      setIncludeStorage(true);
     }
   }, [installationType, offerMode]);
 
-  /* 2. Dynamiczna liczba paneli */
   useEffect(() => {
+    // auto-obliczenie liczby paneli w trybie standard
     if (offerMode === 'standard' && installationType !== 'only-storage') {
       const selectedPanelData = panelTypesData[panelTypeKey];
       if (selectedPanelData && powerInput) {
@@ -105,23 +98,22 @@ export default function PhotovoltaicsOfferForm() {
 
   const handleGenerateAndSetPdf = async (e) => {
     e.preventDefault();
-    if (showPrice && !price.trim()) {
-      alert(
-        'Uzupełnij pole Ceny lub odznacz opcję pokazywania jej w ofercie.'
-      );
+
+    if (showPrice && !String(price || '').trim()) {
+      alert('Uzupełnij pole Ceny lub odznacz opcję pokazywania jej w ofercie.');
       return;
     }
-    setIsProcessing(true);
-    setGeneratedPdfData(null);
 
-    let pdfBlob;
+    setIsProcessing(true);
+    let pdfBlob = null;
+
     if (offerMode === 'standard') {
       const formData = {
         userName,
-        price,
-        isNetto,
-        installationType,
         showPrice,
+        isNetto,
+        price: price.trim(),
+        installationType,
         panelDetails:
           installationType !== 'only-storage'
             ? {
@@ -229,7 +221,6 @@ export default function PhotovoltaicsOfferForm() {
           value={userName}
           onChange={(e) => setUserName(e.target.value)}
           placeholder="Podaj imię i nazwisko"
-          required
         />
       </div>
 
@@ -267,7 +258,7 @@ export default function PhotovoltaicsOfferForm() {
       {/* ---------- OFERTA STANDARDOWA ---------- */}
       {offerMode === 'standard' && (
         <>
-          {/* Typ instalacji */}
+          {/* Typ oferty */}
           <div className="input-group">
             <label htmlFor="pv_installationType">Typ oferty:</label>
             <select
@@ -283,19 +274,14 @@ export default function PhotovoltaicsOfferForm() {
 
           {/* Montaż na ekierkach */}
           {installationType === 'dach' && (
-            <div
-              className="input-group-inline"
-              style={{ paddingLeft: 10, marginTop: 5 }}
-            >
+            <div className="input-group-inline" style={{ paddingLeft: 10, marginTop: 5 }}>
               <input
                 type="checkbox"
                 id="isBracketMount"
                 checked={isBracketMount}
                 onChange={(e) => setIsBracketMount(e.target.checked)}
               />
-              <label htmlFor="isBracketMount">
-                Zastosuj montaż na ekierkach (dach płaski)
-              </label>
+              <label htmlFor="isBracketMount">Montaż na ekierkach (blacha trapezowa)</label>
             </div>
           )}
 
@@ -303,7 +289,7 @@ export default function PhotovoltaicsOfferForm() {
           {installationType !== 'only-storage' && (
             <>
               <div className="input-group">
-                <label htmlFor="pv_panelType">Rodzaj paneli:</label>
+                <label htmlFor="pv_panelType">Panele:</label>
                 <select
                   id="pv_panelType"
                   value={panelTypeKey}
@@ -324,36 +310,34 @@ export default function PhotovoltaicsOfferForm() {
                   id="pv_powerInput"
                   value={powerInput}
                   onChange={(e) => setPowerInput(e.target.value)}
-                  step="0.001"
+                  placeholder="np. 9.1"
+                  step="0.1"
+                  min="0"
                 />
               </div>
 
-              <div id="pv_panelCountMessage" className="input-group">
-                Sugerowana liczba paneli: {numberOfPanels}
+              <div className="input-group">
+                <label>Liczba modułów: {numberOfPanels}</label>
               </div>
             </>
           )}
 
-          {/* ▼ Falownik / ładowarka AC (opcjonalny) ▼ */}
-          <div className="options-box">
-            <div className="option-row">
+          {/* Falownik */}
+          <div className="input-group" style={{ marginTop: 10 }}>
+            <div className="input-group-inline">
               <input
                 type="checkbox"
                 id="pv_includeInverter"
                 checked={includeInverter}
                 onChange={(e) => setIncludeInverter(e.target.checked)}
               />
-              <label htmlFor="pv_includeInverter">
-                Dołącz falownik / ładowarkę AC
-              </label>
+              <label htmlFor="pv_includeInverter">Dołącz falownik / ładowarkę AC</label>
             </div>
 
             {includeInverter && (
               <>
                 <div className="input-group" style={{ paddingLeft: 15 }}>
-                  <label htmlFor="pv_inverterType">
-                    Falownik / Ładowarka AC:
-                  </label>
+                  <label htmlFor="pv_inverterType">Falownik / Ładowarka AC:</label>
                   <select
                     id="pv_inverterType"
                     value={inverterTypeKey}
@@ -367,38 +351,23 @@ export default function PhotovoltaicsOfferForm() {
                   </select>
                 </div>
 
-                {/* niestandardowa ilość */}
-                <div className="options-box" style={{ paddingLeft: 15 }}>
-                  <div className="option-row">
+                <div className="input-group" style={{ paddingLeft: 15 }}>
+                  <div className="input-group-inline">
                     <input
                       type="checkbox"
-                      id="isCustomInverterQuantity"
+                      id="pv_customInverterQuantity"
                       checked={isCustomInverterQuantity}
-                      onChange={(e) =>
-                        setIsCustomInverterQuantity(e.target.checked)
-                      }
+                      onChange={(e) => setIsCustomInverterQuantity(e.target.checked)}
                     />
-                    <label htmlFor="isCustomInverterQuantity">
-                      Niestandardowa ilość falowników
-                    </label>
+                    <label htmlFor="pv_customInverterQuantity">Własna ilość</label>
                   </div>
-
                   {isCustomInverterQuantity && (
-                    <div className="custom-quantity-inputs">
-                      <div className="input-group">
-                        <label htmlFor="inverterQty">Ilość falowników:</label>
-                        <input
-                          id="inverterQty"
-                          type="number"
-                          min="1"
-                          step="1"
-                          value={inverterQuantity}
-                          onChange={(e) =>
-                            setInverterQuantity(Number(e.target.value))
-                          }
-                        />
-                      </div>
-                    </div>
+                    <input
+                      type="number"
+                      min={1}
+                      value={inverterQuantity}
+                      onChange={(e) => setInverterQuantity(Number(e.target.value))}
+                    />
                   )}
                 </div>
               </>
@@ -406,8 +375,8 @@ export default function PhotovoltaicsOfferForm() {
           </div>
 
           {/* Magazyn energii */}
-          <div className="options-box">
-            <div className="option-row">
+          <div className="input-group" style={{ marginTop: 10 }}>
+            <div className="input-group-inline">
               <input
                 type="checkbox"
                 id="pv_includeStorage"
@@ -419,12 +388,8 @@ export default function PhotovoltaicsOfferForm() {
 
             {includeStorage && (
               <>
-                {/* Wybór typu magazynu */}
-                <div
-                  className="input-group"
-                  style={{ paddingLeft: 15, marginTop: 10 }}
-                >
-                  <label htmlFor="pv_storageType">Rodzaj magazynu:</label>
+                <div className="input-group" style={{ paddingLeft: 15 }}>
+                  <label htmlFor="pv_storageType">Magazyn energii:</label>
                   <select
                     id="pv_storageType"
                     value={storageTypeKey}
@@ -438,20 +403,12 @@ export default function PhotovoltaicsOfferForm() {
                   </select>
                 </div>
 
-                {/* Liczba modułów */}
-                <div
-                  className="input-group"
-                  style={{ paddingLeft: 15, marginTop: 10 }}
-                >
-                  <label htmlFor="storageModules">
-                    Ilość modułów magazynu (1-8):
-                  </label>
+                <div className="input-group" style={{ paddingLeft: 15, marginTop: 10 }}>
+                  <label htmlFor="storageModules">Ilość modułów magazynu (1-8):</label>
                   <select
                     id="storageModules"
                     value={storageModules}
-                    onChange={(e) =>
-                      setStorageModules(Number(e.target.value))
-                    }
+                    onChange={(e) => setStorageModules(Number(e.target.value))}
                   >
                     {[...Array(8)].map((_, i) => (
                       <option key={i + 1} value={i + 1}>
@@ -467,7 +424,182 @@ export default function PhotovoltaicsOfferForm() {
       )}
 
       {/* ---------- OFERTA NIESTANDARDOWA ---------- */}
-      {/* … sekcja „custom” zostaje bez zmian … */}
+      {offerMode === 'custom' && (
+        <>
+          {/* Typ oferty */}
+          <div className="input-group">
+            <label htmlFor="pv_installationType_custom">Typ oferty:</label>
+            <select
+              id="pv_installationType_custom"
+              value={installationType}
+              onChange={(e) => setInstallationType(e.target.value)}
+            >
+              <option value="dach">Nowa instalacja - Dach</option>
+              <option value="grunt">Nowa instalacja - Grunt</option>
+              <option value="only-storage">Modernizacja o magazyn energii</option>
+            </select>
+          </div>
+
+          {/* PANEELE */}
+          <div className="input-group">
+            <div className="input-group-inline">
+              <input
+                type="checkbox"
+                id="pv_custom_panels_toggle"
+                checked={selectCustomPanels}
+                onChange={(e) => setSelectCustomPanels(e.target.checked)}
+              />
+              <label htmlFor="pv_custom_panels_toggle">Dołącz panele</label>
+            </div>
+
+            {selectCustomPanels && (
+              <div style={{ paddingLeft: 15 }}>
+                <div className="input-group">
+                  <label htmlFor="pv_custom_panel_name">Nazwa paneli:</label>
+                  <input
+                    type="text"
+                    id="pv_custom_panel_name"
+                    value={customPanelName}
+                    onChange={(e) => setCustomPanelName(e.target.value)}
+                    placeholder="np. Canadian Solar 455 Wp"
+                  />
+                </div>
+
+                <div className="input-group-inline">
+                  <div style={{ flex: 1 }}>
+                    <label htmlFor="pv_custom_panel_qty">Ilość (szt.):</label>
+                    <input
+                      type="number"
+                      id="pv_custom_panel_qty"
+                      value={customPanelQuantity}
+                      min={1}
+                      onChange={(e) => setCustomPanelQuantity(Number(e.target.value))}
+                    />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label htmlFor="pv_custom_panel_power">Moc jednego modułu (Wp):</label>
+                    <input
+                      type="number"
+                      id="pv_custom_panel_power"
+                      value={customPanelPower}
+                      min={1}
+                      onChange={(e) => setCustomPanelPower(Number(e.target.value))}
+                    />
+                  </div>
+                </div>
+
+                <div className="input-group">
+                  <label htmlFor="pv_custom_panel_ds">Karta katalogowa (PDF):</label>
+                  <input
+                    type="file"
+                    id="pv_custom_panel_ds"
+                    accept="application/pdf"
+                    onChange={handleFileChange(setCustomPanelDatasheet)}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* FALOWNIK / ŁADOWARKA */}
+          <div className="input-group">
+            <div className="input-group-inline">
+              <input
+                type="checkbox"
+                id="pv_custom_inverter_toggle"
+                checked={selectCustomInverter}
+                onChange={(e) => setSelectCustomInverter(e.target.checked)}
+              />
+              <label htmlFor="pv_custom_inverter_toggle">Dołącz falownik / ładowarkę</label>
+            </div>
+
+            {selectCustomInverter && (
+              <div style={{ paddingLeft: 15 }}>
+                <div className="input-group">
+                  <label htmlFor="pv_custom_inverter_name">Nazwa urządzenia:</label>
+                  <input
+                    type="text"
+                    id="pv_custom_inverter_name"
+                    value={customInverterName}
+                    onChange={(e) => setCustomInverterName(e.target.value)}
+                    placeholder="np. Huawei SUN2000-10KTL"
+                  />
+                </div>
+
+                <div className="input-group">
+                  <label htmlFor="pv_custom_inverter_qty">Ilość (szt.):</label>
+                  <input
+                    type="number"
+                    id="pv_custom_inverter_qty"
+                    value={customInverterQuantity}
+                    min={1}
+                    onChange={(e) => setCustomInverterQuantity(Number(e.target.value))}
+                  />
+                </div>
+
+                <div className="input-group">
+                  <label htmlFor="pv_custom_inverter_ds">Karta katalogowa (PDF):</label>
+                  <input
+                    type="file"
+                    id="pv_custom_inverter_ds"
+                    accept="application/pdf"
+                    onChange={handleFileChange(setCustomInverterDatasheet)}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* MAGAZYN ENERGII */}
+          <div className="input-group">
+            <div className="input-group-inline">
+              <input
+                type="checkbox"
+                id="pv_custom_storage_toggle"
+                checked={selectCustomStorage}
+                onChange={(e) => setSelectCustomStorage(e.target.checked)}
+              />
+              <label htmlFor="pv_custom_storage_toggle">Dołącz magazyn energii</label>
+            </div>
+
+            {selectCustomStorage && (
+              <div style={{ paddingLeft: 15 }}>
+                <div className="input-group">
+                  <label htmlFor="pv_custom_storage_name">Nazwa magazynu:</label>
+                  <input
+                    type="text"
+                    id="pv_custom_storage_name"
+                    value={customStorageName}
+                    onChange={(e) => setCustomStorageName(e.target.value)}
+                    placeholder="np. Sungrow SBR096"
+                  />
+                </div>
+
+                <div className="input-group">
+                  <label htmlFor="pv_custom_storage_qty">Ilość (kpl.):</label>
+                  <input
+                    type="number"
+                    id="pv_custom_storage_qty"
+                    value={customStorageQuantity}
+                    min={1}
+                    onChange={(e) => setCustomStorageQuantity(Number(e.target.value))}
+                  />
+                </div>
+
+                <div className="input-group">
+                  <label htmlFor="pv_custom_storage_ds">Karta katalogowa (PDF):</label>
+                  <input
+                    type="file"
+                    id="pv_custom_storage_ds"
+                    accept="application/pdf"
+                    onChange={handleFileChange(setCustomStorageDatasheet)}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </>
+      )}
 
       {/* ---------- BUTTONY ---------- */}
       <button type="submit" disabled={isProcessing}>
