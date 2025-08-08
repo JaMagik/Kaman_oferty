@@ -13,6 +13,7 @@ import { kotlospawDrewkoHybridBaseTables } from "./kotlospawDrewkoHybridTable";
 import { kaisaiHydroboxBaseTables } from './kaisaiTable';
 import { opcjeDlaPompCiepla, opcjeDlaKotlow } from './opcjeDodatkowe.js';
 import { acModels, acScopeTemplate, acBaseTables } from './acData';
+import { panasonicBaseTables } from './panasonicTables';   
 
 const allDeviceTables = {
     ...mitsubishiBaseTables, ...atlanticBaseTables, ...lazarBaseTables,
@@ -20,6 +21,7 @@ const allDeviceTables = {
     ...qmpellBaseTables, ...kotlospawDrewkoPlusBaseTables, ...kotlospawDrewkoHybridBaseTables,...toshiba1fBaseTables,
     ...kaisaiHydroboxBaseTables,
     ...acBaseTables,
+     ...panasonicBaseTables, 
 };
 
 function getTankRowData(tankCapacity) {

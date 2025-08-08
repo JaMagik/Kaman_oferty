@@ -200,18 +200,19 @@ export default function UnifiedOfferForm() {
         <optgroup label="Pompy Ciepła Viessmann">
             <option value="VIESSMANN">Viessmann Vitocal 150-A</option>
         </optgroup>
-        <optgroup label="Pompy Ciepła Kaisai">
+        <optgroup label="Pompy Ciepła Kaisai">    
             <option value="Kaisai">Kaisai</option>
         </optgroup>
-        <optgroup label="Pompy Ciepła Panasonic">
+        <optgroup label="Pompy Ciepła Panasonic-Seria HP">
             <option value="Panasonic-HP-cylinder-1f">Panasonic Aquarea (HP) cylinder 1F</option>
             <option value="Panasonic-HP-cylinder-3f">Panasonic Aquarea (HP) cylinder 3F</option>
-
-            <option value="Panasonic-K-cylinder-1f">Panasonic Aquarea T-CAP cylinder 1F</option>
-            <option value="Panasonic-K-cylinder-3f">Panasonic Aquarea T-CAP cylinder 3F</option>
-
             <option value="Panasonic-HP-hydrobox-1f">Panasonic Aquarea (HP) hydrobox 1F</option>
             <option value="Panasonic-HP-hydrobox-3f">Panasonic Aquarea (HP) hydrobox 3F</option>
+         
+        </optgroup>
+        <optgroup label="Pompy Ciepła Panasonic-Seria K">
+            <option value="Panasonic-K-cylinder-1f">Panasonic Aquarea T-CAP cylinder 1F</option>
+            <option value="Panasonic-K-cylinder-3f">Panasonic Aquarea T-CAP cylinder 3F</option>
             <option value="Panasonic-K-hydrobox-1f">Panasonic Aquarea T-CAP hydrobox 1F</option>
             <option value="Panasonic-K-hydrobox-3f">Panasonic Aquarea T-CAP hydrobox 3F</option>
         </optgroup>
