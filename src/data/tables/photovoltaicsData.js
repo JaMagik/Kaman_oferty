@@ -12,11 +12,19 @@ export const panelTypesData = {
   },
    'CANADIAN_SOLAR_465': {
     name: 'Panel fotowoltaiczny Canadian Solar 465 Wp',
-    power: 0.455,
+    power: 0.465,
     description: 'Wysokowydajny moduł monokrystaliczny z technologią PERC.',
     datasheets: [
       '/pdf_templates/photovoltaics/panels/canadian_solar_460/CS_460_DS1.pdf',
       '/pdf_templates/photovoltaics/panels/canadian_solar_460/CS_460_DS2.pdf',
+    ]
+  },
+    'Jinko_Solar_490': {
+    name: 'Panel fotowoltaiczny Jinko Solar 490 Wp',
+    power: 0.490,
+    description: 'Wysokowydajny moduł monokrystaliczny z technologią PERC.',
+    datasheets: [
+      '/pdf_templates/photovoltaics/panels/jinko_solar_490/JS_490.pdf',
     ]
   },
 };
