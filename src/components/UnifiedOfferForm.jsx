@@ -15,7 +15,7 @@ import { kotlospawDrewkoPlusBaseTables } from "../data/tables/kotlospawDrewkoPlu
 import { kotlospawDrewkoHybridBaseTables } from "../data/tables/kotlospawDrewkoHybridTable";
 import { toshiba1fBaseTables } from '../data/tables/toshiba1fTable';
 import { kaisaiHydroboxBaseTables } from '../data/tables/kaisaiTable';
-import { acBaseTables } from '../data/tables/acData';
+
 import { panasonicBaseTables } from '../data/tables/panasonicTables';
 
 
@@ -31,7 +31,6 @@ const allDevicesData = {
   ...kotlospawDrewkoHybridBaseTables,
   ...toshiba1fBaseTables,
   ...kaisaiHydroboxBaseTables,
-  ...acBaseTables,
   ...panasonicBaseTables,
 };
 
@@ -216,18 +215,7 @@ export default function UnifiedOfferForm() {
             <option value="Panasonic-K-hydrobox-1f">Panasonic Aquarea T-CAP hydrobox 1F</option>
             <option value="Panasonic-K-hydrobox-3f">Panasonic Aquarea T-CAP hydrobox 3F</option>
         </optgroup>
-          <optgroup label="Klimatyzatory Mitsubishi">
-          <option value="MITSUBISHI AY">Mitsubishi AY</option>
-          <option value="MITSUBISHI HR">Mitsubishi HR</option>
-        </optgroup>
-        <optgroup label="Klimatyzatory VIVAX">
-            <option value="VIVAX Y-Design">VIVAX Y-Design</option>
-            <option value="VIVAX H-Design">VIVAX H+ Design</option>
-            <option value="VIVAX Q-Design">VIVAX Q-Design</option>
-            <option value="VIVAX N-Design">VIVAX N-Design</option>
-                        <option value="VIVAX M-Design">VIVAX M-Design</option>
-
-        </optgroup>
+       
       </select>
 
       <label htmlFor="model">Model (Moc):</label>
