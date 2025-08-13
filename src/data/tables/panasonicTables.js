@@ -119,6 +119,7 @@ export const panasonicBaseTables = {
     '12 kW': makePowerVariant(tcap_cyl_1f_base, 12, 'T-CAP cylinder 1F'),
   },
   'Panasonic-K-cylinder-3f': {
+    '9 kW': tcap_cyl_3f_base,
     '12 kW': tcap_cyl_3f_base,
     '16 kW': makePowerVariant(tcap_cyl_3f_base, 16, 'T-CAP cylinder 3F'),
   },
@@ -140,6 +141,7 @@ export const panasonicBaseTables = {
     '12 kW': makePowerVariant(tcap_hydro_1f_base, 12, 'T-CAP hydrobox 1F'),
   },
   'Panasonic-K-hydrobox-3f': {
+    '9 kW': tcap_hydro_3f_base,
     '12 kW': tcap_hydro_3f_base,
     '16 kW': makePowerVariant(tcap_hydro_3f_base, 16, 'T-CAP hydrobox 3F'),
   },

@@ -209,7 +209,7 @@ export default function UnifiedOfferForm() {
             <option value="Panasonic-HP-hydrobox-3f">Panasonic Aquarea (HP) hydrobox 3F</option>
          
         </optgroup>
-        <optgroup label="Pompy Ciepła Panasonic-Seria K">
+        <optgroup label="Pompy Ciepła Panasonic-Seria T-CAP">
             <option value="Panasonic-K-cylinder-1f">Panasonic Aquarea T-CAP cylinder 1F</option>
             <option value="Panasonic-K-cylinder-3f">Panasonic Aquarea T-CAP cylinder 3F</option>
             <option value="Panasonic-K-hydrobox-1f">Panasonic Aquarea T-CAP hydrobox 1F</option>
