@@ -404,13 +404,13 @@ export default function PhotovoltaicsOfferForm() {
                 </div>
 
                 <div className="input-group" style={{ paddingLeft: 15, marginTop: 10 }}>
-                  <label htmlFor="storageModules">Ilość modułów magazynu (1-8):</label>
+                  <label htmlFor="storageModules">Ilość modułów magazynu (1-14):</label>
                   <select
                     id="storageModules"
                     value={storageModules}
                     onChange={(e) => setStorageModules(Number(e.target.value))}
                   >
-                    {[...Array(8)].map((_, i) => (
+                    {[...Array(14)].map((_, i) => (
                       <option key={i + 1} value={i + 1}>
                         {i + 1} {i + 1 === 1 ? 'moduł' : 'modułów'}
                       </option>
