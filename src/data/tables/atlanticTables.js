@@ -242,8 +242,10 @@ export const atlanticBaseTables = {
     // W 'script.js' nie było innych mocy dla M-Duo, w razie potrzeby dodaj tutaj.
   },
   'ATLANTIC-EXTENSA': { // Klucz odpowiadający 'deviceType' dla Extensa AI Duo
+     '8 kW': atlanticExtensa_8kW_base,
+    
     '10 kW': atlanticExtensa_10kW_base,
-    '8 kW': atlanticExtensa_8kW_base, // Przykładowe dane, dostosuj według potrzeb
+    // Przykładowe dane, dostosuj według potrzeb
     '12 kW': atlanticExtensa_12kW_base, // Przykładowe dane, dostosuj według potrzeb
   },
   'ATLANTIC-EXTENSA-CYLINDER': { 
