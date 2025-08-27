@@ -1,6 +1,6 @@
 // --- Pereko QMPell 8 kW ---
 const qmpell_8kW_base = [
-   ['1', 'Kocioł na Pereko QMPell 8 kW z podajnikiem bocznym', 'szt.', '1', 'Automatyczny kocioł 5 klasy z zasobnikiem pelletu montowanym na boku.', 'common'],
+   ['1', 'Kocioł na Pereko QMPell 8 kW z podajnikiem górnym', 'szt.', '1', 'Automatyczny kocioł 5 klasy z zasobnikiem pelletu montowanym na górze.', 'common'],
   ['2', 'Pompa obiegowa CO IBO PRO', 'szt.', '1', 'Zapewnia prawidłowy obieg czynnika grzewczego w instalacji.', 'common'],
   ['3', 'Pompa obiegowa CWU IBO PRO', 'szt.', '1', 'Obsługuje wężownicę zasobnika CWU i umożliwia sterowanie pracą w trybie lato/zima.', 'common'],
   ['4', 'Pompa ochrony powrotu z zaworem termostatycznym (55°C)', 'szt.', '1', 'Chroni kocioł przed zbyt niską temperaturą powrotu, co wpływa na jego trwałość.', 'common'],
@@ -28,14 +28,14 @@ const qmpell_8kW_base = [
 // --- Pereko QMPell 12 kW ---
 const qmpell_12kW_base = qmpell_8kW_base.map(row => 
   row[0] === '1'
-    ? ['1', 'Kocioł na Pereko QMPell 12 kW z podajnikiem bocznym', 'szt.', '1', 'Automatyczny kocioł 5 klasy z zasobnikiem pelletu montowanym na boku.', 'common']
+    ? ['1', 'Kocioł na Pereko QMPell 12 kW z podajnikiem górnym', 'szt.', '1', 'Automatyczny kocioł 5 klasy z zasobnikiem pelletu montowanym na górze.', 'common']
     : [...row]
 );
 
 // --- Pereko QMPell 18 kW ---
 const qmpell_18kW_base = qmpell_8kW_base.map(row => 
   row[0] === '1'
-    ? ['1', 'Kocioł na Pereko QMPell 18 kW z podajnikiem bocznym', 'szt.', '1', 'Automatyczny kocioł 5 klasy z zasobnikiem pelletu montowanym na boku.', 'common']
+    ? ['1', 'Kocioł na Pereko QMPell 18 kW z podajnikiem górnym', 'szt.', '1', 'Automatyczny kocioł 5 klasy z zasobnikiem pelletu montowanym na górze.', 'common']
     : [...row]
 );
 
