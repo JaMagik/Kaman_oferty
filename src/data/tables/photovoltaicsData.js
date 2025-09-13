@@ -38,7 +38,7 @@ export const inverterTypesData = {
     description: 'Nowoczesny, trójfazowy inwerter hybrydowy z funkcją zasilania awaryjnego. Może pracować jako retrofit.',
     datasheets: [
       '/pdf_templates/photovoltaics/inverters/deye/DEYE_HYBRID_DS1.pdf',
-      '/pdf_templates/photovoltaics/inverters/deye/DEYE_HYBRID_DS2.pdf',
+      
     ]
   },
   'SOLPLANET_AI_HB_G2': {
