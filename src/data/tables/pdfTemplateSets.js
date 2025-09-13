@@ -308,15 +308,30 @@ export const pdfTemplateSets = {
     groupPage2,
     commonContactPage,
   ],
-  'QMPELL': [
-    '/pdf_templates/kotly-pellet/qmpell-evo/1_okladka.pdf',
-    
-    '/pdf_templates/kotly-pellet/qmpell-evo/karta_katalogowa_qmpell1.pdf',
-     oNas,
+ 'QMPELL': {
+    // Definicja dla konkretnej mocy 8 kW
+    '8 kW': [
+      '/pdf_templates/kotly-pellet/qmpell-evo/1_okladka_standard.pdf', // <- Nowa, dedykowana okładka
+      '/pdf_templates/kotly-pellet/qmpell-evo/karta_katalogowa_qmpell1.pdf',
+            '/pdf_templates/kotly-pellet/qmpell-evo/karta_katalogowa_qmpell2.pdf',
+
+      oNas,
       groupPage,
-    groupPage2,
-    commonContactPage,
-  ],
+      groupPage2,
+      commonContactPage,
+    ],
+    // Domyślny zestaw dla pozostałych mocy (12 kW, 18 kW itd.)
+    'default': [
+      '/pdf_templates/kotly-pellet/qmpell-evo/1_okladka_8kW.pdf', // <- Okładka dla reszty
+      '/pdf_templates/kotly-pellet/qmpell-evo/karta_katalogowa_qmpell1.pdf',
+            '/pdf_templates/kotly-pellet/qmpell-evo/karta_katalogowa_qmpell2.pdf',
+
+      oNas,
+      groupPage,
+      groupPage2,
+      commonContactPage,
+    ]
+},
 
   // --- KOTŁY HYBRYDOWE ---
   'Kotlospaw drewko hybrid': [
@@ -586,9 +601,15 @@ export const pdfTemplateSets = {
 };
 
 
+export function getTemplatePathsForDevice(deviceType, model) {
+  const templateSet = pdfTemplateSets[deviceType];
 
-export function getTemplatePathsForDevice(deviceType) {
-  // Zwraca zdefiniowany zestaw ścieżek lub domyślny, jeśli klucz nie zostanie znaleziony
-  return pdfTemplateSets[deviceType] || defaultTemplatePaths;
+  // Jeśli dla danego urządzenia zdefiniowano zestawy zależne od modelu (jest to obiekt)
+  if (templateSet && typeof templateSet === 'object' && !Array.isArray(templateSet)) {
+    // Zwróć zestaw dla konkretnego modelu lub zestaw domyślny ('default')
+    return templateSet[model] || templateSet['default'] || defaultTemplatePaths;
+  }
+
+  // W przeciwnym razie zwróć standardowy zestaw (który jest tablicą) lub ogólny domyślny
+  return templateSet || defaultTemplatePaths;
 }
-

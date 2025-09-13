@@ -106,21 +106,24 @@ export async function generateCustomOfferPDF(formData) {
     scope = applyStorageRowFix(scope, storage);
 
     // Render tabeli
-    const scopeTitle = 'Szczegółowy zakres prac';
-    const lastY = await drawTable(pdfDoc, offerPage, fonts, scope, y, scopeTitle);
+   const scopeTitle = 'Szczegółowy zakres prac';
+const tableResult = await drawTable(pdfDoc, offerPage, fonts, scope, y, scopeTitle);
 
-    // Cena – tylko jeśli wybrano „Pokaż cenę do oferty” i wpisano wartość
-    const showPriceBlock = !!showPrice && !!String(price || '').trim();
-    if (showPriceBlock) {
-      const label = isNetto ? 'Cena końcowa (NETTO):' : 'Cena końcowa (BRUTTO):';
-      offerPage.drawText(`${label} ${price} PLN`, {
-        x: 50,
-        y: Math.max(60, lastY - 24),
-        size: 11,
-        font: boldFont,
-        color: rgb(0.6, 0, 0.15),
-      });
-    }
+// Cena – tylko jeśli wybrano „Pokaż cenę do oferty” i wpisano wartość
+const showPriceBlock = !!showPrice && !!String(price || '').trim();
+if (showPriceBlock) {
+  const finalPageForPrice = tableResult.finalPage; // Użyj strony, na której zakończyła się tabela
+  const finalYAfterTable = tableResult.finalY;   // Pobierz poprawną pozycję Y
+
+  const label = isNetto ? 'Cena końcowa (NETTO):' : 'Cena końcowa (BRUTTO):';
+  finalPageForPrice.drawText(`${label} ${price} PLN`, {
+    x: 50,
+    y: Math.max(60, finalYAfterTable - 24), // <-- POPRAWKA: Użyj finalYAfterTable
+    size: 11,
+    font: boldFont,
+    color: rgb(0.6, 0, 0.15),
+  });
+}
 
     // Datasheety (opcjonalnie). Jeśli brak – pomijamy.
     const toAppend = [

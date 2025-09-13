@@ -332,7 +332,7 @@ export async function generateOfferPDF(
     const kotlospawDeviceTypes = ["Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid"];
 
     try {
-        const selectedTemplatePaths = getTemplatePathsForDevice(deviceType);
+        const selectedTemplatePaths = getTemplatePathsForDevice(deviceType, model);
         const assetPaths = [ ...selectedTemplatePaths, '/fonts/OpenSans-Bold.ttf', '/fonts/OpenSans-Regular.ttf', '/logos/kaman_logo.png' ];
         const assetBuffers = await Promise.all(assetPaths.map(path => fetch(path).then(res => res.ok ? res.arrayBuffer() : null).catch(() => null)));
         
