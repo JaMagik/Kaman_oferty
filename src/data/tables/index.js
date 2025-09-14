@@ -14,6 +14,7 @@ import { kaisaiHydroboxBaseTables } from './kaisaiTable';
 import { opcjeDlaPompCiepla, opcjeDlaKotlow } from './opcjeDodatkowe.js';
 import { acModels, acScopeTemplate, acBaseTables } from './acData';
 import { panasonicBaseTables } from './panasonicTables';   
+import { kotlospawduOKOBaseTables } from './kotlospawDuoko.js';
 
 const allDeviceTables = {
     ...mitsubishiBaseTables, ...atlanticBaseTables, ...lazarBaseTables,
@@ -22,6 +23,7 @@ const allDeviceTables = {
     ...kaisaiHydroboxBaseTables,
     ...acBaseTables,
      ...panasonicBaseTables, 
+    ...kotlospawduOKOBaseTables,
 };
 
 function getTankRowData(tankCapacity) {

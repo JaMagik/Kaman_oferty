@@ -297,6 +297,14 @@ export const pdfTemplateSets = {
     groupPage2,
     commonContactPage,
   ],
+   'Kotlospaw duoko': [
+    '/pdf_templates/kotly-pellet/kotlospaw-duoko/1_okladka.pdf',
+    '/pdf_templates/kotly-pellet/kotlospaw-duoko/kotlospaw_duoko_ds1.pdf',
+     oNas,
+      groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
   'Kotlospaw slimko plus niski': [
     '/pdf_templates/kotly-pellet/kotlospaw-slimko-plus-niski/1_okladka.pdf',
 

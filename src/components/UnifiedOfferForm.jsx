@@ -17,7 +17,7 @@ import { toshiba1fBaseTables } from '../data/tables/toshiba1fTable';
 import { kaisaiHydroboxBaseTables } from '../data/tables/kaisaiTable';
 
 import { panasonicBaseTables } from '../data/tables/panasonicTables';
-
+import { kotlospawduOKOBaseTables } from '../data/tables/kotlospawDuoko';
 
 const allDevicesData = {
   ...mitsubishiBaseTables,
@@ -32,6 +32,7 @@ const allDevicesData = {
   ...toshiba1fBaseTables,
   ...kaisaiHydroboxBaseTables,
   ...panasonicBaseTables,
+  ...kotlospawduOKOBaseTables,
 };
 
 const boilerDeviceTypes = [ "LAZAR", "Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid" ];
@@ -191,6 +192,8 @@ export default function UnifiedOfferForm() {
           <option value="QMPELL">QMPell EVO</option>
           <option value="Kotlospaw Slimko Plus">Kotłospaw Slimko Plus</option>
           <option value="Kotlospaw slimko plus niski">Kotłospaw Slimko Plus niski</option>
+          <option value="Kotlospaw duoko">Kotłospaw Duoko</option>
+
         </optgroup>
         <optgroup label="Kotły na Drewno / Hybrydowe">
             <option value="Kotlospaw drewko plus">Kotłospaw Drewko Plus</option>
