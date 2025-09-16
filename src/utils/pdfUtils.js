@@ -21,6 +21,9 @@ const wrapText = (text, textFont, textSize, maxWidth) => {
     return lines;
 };
 
+export const safeY = (y, fallback) => Number.isFinite(y) ? y : fallback;
+
+
 export function drawHeaderBlock(page, fonts, logoImage, details, yPos) {
     const { width } = page.getSize();
     const { bold: boldFont, regular: regularFont } = fonts;
