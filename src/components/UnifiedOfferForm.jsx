@@ -35,7 +35,7 @@ const allDevicesData = {
   ...kotlospawduOKOBaseTables,
 };
 
-const boilerDeviceTypes = [ "LAZAR", "Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid" ];
+const boilerDeviceTypes = [ "LAZAR", "Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid", "Kotlospaw duoko" ];
 const heatPumpBufferOptions = [ { value: "sprzeglo", label: "Sprzęgło hydrauliczne z osprzętem" }, { value: "none", label: "Bufor niewymagany" }, { value: "40-100L", label: "Bufor 40-100 L + osprzęt" }, { value: "200L", label: "Bufor 200 L + osprzęt" }, { value: "300L", label: "Bufor 300 L + osprzęt" }, ];
 const boilerBufferOptions = [ { value: "sprzeglo", label: "Sprzęgło hydrauliczne z osprzętem" }, { value: "none", label: "Bufor niewymagany" }, { value: "zawor-4d", label: "Zawór czterodrożny z siłownikiem" }, { value: "100L", label: "Bufor 100 L + osprzęt" }, { value: "120L", label: "Bufor 120 L + osprzęt" }, { value: "140L", label: "Bufor 140 L + osprzęt" }, { value: "200L", label: "Bufor 200 L + osprzęt" }, { value: "500L", label: "Bufor 500 L + osprzęt" }, { value: "800L", label: "Bufor 800 L + osprzęt" }, { value: "1000L", label: "Bufor 1000 L + osprzęt" } ];
 const acDeviceTypes = ['MITSUBISHI AY', 'MITSUBISHI HR', 'VIVAX Y-Design', 'VIVAX H-Design', 'VIVAX M-Design', 'VIVAX Q-Design', 'VIVAX N-Design'];
