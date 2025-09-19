@@ -15,6 +15,7 @@ import { opcjeDlaPompCiepla, opcjeDlaKotlow } from './opcjeDodatkowe.js';
 import { acModels, acScopeTemplate, acBaseTables } from './acData';
 import { panasonicBaseTables } from './panasonicTables';   
 import { kotlospawduOKOBaseTables } from './kotlospawDuoko.js';
+import { viessmannEasypellBaseTables } from './viessmannEasypellTables.js';
 
 const allDeviceTables = {
     ...mitsubishiBaseTables, ...atlanticBaseTables, ...lazarBaseTables,
@@ -24,6 +25,7 @@ const allDeviceTables = {
     ...acBaseTables,
      ...panasonicBaseTables, 
     ...kotlospawduOKOBaseTables,
+    ...viessmannEasypellBaseTables,
 };
 
 function getTankRowData(tankCapacity) {
@@ -86,9 +88,9 @@ export function getTableData(deviceType, model, tankCapacity, bufferCapacity, sy
   }
 
   // Logika dla pomp ciepła i kotłów
-  const boilerDeviceTypes = ["LAZAR", "Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid", "Kotlospaw duoko"];
+  const boilerDeviceTypes = ["LAZAR", "Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid", "Kotlospaw duoko", "Viessmann Easypell"];
   const isBoiler = boilerDeviceTypes.includes(deviceType);
-  const returnPumpBoilers = ["Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid", "Kotlospaw duoko"];
+  const returnPumpBoilers = ["Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid", "Kotlospaw duoko", "Viessmann Easypell"];
 
   if (!allDeviceTables[deviceType] || !allDeviceTables[deviceType][model]) {
     return [];

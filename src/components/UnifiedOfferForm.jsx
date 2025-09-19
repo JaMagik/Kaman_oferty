@@ -18,6 +18,7 @@ import { kaisaiHydroboxBaseTables } from '../data/tables/kaisaiTable';
 
 import { panasonicBaseTables } from '../data/tables/panasonicTables';
 import { kotlospawduOKOBaseTables } from '../data/tables/kotlospawDuoko';
+import { viessmannEasypellBaseTables } from '../data/tables/viessmannEasypellTables';
 
 const DEVICE_CATEGORY = {
   HEAT_PUMP: "heat-pump",
@@ -41,6 +42,7 @@ const allDevicesData = {
   ...kaisaiHydroboxBaseTables,
   ...panasonicBaseTables,
   ...kotlospawduOKOBaseTables,
+  ...viessmannEasypellBaseTables,
 };
 
 const boilerDeviceTypes = [
@@ -51,6 +53,7 @@ const boilerDeviceTypes = [
   "Kotlospaw drewko plus",
   "Kotlospaw drewko hybrid",
   "Kotlospaw duoko",
+  "Viessmann Easypell",
 ];
 const hybridBoilerDeviceTypes = ["Kotlospaw drewko hybrid"];
 
@@ -320,6 +323,7 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
               <option value="Kotlospaw Slimko Plus">Kotłospaw Slimko Plus</option>
               <option value="Kotlospaw slimko plus niski">Kotłospaw Slimko Plus niski</option>
               <option value="Kotlospaw duoko">Kotłospaw Duoko</option>
+              <option value="Viessmann Easypell">Viessmann Easypell</option>
             </optgroup>
             <optgroup label="Kotły na Drewno / Hybrydowe">
               <option value="Kotlospaw drewko plus">Kotłospaw Drewko Plus</option>

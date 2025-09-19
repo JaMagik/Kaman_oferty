@@ -286,6 +286,15 @@ export const pdfTemplateSets = {
     groupPage2,
     commonContactPage,
   ],
+
+  'Viessmann Easypell': [
+    '/pdf_templates/kotly-pellet/viessmann-easypell/1_okladka.pdf',
+    '/pdf_templates/kotly-pellet/viessmann-easypell/2_katalog.pdf',
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
   'Kotlospaw Slimko Plus': [
     '/pdf_templates/kotly-pellet/kotlospaw-slimko-plus/1_okladka.pdf',
   
