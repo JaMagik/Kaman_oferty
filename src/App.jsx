@@ -14,11 +14,12 @@ import "./App.css";
 import kamanLogo from "./assets/logo_kaman.png";
 
 function App() {
-  const [activeForm, setActiveForm] = useState("heating");
+  const [activeForm, setActiveForm] = useState("heat-pumps");
 
   const getBackgroundClass = () => {
     switch (activeForm) {
-      case "heating":
+      case "heat-pumps":
+      case "boilers":
         return "bg-heating";
       case "pv":
         return "bg-pv";
@@ -33,8 +34,10 @@ function App() {
 
   const renderActiveForm = () => {
     switch (activeForm) {
-      case "heating":
-        return <UnifiedOfferForm />;
+      case "heat-pumps":
+        return <UnifiedOfferForm key="heat-pumps" deviceCategory="heat-pump" />;
+      case "boilers":
+        return <UnifiedOfferForm key="boilers" deviceCategory="boiler" />;
       case "pv":
         return <PhotovoltaicsOfferForm />;
       case "rekuperacja":
@@ -66,7 +69,8 @@ function App() {
       <header className="app-header">
         <img src={kamanLogo} alt="KAMAN Logo" className="app-logo" />
         <nav className="form-switcher">
-          {tabButton("heating", "Ogrzewanie")}
+          {tabButton("heat-pumps", "Pompy ciepła")}
+          {tabButton("boilers", "Piece")}
           {tabButton("ac", "Klimatyzacja")}
           {tabButton("pv", "Fotowoltaika")}
           {tabButton("rekuperacja", "Rekuperacja")}

@@ -185,15 +185,6 @@ export async function generatePhotovoltaicsOfferPDF(formData) {
         String(inverterQuantity || 1),
       ]);
 
-    if (storageDetails) {
-      table.push([
-        '',
-        `${storageDetails.name} ${storageTotalCap} kWh`,
-        storageDetails.description,
-        'kpl.',
-        '1',
-      ]);
-    }
 
     /* zakres prac */
     if (!isStorageOnly) {

@@ -270,6 +270,7 @@ function prepareTableData(deviceType, model, tankCapacity, bufferCapacity, syste
         { key: 'demontaz', name: 'Demontaż starego źródła ciepła', applicable: () => !isAc },
         { key: 'podbudowa', name: 'Wykonanie podbudowy pod jednostkę zewnętrzną', applicable: () => !isAc && !isKotel },
         { key: 'exhaustFan', name: 'Wentylator wyciągowy', applicable: () => isKotel },
+        { key: 'returnProtection', name: 'Zastosowanie termostatycznej ochrony powrotu', applicable: () => isKotel },
     ];
     
     movableItems.forEach(item => {

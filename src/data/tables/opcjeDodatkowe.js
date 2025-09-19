@@ -28,4 +28,5 @@ export const opcjeDlaKotlow = [
     ['9', 'Pompa obiegowa do instalacji C.O (IBO PRO) z osprzętem', 'Stosowana jako dodatkowa pompa w przypadku, gdy w budynku występuje więcej niż jeden obieg grzewczy (np. podłogówka i grzejniki); zapewnia niezależną cyrkulację w danym obiegu i poprawia efektywność działania instalacji.', 'szt.', '650zł'],
         ['10', 'Demontaż starego źródła ciepła', 'Odłączenie i odsunięcie starego źródła ciepła umożliwiające odpowiednie dojście ekipy montującej.', 'kpl.', '500 zł'],
 
+    ['11', 'Zastosowanie termostatycznej ochrony powrotu', 'Zestaw z zaworem termostatycznym utrzymujacym wlasciwa temperature powrotu kotla.', 'kpl.', 'wycena indywidualna'],
 ];

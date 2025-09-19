@@ -1,6 +1,6 @@
 // Pełna, zaktualizowana zawartość pliku: src/components/UnifiedOfferForm.jsx
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { generateOfferPDF } from "../utils/pdfGenerator";
 import TrelloActions from './TrelloActions';
 
@@ -19,6 +19,14 @@ import { kaisaiHydroboxBaseTables } from '../data/tables/kaisaiTable';
 import { panasonicBaseTables } from '../data/tables/panasonicTables';
 import { kotlospawduOKOBaseTables } from '../data/tables/kotlospawDuoko';
 
+const DEVICE_CATEGORY = {
+  HEAT_PUMP: "heat-pump",
+  BOILER: "boiler",
+};
+
+const HEAT_PUMP_DEFAULT_DEVICE = "Mitsubishi-cylinder-PUZ";
+const BOILER_DEFAULT_DEVICE = "LAZAR";
+
 const allDevicesData = {
   ...mitsubishiBaseTables,
   ...atlanticBaseTables,
@@ -35,20 +43,62 @@ const allDevicesData = {
   ...kotlospawduOKOBaseTables,
 };
 
-const boilerDeviceTypes = [ "LAZAR", "Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid", "Kotlospaw duoko" ];
-const heatPumpBufferOptions = [ { value: "sprzeglo", label: "Sprzęgło hydrauliczne z osprzętem" }, { value: "none", label: "Bufor niewymagany" }, { value: "40-100L", label: "Bufor 40-100 L + osprzęt" }, { value: "200L", label: "Bufor 200 L + osprzęt" }, { value: "300L", label: "Bufor 300 L + osprzęt" }, ];
-const boilerBufferOptions = [ { value: "sprzeglo", label: "Sprzęgło hydrauliczne z osprzętem" }, { value: "none", label: "Bufor niewymagany" }, { value: "zawor-4d", label: "Zawór czterodrożny z siłownikiem" }, { value: "100L", label: "Bufor 100 L + osprzęt" }, { value: "120L", label: "Bufor 120 L + osprzęt" }, { value: "140L", label: "Bufor 140 L + osprzęt" }, { value: "200L", label: "Bufor 200 L + osprzęt" }, { value: "500L", label: "Bufor 500 L + osprzęt" }, { value: "800L", label: "Bufor 800 L + osprzęt" }, { value: "1000L", label: "Bufor 1000 L + osprzęt" } ];
+const boilerDeviceTypes = [
+  "LAZAR",
+  "Kotlospaw Slimko Plus",
+  "Kotlospaw slimko plus niski",
+  "QMPELL",
+  "Kotlospaw drewko plus",
+  "Kotlospaw drewko hybrid",
+  "Kotlospaw duoko",
+];
+const hybridBoilerDeviceTypes = ["Kotlospaw drewko hybrid"];
+
+const heatPumpBufferOptions = [
+  { value: "sprzeglo", label: "Sprzęgło hydrauliczne z osprzętem" },
+  { value: "none", label: "Bufor niewymagany" },
+  { value: "40-100L", label: "Bufor 40-100 L + osprzęt" },
+  { value: "200L", label: "Bufor 200 L + osprzęt" },
+  { value: "300L", label: "Bufor 300 L + osprzęt" },
+];
+const boilerBufferOptions = [
+  { value: "zawor-4d", label: "Zawór czterodrogowy z siłownikiem" },
+  { value: "sprzeglo", label: "Sprzęgło hydrauliczne z osprzętem" },
+  { value: "none", label: "Bufor niewymagany" },
+  { value: "100L", label: "Bufor 100 L + osprzęt" },
+  { value: "120L", label: "Bufor 120 L + osprzęt" },
+  { value: "140L", label: "Bufor 140 L + osprzęt" },
+  { value: "200L", label: "Bufor 200 L + osprzęt" },
+  { value: "300L", label: "Bufor 300 L + osprzęt" },
+  { value: "500L", label: "Bufor 500 L + osprzęt" },
+  { value: "800L", label: "Bufor 800 L + osprzęt" },
+  { value: "1000L", label: "Bufor 1000 L + osprzęt" },
+];
+const hybridBoilerBufferOptions = [
+  { value: "500L", label: "Bufor 500 L + osprzęt" },
+  { value: "800L", label: "Bufor 800 L + osprzęt" },
+  { value: "1000L", label: "Bufor 1000 L + osprzęt" },
+];
+const hybridBufferDefaults = {
+  "12 kW": "500L",
+  "18 kW": "800L",
+  "24 kW": "1000L",
+};
 const acDeviceTypes = ['MITSUBISHI AY', 'MITSUBISHI HR', 'VIVAX Y-Design', 'VIVAX H-Design', 'VIVAX M-Design', 'VIVAX Q-Design', 'VIVAX N-Design'];
 
-export default function UnifiedOfferForm() {
+export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT_PUMP }) {
+  const initialDeviceType = deviceCategory === DEVICE_CATEGORY.BOILER ? BOILER_DEFAULT_DEVICE : HEAT_PUMP_DEFAULT_DEVICE;
+  const initialBufferOptions = boilerDeviceTypes.includes(initialDeviceType) ? boilerBufferOptions : heatPumpBufferOptions;
+  const initialBufferValue = initialBufferOptions[0]?.value || "";
+
   const [userName, setUserName] = useState("");
   const [price, setPrice] = useState("");
-  const [deviceType, setDeviceType] = useState("Mitsubishi-cylinder-PUZ");
+  const [deviceType, setDeviceType] = useState(initialDeviceType);
   const [model, setModel] = useState("12 kW");
   const [availableModels, setAvailableModels] = useState([]);
   const [tank, setTank] = useState("200L");
-  const [buffer, setBuffer] = useState("Sprzęgło hydrauliczne z osprzętem");
-  const [currentBufferOptions, setCurrentBufferOptions] = useState(heatPumpBufferOptions);
+  const [buffer, setBuffer] = useState(initialBufferValue);
+  const [currentBufferOptions, setCurrentBufferOptions] = useState(initialBufferOptions);
   const [includeDemontaz, setIncludeDemontaz] = useState(true);
   const [includePodbudowa, setIncludePodbudowa] = useState(true);
   const [isNettoPrice, setIsNettoPrice] = useState(false);
@@ -61,11 +111,19 @@ export default function UnifiedOfferForm() {
   const [systemType, setSystemType] = useState('zamkniety');
   
   const [includeExhaustFan, setIncludeExhaustFan] = useState(false);
+  const [includeReturnProtection, setIncludeReturnProtection] = useState(true);
+
+  const prevDeviceTypeRef = useRef(initialDeviceType);
+  const prevModelRef = useRef(model);
 
   const isBoiler = boilerDeviceTypes.includes(deviceType);
   const isAcDevice = acDeviceTypes.includes(deviceType);
-  
+  const isHybridBoiler = hybridBoilerDeviceTypes.includes(deviceType);
+
   const isKotlospaw = deviceType.toLowerCase().includes('kotlospaw');
+  const isHeatPumpCategory = deviceCategory === DEVICE_CATEGORY.HEAT_PUMP;
+  const isBoilerCategory = deviceCategory === DEVICE_CATEGORY.BOILER;
+
 
   const formatPriceForDisplay = (value) => {
     if (!value) return '';
@@ -89,6 +147,14 @@ export default function UnifiedOfferForm() {
   };
   
   useEffect(() => {
+    if (deviceCategory === DEVICE_CATEGORY.BOILER && !boilerDeviceTypes.includes(deviceType)) {
+      setDeviceType(BOILER_DEFAULT_DEVICE);
+    } else if (deviceCategory === DEVICE_CATEGORY.HEAT_PUMP && boilerDeviceTypes.includes(deviceType)) {
+      setDeviceType(HEAT_PUMP_DEFAULT_DEVICE);
+    }
+  }, [deviceCategory, deviceType]);
+
+  useEffect(() => {
     const modelsForDevice = allDevicesData[deviceType] ? Object.keys(allDevicesData[deviceType]) : [];
     setAvailableModels(modelsForDevice);
     if (modelsForDevice.length > 0 && !modelsForDevice.includes(model)) {
@@ -96,10 +162,49 @@ export default function UnifiedOfferForm() {
     } else if (modelsForDevice.length === 0) {
       setModel("");
     }
-    setCurrentBufferOptions(isBoiler ? boilerBufferOptions : heatPumpBufferOptions);
-    if (!isBoiler) setSystemType('zamkniety');
-    if(isBoiler || isAcDevice) setIsCustomQuantity(false);
-  }, [deviceType, model, isBoiler, isAcDevice]);
+
+    const nextBufferOptions = isHybridBoiler
+      ? hybridBoilerBufferOptions
+      : isBoiler
+      ? boilerBufferOptions
+      : heatPumpBufferOptions;
+
+    setCurrentBufferOptions(nextBufferOptions);
+
+    const deviceTypeChanged = prevDeviceTypeRef.current !== deviceType;
+    const modelChanged = prevModelRef.current !== model;
+
+    let nextBufferValue = buffer;
+    if (!nextBufferOptions.some((option) => option.value === nextBufferValue)) {
+      nextBufferValue = nextBufferOptions[0]?.value || "";
+    }
+
+    if (isHybridBoiler && modelChanged) {
+      const preferred = hybridBufferDefaults[model] || hybridBufferDefaults["12 kW"];
+      if (preferred && nextBufferOptions.some((option) => option.value === preferred)) {
+        nextBufferValue = preferred;
+      }
+    } else if (isBoiler && deviceTypeChanged) {
+      if (nextBufferOptions.some((option) => option.value === "zawor-4d")) {
+        nextBufferValue = "zawor-4d";
+      }
+    }
+
+    if (nextBufferValue !== buffer) {
+      setBuffer(nextBufferValue);
+    }
+
+    if (!isBoiler) {
+      setSystemType("zamkniety");
+    }
+    if (isBoiler || isAcDevice) {
+      setIsCustomQuantity(false);
+    }
+
+    prevDeviceTypeRef.current = deviceType;
+    prevModelRef.current = model;
+  }, [deviceType, model, buffer, isBoiler, isHybridBoiler, isAcDevice]);
+
 
   const handleGenerateAndSetPdf = async (e) => {
     e.preventDefault();
@@ -115,6 +220,7 @@ export default function UnifiedOfferForm() {
       podbudowa: !isAcDevice && includePodbudowa,
       dotacja: includeDotacja,
       exhaustFan: isKotlospaw && includeExhaustFan,
+      returnProtection: isBoiler && includeReturnProtection,
     };
 
     const pdfData = await generateOfferPDF(
@@ -165,60 +271,62 @@ export default function UnifiedOfferForm() {
 
       <label htmlFor="deviceType">Typ Urządzenia/Oferty:</label>
       <select id="deviceType" value={deviceType} onChange={(e) => setDeviceType(e.target.value)}>
-        <optgroup label="Pompy Ciepła Mitsubishi">
-          <option value="Mitsubishi-hydrobox">Mitsubishi Hydrobox (Standard PUD)</option>
-          <option value="Mitsubishi-cylinder-PUZ">Mitsubishi Cylinder (Zubadan PUZ)</option>
-          <option value="Mitsubishi-cylinder-PUZ-1F">Mitsubishi Cylinder (Zubadan PUZ 1-faz.)</option>
-          <option value="Mitsubishi-hydrobox-PUZ">Mitsubishi Hydrobox (Zubadan PUZ)</option>
-          <option value="Mitsubishi-hydrobox-PUZ-1F">Mitsubishi Hydrobox (Zubadan PUZ 1-faz.)</option>
-          <option value="Mitsubishi-ecoinverter">Mitsubishi Ecoinverter (Cylinder)</option>
-          <option value="Mitsubishi-ecoinverter-hydrobox">Mitsubishi Ecoinverter (Hydrobox)</option>
-        </optgroup>
-        <optgroup label="Pompy Ciepła Toshiba">
-          <option value="Toshiba 1F">Toshiba (1-fazowe)</option>
-        </optgroup>
-        <optgroup label="Pompy Ciepła Atlantic">
-          <option value="ATLANTIC-M-DUO">Atlantic S-TRI hydrobox</option>
-          <option value="ATLANTIC-S">Atlantic S-TRI-Duo cylinder</option>
-          <option value="ATLANTIC-EXCELIA">Atlantic EXCELIA AI TRI hydrobox</option>
-                    <option value="ATLANTIC-EXTENSA">Atlantic EXTENSA hydrobox</option>
-                                        <option value="ATLANTIC-EXTENSA-CYLINDER">Atlantic EXTENSA cylinder</option>
-
-
-        </optgroup>
-      
-        <optgroup label="Kotły na Pellet">
-          <option value="LAZAR">Lazar</option>
-          <option value="QMPELL">QMPell EVO</option>
-          <option value="Kotlospaw Slimko Plus">Kotłospaw Slimko Plus</option>
-          <option value="Kotlospaw slimko plus niski">Kotłospaw Slimko Plus niski</option>
-          <option value="Kotlospaw duoko">Kotłospaw Duoko</option>
-
-        </optgroup>
-        <optgroup label="Kotły na Drewno / Hybrydowe">
-            <option value="Kotlospaw drewko plus">Kotłospaw Drewko Plus</option>
-            <option value="Kotlospaw drewko hybrid">Kotłospaw Drewko Hybrid</option>
-        </optgroup>
-        <optgroup label="Pompy Ciepła Viessmann">
-            <option value="VIESSMANN">Viessmann Vitocal 150-A</option>
-        </optgroup>
-        <optgroup label="Pompy Ciepła Kaisai">    
-            <option value="Kaisai">Kaisai</option>
-        </optgroup>
-        <optgroup label="Pompy Ciepła Panasonic-Seria HP">
-            <option value="Panasonic-HP-cylinder-1f">Panasonic Aquarea (HP) cylinder 1F</option>
-            <option value="Panasonic-HP-cylinder-3f">Panasonic Aquarea (HP) cylinder 3F</option>
-            <option value="Panasonic-HP-hydrobox-1f">Panasonic Aquarea (HP) hydrobox 1F</option>
-            <option value="Panasonic-HP-hydrobox-3f">Panasonic Aquarea (HP) hydrobox 3F</option>
-         
-        </optgroup>
-        <optgroup label="Pompy Ciepła Panasonic-Seria T-CAP">
-            <option value="Panasonic-K-cylinder-1f">Panasonic Aquarea T-CAP cylinder 1F</option>
-            <option value="Panasonic-K-cylinder-3f">Panasonic Aquarea T-CAP cylinder 3F</option>
-            <option value="Panasonic-K-hydrobox-1f">Panasonic Aquarea T-CAP hydrobox 1F</option>
-            <option value="Panasonic-K-hydrobox-3f">Panasonic Aquarea T-CAP hydrobox 3F</option>
-        </optgroup>
-       
+        {!isBoilerCategory && (
+          <>
+            <optgroup label="Pompy Ciepła Mitsubishi">
+              <option value="Mitsubishi-hydrobox">Mitsubishi Hydrobox (Standard PUD)</option>
+              <option value="Mitsubishi-cylinder-PUZ">Mitsubishi Cylinder (Zubadan PUZ)</option>
+              <option value="Mitsubishi-cylinder-PUZ-1F">Mitsubishi Cylinder (Zubadan PUZ 1-faz.)</option>
+              <option value="Mitsubishi-hydrobox-PUZ">Mitsubishi Hydrobox (Zubadan PUZ)</option>
+              <option value="Mitsubishi-hydrobox-PUZ-1F">Mitsubishi Hydrobox (Zubadan PUZ 1-faz.)</option>
+              <option value="Mitsubishi-ecoinverter">Mitsubishi Ecoinverter (Cylinder)</option>
+              <option value="Mitsubishi-ecoinverter-hydrobox">Mitsubishi Ecoinverter (Hydrobox)</option>
+            </optgroup>
+            <optgroup label="Pompy Ciepła Toshiba">
+              <option value="Toshiba 1F">Toshiba (1-fazowe)</option>
+            </optgroup>
+            <optgroup label="Pompy Ciepła Atlantic">
+              <option value="ATLANTIC-M-DUO">Atlantic S-TRI hydrobox</option>
+              <option value="ATLANTIC-S">Atlantic S-TRI-Duo cylinder</option>
+              <option value="ATLANTIC-EXCELIA">Atlantic EXCELIA AI TRI hydrobox</option>
+              <option value="ATLANTIC-EXTENSA">Atlantic EXTENSA hydrobox</option>
+              <option value="ATLANTIC-EXTENSA-CYLINDER">Atlantic EXTENSA cylinder</option>
+            </optgroup>
+            <optgroup label="Pompy Ciepła Viessmann">
+              <option value="VIESSMANN">Viessmann Vitocal 150-A</option>
+            </optgroup>
+            <optgroup label="Pompy Ciepła Kaisai">
+              <option value="Kaisai">Kaisai</option>
+            </optgroup>
+            <optgroup label="Pompy Ciepła Panasonic-Seria HP">
+              <option value="Panasonic-HP-cylinder-1f">Panasonic Aquarea (HP) cylinder 1F</option>
+              <option value="Panasonic-HP-cylinder-3f">Panasonic Aquarea (HP) cylinder 3F</option>
+              <option value="Panasonic-HP-hydrobox-1f">Panasonic Aquarea (HP) hydrobox 1F</option>
+              <option value="Panasonic-HP-hydrobox-3f">Panasonic Aquarea (HP) hydrobox 3F</option>
+            </optgroup>
+            <optgroup label="Pompy Ciepła Panasonic-Seria T-CAP">
+              <option value="Panasonic-K-cylinder-1f">Panasonic Aquarea T-CAP cylinder 1F</option>
+              <option value="Panasonic-K-cylinder-3f">Panasonic Aquarea T-CAP cylinder 3F</option>
+              <option value="Panasonic-K-hydrobox-1f">Panasonic Aquarea T-CAP hydrobox 1F</option>
+              <option value="Panasonic-K-hydrobox-3f">Panasonic Aquarea T-CAP hydrobox 3F</option>
+            </optgroup>
+          </>
+        )}
+        {!isHeatPumpCategory && (
+          <>
+            <optgroup label="Kotły na Pellet">
+              <option value="LAZAR">Lazar</option>
+              <option value="QMPELL">QMPell EVO</option>
+              <option value="Kotlospaw Slimko Plus">Kotłospaw Slimko Plus</option>
+              <option value="Kotlospaw slimko plus niski">Kotłospaw Slimko Plus niski</option>
+              <option value="Kotlospaw duoko">Kotłospaw Duoko</option>
+            </optgroup>
+            <optgroup label="Kotły na Drewno / Hybrydowe">
+              <option value="Kotlospaw drewko plus">Kotłospaw Drewko Plus</option>
+              <option value="Kotlospaw drewko hybrid">Kotłospaw Drewko Hybrid</option>
+            </optgroup>
+          </>
+        )}
       </select>
 
       <label htmlFor="model">Model (Moc):</label>
@@ -259,7 +367,18 @@ export default function UnifiedOfferForm() {
                 <label htmlFor="includePodbudowa">Uwzględnij podbudowę pod pompę ciepła w ofercie</label>
               </div>
             )}
-             {isKotlospaw && (
+            {isBoiler && (
+              <div className="option-row">
+                <input
+                  type="checkbox"
+                  id="includeReturnProtection"
+                  checked={includeReturnProtection}
+                  onChange={(e) => setIncludeReturnProtection(e.target.checked)}
+                />
+                <label htmlFor="includeReturnProtection">Zastosowanie termostatycznej ochrony powrotu</label>
+              </div>
+            )}
+            {isKotlospaw && (
               <div className="option-row">
                 <input
                   type="checkbox"
