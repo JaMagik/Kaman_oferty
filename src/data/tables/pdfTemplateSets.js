@@ -122,11 +122,10 @@ export const pdfTemplateSets = {
   'Mitsubishi-ecoinverter-hydrobox': [
     '/pdf_templates/mitsubishi/ecoinverter-hydrobox/1_okladka.pdf',
        
-        '/pdf_templates/mitsubishi/standard-cylinder/3.1_wewnetrzna_zubadan_ds.pdf',
-    '/pdf_templates/mitsubishi/standard-cylinder/3.2_wewnetrzna_zubadan_ds.pdf',
-     '/pdf_templates/mitsubishi/standard-cylinder/3.3_wewnetrzna_zubadan_ds.pdf',
     '/pdf_templates/mitsubishi/ecoinverter-hydrobox/3.1_ecoinverter_zewnetrzna.pdf',
     '/pdf_templates/mitsubishi/ecoinverter-hydrobox/3.2_ecoinverter_zewnetrzna.pdf',
+        '/pdf_templates/mitsubishi/ecoinverter-hydrobox/3.3_ecoinverter_wewnetrzna.pdf',
+
      oNas,
       groupPage,
     groupPage2,

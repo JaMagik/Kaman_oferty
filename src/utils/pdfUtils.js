@@ -66,28 +66,36 @@ export function drawHeaderBlock(page, fonts, logoImage, details, yPos) {
     return currentY;
 }
 
-export async function drawTable(pdfDoc, page, fonts, tableData, startY, title) {
+export async function drawTable(pdfDoc, page, fonts, tableData, startY, title, customConfig = {}) {
     let currentPage = page;
     let currentY = startY;
     const { regular: regularFont, bold: boldFont } = fonts;
-    
-  // NOWA, POPRAWIONA WERSJA ZE ZMNIEJSZONĄ CZCIONKĄ
-const tableConfig = {
-    columnWidths: [30, 160, 250, 35, 35],
-    headerHeight: 22,
-    padding: { top: 5, bottom: 5, left: 5, right: 5 },
-    headerFontSize: 9,
-    contentFontSize: 7,      // Zmniejszono z 8
-    descriptionFontSize: 6.4,    // Zmniejszono z 7.5
-    lineHeightMultiplier: 1.3, // Lekko zmniejszono dla zwartości
-    lineColor: rgb(0.85, 0.85, 0.85),
-    headerBgColor: rgb(0.6, 0, 0.15),
-    headerFontColor: rgb(1, 1, 1),
-    rowFontColor: rgb(0.2, 0.2, 0.2),
-    evenRowBgColor: rgb(0.98, 0.96, 0.96),
-    pageMargins: { top: 40, bottom: 80 }
-};
-    
+
+    const overrides = customConfig || {};
+
+    const defaultConfig = {
+        columnWidths: [30, 160, 250, 35, 35],
+        headerHeight: 22,
+        padding: { top: 5, bottom: 5, left: 5, right: 5 },
+        headerFontSize: 9,
+        contentFontSize: 7,
+        descriptionFontSize: 6.4,
+        lineHeightMultiplier: 1.3,
+        lineColor: rgb(0.85, 0.85, 0.85),
+        headerBgColor: rgb(0.6, 0, 0.15),
+        headerFontColor: rgb(1, 1, 1),
+        rowFontColor: rgb(0.2, 0.2, 0.2),
+        evenRowBgColor: rgb(0.98, 0.96, 0.96),
+        pageMargins: { top: 40, bottom: 80 }
+    };
+
+    const tableConfig = {
+        ...defaultConfig,
+        ...overrides,
+        padding: { ...defaultConfig.padding, ...(overrides.padding || {}) },
+        pageMargins: { ...defaultConfig.pageMargins, ...(overrides.pageMargins || {}) }
+    };
+
     const tableWidth = tableConfig.columnWidths.reduce((a, b) => a + b, 0);
     const tableStartX = (currentPage.getSize().width - tableWidth) / 2;
     const columnPositions = [tableStartX];

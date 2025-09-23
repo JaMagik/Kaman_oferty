@@ -224,6 +224,17 @@ export async function generatePhotovoltaicsOfferPDF(formData) {
       return r;
     });
 
+    const shouldCompactTable = installationType === 'grunt' && table.length > 20;
+    const tableLayoutOverrides = shouldCompactTable
+      ? {
+          contentFontSize: 6.6,
+          descriptionFontSize: 6.0,
+          lineHeightMultiplier: 1.22,
+          padding: { top: 4, bottom: 4 },
+          pageMargins: { top: 40, bottom: 60 },
+        }
+      : undefined;
+
     y -= 10;
     const res = await drawTable(
       pdfDoc,
@@ -231,7 +242,8 @@ export async function generatePhotovoltaicsOfferPDF(formData) {
       { regular: regularFont, bold: boldFont },
       table,
       y,
-      'Komponenty i zakres prac'
+      'Komponenty i zakres prac',
+      tableLayoutOverrides
     );
     lastPage = res.finalPage;
 
