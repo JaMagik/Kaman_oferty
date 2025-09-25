@@ -3,7 +3,7 @@
 export const opcjeDlaPompCiepla = [
     ['1', 'Pompa do cyrkulacji CWU z osprzętem i regulatorem czasowym', 'Poprawia komfort użytkowania ciepłej wody użytkowej, skraca czas oczekiwania.', 'szt.', '660zł'],
     ['2', 'Separator zanieczyszczeń magnetyczny (odmulnik)', 'Chroni układ grzewczy przed zanieczyszczeniami metalicznymi i szlamem, zwiększając żywotność urządzeń.', 'szt.', '580zł'],
-    ['3', 'Pompa obiegowa do instalacji C.O (IBO PRO) z osprzętem', 'Stosowana jako dodatkowa pompa w przypadku, gdy w budynku występuje więcej niż jeden obieg grzewczy (np. podłogówka i grzejniki); zapewnia niezależną cyrkulację w danym obiegu i poprawia efektywność działania instalacji.', 'szt.', '650zł'],
+    ['3', 'Pompa obiegowa do instalacji C.O (KAMAN PRO) z osprzętem', 'Stosowana jako dodatkowa pompa w przypadku, gdy w budynku występuje więcej niż jeden obieg grzewczy (np. podłogówka i grzejniki); zapewnia niezależną cyrkulację w danym obiegu i poprawia efektywność działania instalacji.', 'szt.', '650zł'],
     ['4', 'Zbiornik z stali nierdzewnej', 'Odporny na korozję, przeznaczony do CWU.', 'szt.', '1 250zł'],
     ['5', 'Dodatkowy sterownik do zarządzania do drugą strefą', 'Umożliwia niezależne zarządzanie drugą strefą (np. piętro lub łazienka).', 'szt.', '450zł'],
     ['6', 'Kabel grzewczy z termostatem do odpływu skroplin', 'Zapobiega zamarzaniu odpływu wody z jednostki zewnętrznej.', 'kpl.', '500zł'],
@@ -25,7 +25,7 @@ export const opcjeDlaKotlow = [
     ['6', 'Regulator pokojowy', 'Pozwala na sterowanie dodatkową strefą grzewczą z poziomu pomieszczenia.', 'szt.', '450zł'],
     ['7', 'Pompa do cyrkulacji CWU z regulatorem czasowym', 'Zapewnia natychmiastowy dostęp do ciepłej wody w punktach poboru.', 'szt.', '650zł'],
     ['8', 'Reduktor ciśnienia wody użytkowej', 'Zabezpiecza instalację wodną przed zbyt wysokim ciśnieniem.', 'kpl.', '500zł'],
-    ['9', 'Pompa obiegowa do instalacji C.O (IBO PRO) z osprzętem', 'Stosowana jako dodatkowa pompa w przypadku, gdy w budynku występuje więcej niż jeden obieg grzewczy (np. podłogówka i grzejniki); zapewnia niezależną cyrkulację w danym obiegu i poprawia efektywność działania instalacji.', 'szt.', '650zł'],
+    ['9', 'Pompa obiegowa do instalacji C.O (KAMAN PRO) z osprzętem', 'Stosowana jako dodatkowa pompa w przypadku, gdy w budynku występuje więcej niż jeden obieg grzewczy (np. podłogówka i grzejniki); zapewnia niezależną cyrkulację w danym obiegu i poprawia efektywność działania instalacji.', 'szt.', '650zł'],
         ['10', 'Demontaż starego źródła ciepła', 'Odłączenie i odsunięcie starego źródła ciepła umożliwiające odpowiednie dojście ekipy montującej.', 'kpl.', '500 zł'],
 
     ['11', 'Zastosowanie termostatycznej ochrony powrotu', 'Zestaw z zaworem termostatycznym utrzymujacym wlasciwa temperature powrotu kotla.', 'kpl.', 'wycena indywidualna'],

@@ -2,7 +2,7 @@
 const toshibaCylinder_6kW_base = [
   ['1', 'Pompa ciepła – jed. zew. 6kW (601HWE)', 'szt.', '1', 'Toshiba | Inverter | Split | 6,0kW, 230V, R32 601HWE. Jednostka zewnętrzna typu Split, energooszczędna, cicha praca.'],
   ['2', 'Hydrobox – jednostka wewnętrzna', 'szt.', '1', 'Toshiba | Split | grzałka 6 kW, 230V | naczynie wzbiorcze 10L | grzanie.'],
-['3', 'Pompa obiegowa CO IBO PRO', 'szt.', '1', 'Zapewnia prawidłowy obieg czynnika grzewczego w instalacji.'],
+['3', 'Pompa obiegowa CO KAMAN PRO', 'szt.', '1', 'Zapewnia prawidłowy obieg czynnika grzewczego w instalacji.'],
 
  ['4', 'Komplet elementów hydraulicznych', 'kpl.', '1', 'W tym: zawory kulowe, zawory zwrotne, odpowietrzniki automatyczne, filtry, trójniki, kształtki, nyple, redukcje i pozostała armatura niezbędna do wykonania instalacji wodnej.'],
   ['5', 'Komplet elementów elektrycznych', 'kpl.', '1', 'Okablowanie, bezpieczniki, zabezpieczenia różnicowo-prądowe i nadprądowe, rozdzielnia – zgodnie z wymaganiami producenta dla bezpiecznego działania układu.'],
@@ -43,3 +43,4 @@ export const toshiba1fBaseTables = {
 
 
 export default toshiba1fBaseTables;
+

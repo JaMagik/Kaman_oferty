@@ -18,7 +18,7 @@ const hp_cyl_1f_base = [
     'Aquarea High Performance K – wersja jednofazowa, współpraca z jednostką wewnętrzną cylinder, czynnik R32.'],
   ['2', 'Jednostka wewnętrzna typu Cylinder', 'szt.', '1',
     'Zintegrowany zbiornik CWU, grzałka elektryczna, automatyka.'],
-  ['3', 'Pompa obiegowa CO IBO PRO', 'szt.', '1', 'Zapewnia prawidłowy obieg czynnika grzewczego w instalacji.'],
+  ['3', 'Pompa obiegowa CO KAMAN PRO', 'szt.', '1', 'Zapewnia prawidłowy obieg czynnika grzewczego w instalacji.'],
   ['4', 'Komplet elementów hydraulicznych', 'kpl.', '1', 'Zawory, filtry, zabezpieczenia, złączki.'],
   ['5', 'Komplet elementów elektrycznych', 'kpl.', '1', 'Okablowanie zasilająco–sterujące wraz z zabezpieczeniami.'],
   ['6', 'Grupa bezpieczeństwa C.O.', 'kpl.', '1', 'Zawór bezpieczeństwa, odpowietrzniki, manometr.'],
@@ -146,3 +146,4 @@ export const panasonicBaseTables = {
     '16 kW': makePowerVariant(tcap_hydro_3f_base, 16, 'T-CAP hydrobox 3F'),
   },
 };
+

@@ -2,7 +2,7 @@
 const kaisaiHydrobox_10kW_base = [
   ['1', 'Pompa ciepła – jed. zew. 10kW (KHA-10RY1-B)', 'szt.', '1', 'Kaisai Arctic | Split | 10,0kW, 230V, R32 KHA-10RY1-B. Jednostka zewnętrzna typu Split, przeznaczona do współpracy z hydroboxem.'],
   ['2', 'Moduł wewnętrzny Hydrobox (KMK-100RY3)', 'szt.', '1', 'Kaisai Arctic | hydrobox | bez zintegrowanego zasobnika CWU | grzałka 3/6 kW, 230V | naczynie wzbiorcze 10L | do ogrzewania i przygotowania CWU przez zewnętrzny zbiornik.'],
-['3', 'Pompa obiegowa CO IBO PRO', 'szt.', '1', 'Zapewnia prawidłowy obieg czynnika grzewczego w instalacji.'],
+['3', 'Pompa obiegowa CO KAMAN PRO', 'szt.', '1', 'Zapewnia prawidłowy obieg czynnika grzewczego w instalacji.'],
 
  ['4', 'Komplet elementów hydraulicznych', 'kpl.', '1', 'W tym: zawory kulowe, zawory zwrotne, odpowietrzniki automatyczne, filtry, trójniki, kształtki, nyple, redukcje i pozostała armatura niezbędna do wykonania instalacji wodnej.'],
   ['5', 'Komplet elementów elektrycznych', 'kpl.', '1', 'Okablowanie, bezpieczniki, zabezpieczenia różnicowo-prądowe i nadprądowe, rozdzielnia – zgodnie z wymaganiami producenta dla bezpiecznego działania układu.'],
@@ -43,3 +43,4 @@ export const kaisaiHydroboxBaseTables = {
   '16 kW': kaisaiHydrobox_16kW_base,
     }
 };
+

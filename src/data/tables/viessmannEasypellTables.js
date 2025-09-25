@@ -1,9 +1,9 @@
-﻿// Ścieżka: src/data/tables/viessmannEasypellTables.js
+// Ścieżka: src/data/tables/viessmannEasypellTables.js
 
 const easypellBaseTable = [
   ['1', 'Kocioł na pellet – Viessmann Easypell', 'szt.', '1', 'Automatyczny kocioł na pellet 5 klasy z zasobnikiem i automatycznym czyszczeniem wymiennika.', 'common'],
-  ['2', 'Pompa obiegowa CO IBO PRO', 'szt.', '1', 'Zapewnia prawidłowy obieg czynnika grzewczego w instalacji.', 'common'],
-  ['3', 'Pompa obiegowa CWU IBO PRO', 'szt.', '1', 'Obsługuje wężownicę zasobnika CWU i umożliwia sterowanie pracą w trybie lato/zima.', 'common'],
+  ['2', 'Pompa obiegowa CO KAMAN PRO', 'szt.', '1', 'Zapewnia prawidłowy obieg czynnika grzewczego w instalacji.', 'common'],
+  ['3', 'Pompa obiegowa CWU KAMAN PRO', 'szt.', '1', 'Obsługuje wężownicę zasobnika CWU i umożliwia sterowanie pracą w trybie lato/zima.', 'common'],
   ['4', 'Pompa ochrony powrotu z zaworem termostatycznym (55°C)', 'szt.', '1', 'Chroni kocioł przed zbyt niską temperaturą powrotu, co wpływa na jego trwałość.', 'common'],
   ['5', 'Regulator pokojowy bezprzewodowy', 'szt.', '1', 'Umożliwia wygodne sterowanie temperaturą w pomieszczeniu bez prowadzenia przewodów.', 'common'],
   ['6', 'Podłączenie kominowe', 'kpl.', '1', 'Komplet elementów do odprowadzenia spalin: kolana, rury, czyszczak – zgodnie z wytycznymi producenta.', 'common'],
@@ -38,3 +38,4 @@ export const viessmannEasypellBaseTables = {
     '20 kW': easypell20,
   },
 };
+
