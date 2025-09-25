@@ -260,10 +260,22 @@ function prepareTableData(deviceType, model, tankCapacity, bufferCapacity, syste
     }
     
     if (!isKotel && !isAc && quantityOptions.isCustom) {
+        const normalizeQty = (value, fallback = 1) => {
+            const parsed = parseInt(value, 10);
+            if (Number.isNaN(parsed) || parsed < 1) return fallback;
+            return parsed;
+        };
+
+        const outdoorQty = normalizeQty(quantityOptions.outdoor, 1);
+        const indoorQty = normalizeQty(quantityOptions.indoor, 1);
+        const circuitsQty = normalizeQty(quantityOptions.heatingCircuits, 1);
+
         const outdoorUnitIndex = mainTableData.findIndex(row => row[1] && row[1].toLowerCase().includes('jednostka zew'));
-        if (outdoorUnitIndex !== -1) { mainTableData[outdoorUnitIndex][3] = String(quantityOptions.outdoor); }
+        if (outdoorUnitIndex !== -1) { mainTableData[outdoorUnitIndex][3] = String(outdoorQty); }
         const indoorUnitIndex = mainTableData.findIndex(row => row[1] && (row[1].toLowerCase().includes('hydrobox') || row[1].toLowerCase().includes('cylinder')));
-        if (indoorUnitIndex !== -1) { mainTableData[indoorUnitIndex][3] = String(quantityOptions.indoor); }
+        if (indoorUnitIndex !== -1) { mainTableData[indoorUnitIndex][3] = String(indoorQty); }
+        const heatingCircuitsIndex = mainTableData.findIndex(row => row[1] && row[1].toLowerCase().includes('pompa obiegowa co'));
+        if (heatingCircuitsIndex !== -1) { mainTableData[heatingCircuitsIndex][3] = String(circuitsQty); }
     }
 
     const movableItems = [

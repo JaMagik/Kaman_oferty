@@ -110,6 +110,7 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
   const [isCustomQuantity, setIsCustomQuantity] = useState(false);
   const [outdoorUnitQty, setOutdoorUnitQty] = useState(1);
   const [indoorUnitQty, setIndoorUnitQty] = useState(1);
+  const [heatingCircuitQty, setHeatingCircuitQty] = useState(1);
   const [generatedPdfData, setGeneratedPdfData] = useState(null);
   const [systemType, setSystemType] = useState('zamkniety');
   
@@ -148,7 +149,13 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
     }
     setPrice(cleanedValue);
   };
-  
+
+  const getPositiveInt = (value, fallback = 1) => {
+    const parsed = parseInt(value, 10);
+    if (Number.isNaN(parsed) || parsed < 1) return fallback;
+    return parsed;
+  };
+
   useEffect(() => {
     if (deviceCategory === DEVICE_CATEGORY.BOILER && !boilerDeviceTypes.includes(deviceType)) {
       setDeviceType(BOILER_DEFAULT_DEVICE);
@@ -202,6 +209,9 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
     }
     if (isBoiler || isAcDevice) {
       setIsCustomQuantity(false);
+      setOutdoorUnitQty(1);
+      setIndoorUnitQty(1);
+      setHeatingCircuitQty(1);
     }
 
     prevDeviceTypeRef.current = deviceType;
@@ -230,7 +240,12 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
         price, userName, deviceType, model, tank, buffer, systemType, 
         offerOptions,
         isNettoPrice,
-        { isCustom: isCustomQuantity, outdoor: outdoorUnitQty, indoor: indoorUnitQty },
+        {
+          isCustom: isCustomQuantity,
+          outdoor: outdoorUnitQty,
+          indoor: indoorUnitQty,
+          heatingCircuits: heatingCircuitQty,
+        },
         showPrice
     );
     if (pdfData) {
@@ -355,6 +370,59 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
           <select id="buffer" value={buffer} onChange={(e) => setBuffer(e.target.value)}>
             {currentBufferOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
           </select>
+
+          {!isBoiler && !isAcDevice && (
+            <div className="custom-quantity-box">
+              <div className="option-row">
+                <input
+                  type="checkbox"
+                  id="customQuantityToggle"
+                  checked={isCustomQuantity}
+                  onChange={(e) => {
+                    const nextChecked = e.target.checked;
+                    setIsCustomQuantity(nextChecked);
+                    if (!nextChecked) {
+                      setOutdoorUnitQty(1);
+                      setIndoorUnitQty(1);
+                      setHeatingCircuitQty(1);
+                    }
+                  }}
+                />
+                <label htmlFor="customQuantityToggle">Dostosuj ilości jednostek i obiegów</label>
+              </div>
+              {isCustomQuantity && (
+                <div className="quantity-grid">
+                  <label htmlFor="outdoorUnitQty">Jednostki zewnętrzne</label>
+                  <input
+                    id="outdoorUnitQty"
+                    type="number"
+                    min="1"
+                    value={outdoorUnitQty}
+                    onChange={(e) => setOutdoorUnitQty(getPositiveInt(e.target.value, 1))}
+                  />
+
+                  <label htmlFor="indoorUnitQty">Jednostki wewnętrzne</label>
+                  <input
+                    id="indoorUnitQty"
+                    type="number"
+                    min="1"
+                    value={indoorUnitQty}
+                    onChange={(e) => setIndoorUnitQty(getPositiveInt(e.target.value, 1))}
+                  />
+
+                  <label htmlFor="heatingCircuitQty">Obiegi grzewcze</label>
+                  <input
+                    id="heatingCircuitQty"
+                    type="number"
+                    min="1"
+                    value={heatingCircuitQty}
+                    onChange={(e) => setHeatingCircuitQty(getPositiveInt(e.target.value, 1))}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
 
           <div className="options-box">
             <div className="option-row">
