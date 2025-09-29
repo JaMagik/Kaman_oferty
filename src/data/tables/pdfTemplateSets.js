@@ -264,6 +264,16 @@ export const pdfTemplateSets = {
 
 
   // --- NIBE ---
+  'NIBE F2120': [
+    '/pdf_templates/nibe/f2120/1_okladka.pdf',
+    '/pdf_templates/nibe/f2120/3_katalog_f2120.pdf',
+  
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+
   'NIBE12': [ // NIBE F1245 (Gruntowa)
     '/pdf_templates/nibe/f1245-gruntowa/1_okladka.pdf',
     '/pdf_templates/nibe/f1245-gruntowa/3_katalog.pdf',

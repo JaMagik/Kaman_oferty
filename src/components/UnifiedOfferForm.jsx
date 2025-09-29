@@ -8,6 +8,7 @@ import { mitsubishiBaseTables } from "../data/tables/mitsubishiTables";
 import { atlanticBaseTables } from "../data/tables/atlanticTables";
 import { lazarBaseTables } from "../data/tables/lazarTables";
 import { viessmannBaseTables } from "../data/tables/viessmannTables";
+import { nibeBaseTables } from "../data/tables/nibeTables";
 import { kotlospawSlimkoPlusBaseTables } from "../data/tables/kotlospawSlimkoPlusTable";
 import { kotlospawSlimkoPlusNiskiBaseTables } from "../data/tables/kotlospawSlimkoPlusNiskiTable";
 import { qmpellBaseTables } from "../data/tables/qmpellEvoTables";
@@ -33,6 +34,7 @@ const allDevicesData = {
   ...atlanticBaseTables,
   ...lazarBaseTables,
   ...viessmannBaseTables,
+  ...nibeBaseTables,
   ...kotlospawSlimkoPlusBaseTables,
   ...kotlospawSlimkoPlusNiskiBaseTables,
   ...qmpellBaseTables,
@@ -312,6 +314,9 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
             </optgroup>
             <optgroup label="Pompy Ciepła Viessmann">
               <option value="VIESSMANN">Viessmann Vitocal 150-A</option>
+            </optgroup>
+            <optgroup label="Pompy Ciepla NIBE">
+              <option value="NIBE F2120">NIBE F2120</option>
             </optgroup>
             <optgroup label="Pompy Ciepła Kaisai">
               <option value="Kaisai">Kaisai</option>

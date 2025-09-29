@@ -5,6 +5,7 @@ import { toshiba1fBaseTables } from './toshiba1fTable';
 import { atlanticBaseTables } from './atlanticTables';
 import { lazarBaseTables } from './lazarTables';
 import { viessmannBaseTables } from './viessmannTables';
+import { nibeBaseTables } from './nibeTables';
 import { kotlospawSlimkoPlusBaseTables } from './kotlospawSlimkoPlusTable';
 import { kotlospawSlimkoPlusNiskiBaseTables } from './kotlospawSlimkoPlusNiskiTable';
 import { qmpellBaseTables } from "./qmpellEvoTables"; 
@@ -19,7 +20,7 @@ import { viessmannEasypellBaseTables } from './viessmannEasypellTables.js';
 
 const allDeviceTables = {
     ...mitsubishiBaseTables, ...atlanticBaseTables, ...lazarBaseTables,
-    ...viessmannBaseTables, ...kotlospawSlimkoPlusBaseTables,...kotlospawSlimkoPlusNiskiBaseTables,
+    ...viessmannBaseTables, ...nibeBaseTables, ...kotlospawSlimkoPlusBaseTables,...kotlospawSlimkoPlusNiskiBaseTables,
     ...qmpellBaseTables, ...kotlospawDrewkoPlusBaseTables, ...kotlospawDrewkoHybridBaseTables,...toshiba1fBaseTables,
     ...kaisaiHydroboxBaseTables,
     ...acBaseTables,
