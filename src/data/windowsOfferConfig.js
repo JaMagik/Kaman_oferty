@@ -8,15 +8,14 @@ export const profileTypeOptions = [
 ];
 
 export const hardwareThicknessOptions = [
-  { value: 'standard-2mm', label: 'Okucia standard 2,0 mm' },
-  { value: 'premium-25mm', label: 'Okucia wzmocnione 2,5 mm' },
-  { value: 'security-3mm', label: 'Okucia antywlamaniowe 3,0 mm' },
+  { value: 'standard-12', label: 'Standard 1,2 mm' },
+  { value: 'premium-20', label: 'Wzmocniony 2,0 mm (premium)' },
 ];
 
 export const assemblyTypeOptions = [
-  { value: 'warm-complete', label: 'Cieply montaz kompletny (tasmy paro i paroprzepuszczalne, listwy podwalinowe)' },
-  { value: 'standard-foam', label: 'Montaz standardowy na piance i silikonie' },
-  { value: 'renovation', label: 'Montaz renowacyjny w istniejacej ramie' },
+  { value: 'standard-foam', label: 'Standardowy (piana + kotwa)' },
+  { value: 'sealed-tape', label: 'Szczelny (tasmy)' },
+  { value: 'titan-wings', label: 'Titan Wings' },
 ];
 
 export const profileColorOptions = [
@@ -190,17 +189,18 @@ export const optionalFeatureGroups = [
 ];
 
 export const installationExtras = [
-  { id: 'extra-demontaz', label: 'Demontaz i utylizacja starych okien', summaryLabel: 'Demontaz' },
-  { id: 'extra-delivery', label: 'Dostawa i wniesienie', summaryLabel: 'Dostawa' },
-  { id: 'extra-warm-sill', label: 'Cieply parapet XPS / listwa podparapetowa', summaryLabel: 'Cieply parapet' },
-  { id: 'extra-interior-sills', label: 'Montaz parapetow wewnetrznych', summaryLabel: 'Parapety wew' },
-  { id: 'extra-exterior-sills', label: 'Montaz parapetow zewnetrznych', summaryLabel: 'Parapety zewn' },
-  { id: 'extra-blinds-install', label: 'Montaz rolet / zaluzji (jesli w zamowieniu)', summaryLabel: 'Montaz rolet' },
-  { id: 'extra-threshold-extensions', label: 'Poszerzenia / podklad progowy pod drzwi balkonowe', summaryLabel: 'Poszerzenia progowe' },
+  { id: 'install-sealed-tape', label: 'Montaz szczelny (tasmy)', summaryLabel: 'Montaz szczelny' },
+  { id: 'install-titan-wings', label: 'Montaz Titan Wings', summaryLabel: 'Montaz Titan Wings' },
+  { id: 'install-inner-sills', label: 'Montaz parapetow wewnetrznych', summaryLabel: 'Parapety wewnetrzne' },
+  { id: 'install-outer-sills', label: 'Montaz parapetow zewnetrznych', summaryLabel: 'Parapety zewnetrzne' },
+  { id: 'install-threshold-seal', label: 'Szczelny montaz progow (membrana EPDM)', summaryLabel: 'Szczelny montaz progow' },
+  { id: 'install-reveal-prep', label: 'Przygotowanie glifow pod szczelny montaz', summaryLabel: 'Przygotowanie glifow' },
+  { id: 'install-prime-level', label: 'Zagruntowanie i wyrownanie klejem', summaryLabel: 'Gruntowanie i wyrownanie' },
 ];
 
 export const demolitionOptions = [
-  { value: 'cut-frames', label: 'Przeciecie ram' },
-  { value: 'whole', label: 'Demontaz calosciowy' },
+  { value: 'none', label: 'Brak' },
+  { value: 'na', label: 'Nie dotyczy' },
+  { value: 'yes', label: 'Tak' },
 ];
 

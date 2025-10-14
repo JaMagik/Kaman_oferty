@@ -11,6 +11,27 @@ import {
   additionalOfferIds,
 } from '../data/windowsOfferConfig';
 
+const clientAdvisorOptions = [
+  {
+    value: 'daniel',
+    label: 'Daniel Kopek',
+    phone: '578 615 100',
+    email: 'daniel.kopek@kaman.eu',
+  },
+  {
+    value: 'beata',
+    label: 'Beata Mularczyk',
+    phone: '884 996 055',
+    email: 'b.mularczyk@kaman.eu',
+  },
+  {
+    value: 'robert',
+    label: 'Robert Mularczyk',
+    phone: '574 571 100',
+    email: 'robert.mularczyk@kaman.eu',
+  },
+];
+
 const ADDITIONAL_OFFER_ID_SET = new Set(additionalOfferIds);
 
 const coreWindowOptions = windowOptionDefinitions.filter(
@@ -36,8 +57,28 @@ const vatPresetOptions = [
 ];
 
 const hingeOptions = [
+  { value: 'visible', label: 'Zawiasy widoczne' },
   { value: 'hidden', label: 'Zawiasy ukryte' },
-  { value: 'standard', label: 'Zawiasy widoczne' },
+];
+
+const warmSpacerOptions = [
+  { value: 'no', label: 'Nie' },
+  { value: 'yes', label: 'Tak' },
+];
+
+const glazingPackageOptions = [
+  { value: 'double', label: 'Pakiet 2-szybowy' },
+  { value: 'triple', label: 'Pakiet 3-szybowy' },
+];
+
+const rcPackageOptions = [
+  { value: 'no', label: 'Nie' },
+  { value: 'yes', label: 'Tak' },
+];
+
+const lazikOptions = [
+  { value: 'na', label: 'Nie dotyczy' },
+  { value: 'yes', label: 'Tak' },
 ];
 
 const parsePreviewNumber = (value) => {
@@ -59,16 +100,32 @@ const buildDefaultFeatureState = () => {
   return state;
 };
 
+const excludedFeatureIdsInForm = new Set(['feature-hinge-brake', 'feature-rc2']);
+
 const buildDefaultInstallationExtrasState = () => {
   const state = {};
   installationExtras.forEach((item) => {
-    state[item.id] = false;
+    state[item.id] = { selected: false, price: '' };
+  });
+  return state;
+};
+
+const buildDefaultWindowOptionPriceState = () => {
+  const state = {};
+  optionalWindowOptions.forEach((option) => {
+    state[option.id] = { price: '' };
   });
   return state;
 };
 export default function OknaNestOfferForm() {
-  const [userName, setUserName] = useState('');
-  const [investmentAddress, setInvestmentAddress] = useState('');
+const defaultAdvisor = clientAdvisorOptions[0];
+const [userName, setUserName] = useState('');
+const [investmentAddress, setInvestmentAddress] = useState('');
+const [selectedAdvisorKey, setSelectedAdvisorKey] = useState(defaultAdvisor?.value || '');
+const selectedAdvisor = useMemo(
+  () => clientAdvisorOptions.find((option) => option.value === selectedAdvisorKey) || defaultAdvisor || {},
+  [selectedAdvisorKey, defaultAdvisor],
+);
   const [catalogPrice, setCatalogPrice] = useState('');
   const [discountPercent, setDiscountPercent] = useState('');
   const [marginPercent, setMarginPercent] = useState('');
@@ -80,7 +137,10 @@ export default function OknaNestOfferForm() {
   const [assemblyType, setAssemblyType] = useState(assemblyTypeOptions[0]?.value || '');
   const [profileColor, setProfileColor] = useState('');
   const [hingeType, setHingeType] = useState(hingeOptions[0]?.value || '');
-  const [lazikIncluded, setLazikIncluded] = useState('yes');
+  const [warmSpacer, setWarmSpacer] = useState(warmSpacerOptions[0]?.value || 'no');
+  const [glazingPackage, setGlazingPackage] = useState(glazingPackageOptions[1]?.value || 'triple');
+  const [rcPackage, setRcPackage] = useState(rcPackageOptions[0]?.value || 'no');
+  const [lazikIncluded, setLazikIncluded] = useState('na');
   const [demolitionMode, setDemolitionMode] = useState(demolitionOptions[0]?.value || '');
   const [vatPreset, setVatPreset] = useState('23');
   const [vatCustom, setVatCustom] = useState('');
@@ -90,6 +150,7 @@ export default function OknaNestOfferForm() {
   const [additionalNotes, setAdditionalNotes] = useState('');
   const [featureSelections, setFeatureSelections] = useState(() => buildDefaultFeatureState());
   const [installationExtrasState, setInstallationExtrasState] = useState(() => buildDefaultInstallationExtrasState());
+  const [optionPriceState, setOptionPriceState] = useState(() => buildDefaultWindowOptionPriceState());
   const [isProcessing, setIsProcessing] = useState(false);
 
   const gridStyle = {
@@ -108,6 +169,16 @@ export default function OknaNestOfferForm() {
       }
       return [...current, optionId];
     });
+  };
+
+  const updateOptionPrice = (optionId, value) => {
+    if (!optionalWindowOptions.some((option) => option.id === optionId)) {
+      return;
+    }
+    setOptionPriceState((current) => ({
+      ...current,
+      [optionId]: { price: value },
+    }));
   };
 
   const toggleFeatureSelection = (featureId) => {
@@ -135,10 +206,34 @@ export default function OknaNestOfferForm() {
   };
 
   const toggleInstallationExtra = (extraId) => {
+    setInstallationExtrasState((current) => {
+      const previous = current[extraId] || { selected: false, price: '' };
+      return {
+        ...current,
+        [extraId]: {
+          ...previous,
+          selected: !previous.selected,
+        },
+      };
+    });
+  };
+
+  const updateInstallationExtraPrice = (extraId, value) => {
     setInstallationExtrasState((current) => ({
       ...current,
-      [extraId]: !current[extraId],
+      [extraId]: {
+        ...(current[extraId] || { selected: false, price: '' }),
+        price: value,
+      },
     }));
+  };
+
+  const getInstallationExtraState = (extraId) => {
+    const entry = installationExtrasState[extraId];
+    if (entry && typeof entry === 'object') {
+      return entry;
+    }
+    return { selected: Boolean(entry), price: '' };
   };
 
   const handleAttachmentChange = (event) => {
@@ -185,13 +280,13 @@ export default function OknaNestOfferForm() {
   const complementaryOfferList = useMemo(() => {
     const base = complementaryOfferOptions
       .filter((option) => {
-        if (option.id === 'internal-sills' && installationExtrasState['extra-interior-sills']) {
+        if (option.id === 'internal-sills' && getInstallationExtraState('install-inner-sills').selected) {
           return false;
         }
-        if (option.id === 'external-sills' && installationExtrasState['extra-exterior-sills']) {
+        if (option.id === 'external-sills' && getInstallationExtraState('install-outer-sills').selected) {
           return false;
         }
-        if (option.id === 'external-blinds' && installationExtrasState['extra-blinds-install']) {
+        if (option.id === 'external-blinds' && getInstallationExtraState('install-titan-wings').selected) {
           return false;
         }
         return true;
@@ -202,7 +297,7 @@ export default function OknaNestOfferForm() {
         summaryBullet: option.summaryBullet,
       }));
 
-    if (!installationExtrasState['extra-threshold-extensions']) {
+    if (!getInstallationExtraState('install-threshold-seal').selected) {
       base.push({
         id: 'threshold-extensions',
         label: 'Poszerzenia progowe',
@@ -241,9 +336,17 @@ export default function OknaNestOfferForm() {
   try {
     const hingeLabel = hingeOptions.find((option) => option.value === hingeType)?.label || hingeType;
     const resolvedVatRate = vatPreset === 'custom' ? vatCustom : vatPreset;
+    const advisor = selectedAdvisor || defaultAdvisor || {};
     const pdfBlob = await generateOknaNestPDF({
       userName: userName.trim(),
       investmentAddress: investmentAddress.trim(),
+      clientAdvisor: {
+        name: advisor.label || '',
+        phone: advisor.phone || '',
+        email: advisor.email || '',
+      },
+      preparedBy: advisor.value || '',
+      preparedByLabel: advisor.label || '',
       catalogPrice,
       discountPercent,
       marginPercent,
@@ -254,13 +357,18 @@ export default function OknaNestOfferForm() {
       hardwareThickness,
       assemblyType,
       profileColor: profileColor.trim(),
-      hingeType: hingeLabel,
+      hingeType,
+      hingeLabel,
+      warmSpacer,
+      glazingPackage,
+      rcPackage,
       lazikIncluded,
       demolitionMode,
       selectedOptionIds,
       additionalNotes,
       featureSelections,
       installationExtras: installationExtrasState,
+      optionPrices: optionPriceState,
       vatRate: resolvedVatRate,
       attachmentFile,
     });
@@ -277,6 +385,7 @@ export default function OknaNestOfferForm() {
 
         setUserName('');
         setInvestmentAddress('');
+        setSelectedAdvisorKey(defaultAdvisor?.value || '');
         setCatalogPrice('');
         setDiscountPercent('');
         setMarginPercent('');
@@ -288,7 +397,10 @@ export default function OknaNestOfferForm() {
         setAssemblyType(assemblyTypeOptions[0]?.value || '');
         setProfileColor('');
         setHingeType(hingeOptions[0]?.value || '');
-        setLazikIncluded('yes');
+        setWarmSpacer(warmSpacerOptions[0]?.value || 'no');
+        setGlazingPackage(glazingPackageOptions[1]?.value || 'triple');
+        setRcPackage(rcPackageOptions[0]?.value || 'no');
+        setLazikIncluded('na');
         setDemolitionMode(demolitionOptions[0]?.value || '');
         setVatPreset('23');
         setVatCustom('');
@@ -298,6 +410,7 @@ export default function OknaNestOfferForm() {
         setAdditionalNotes('');
         setFeatureSelections(buildDefaultFeatureState());
         setInstallationExtrasState(buildDefaultInstallationExtrasState());
+        setOptionPriceState(buildDefaultWindowOptionPriceState());
       }
     } catch (error) {
       console.error('Blad podczas generowania PDF dla Okien Nest:', error);
@@ -322,20 +435,39 @@ export default function OknaNestOfferForm() {
             onChange={(event) => setUserName(event.target.value)}
             placeholder="np. Jan Nowak"
             required
-          />
-        </div>
-        <div className="input-group">
-          <label htmlFor="okna_address">Adres inwestycji</label>
-          <input
-            id="okna_address"
-            type="text"
-            value={investmentAddress}
-            onChange={(event) => setInvestmentAddress(event.target.value)}
-            placeholder="np. ul. Wiosenna 12, Krakow"
-            required
-          />
-        </div>
-      </fieldset>
+      />
+    </div>
+    <div className="input-group">
+      <label htmlFor="okna_address">Adres inwestycji</label>
+      <input
+        id="okna_address"
+        type="text"
+        value={investmentAddress}
+        onChange={(event) => setInvestmentAddress(event.target.value)}
+        placeholder="np. ul. Wiosenna 12, Krakow"
+        required
+      />
+    </div>
+    <div className="input-grid" style={gridStyle}>
+      <div className="input-group">
+        <label htmlFor="okna_advisorSelect">Opiekun klienta</label>
+        <select
+          id="okna_advisorSelect"
+          value={selectedAdvisorKey}
+          onChange={(event) => {
+            const value = event.target.value;
+            setSelectedAdvisorKey(value);
+          }}
+        >
+          {clientAdvisorOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
+  </fieldset>
 
       <fieldset className="component-fieldset">
         <legend>Parametry finansowe</legend>
@@ -513,16 +645,60 @@ export default function OknaNestOfferForm() {
                 </option>
               ))}
             </select>
+        </div>
+        <div className="input-group">
+          <label htmlFor="okna_profileColor">Kolor profili</label>
+          <input
+            id="okna_profileColor"
+            type="text"
+            value={profileColor}
+            onChange={(event) => setProfileColor(event.target.value)}
+            placeholder="np. Antracyt struktura RAL 7016"
+          />
+        </div>
+      </div>
+        <div className="input-grid" style={gridStyle}>
+          <div className="input-group">
+            <label htmlFor="okna_glazing">Pakiet szklenia</label>
+            <select
+              id="okna_glazing"
+              value={glazingPackage}
+              onChange={(event) => setGlazingPackage(event.target.value)}
+            >
+              {glazingPackageOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="input-group">
-            <label htmlFor="okna_profileColor">Kolor profili</label>
-            <input
-              id="okna_profileColor"
-              type="text"
-              value={profileColor}
-              onChange={(event) => setProfileColor(event.target.value)}
-              placeholder="np. Antracyt struktura RAL 7016"
-            />
+            <label htmlFor="okna_warmSpacer">Ciepla ramka</label>
+            <select
+              id="okna_warmSpacer"
+              value={warmSpacer}
+              onChange={(event) => setWarmSpacer(event.target.value)}
+            >
+              {warmSpacerOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="input-group">
+            <label htmlFor="okna_rc">Pakiet RC</label>
+            <select
+              id="okna_rc"
+              value={rcPackage}
+              onChange={(event) => setRcPackage(event.target.value)}
+            >
+              {rcPackageOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
         <div className="input-grid" style={gridStyle}>
@@ -549,12 +725,15 @@ export default function OknaNestOfferForm() {
               value={lazikIncluded}
               onChange={(event) => setLazikIncluded(event.target.value)}
             >
-              <option value="yes">Tak</option>
-              <option value="no">Nie</option>
+              {lazikOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
             </select>
           </div>
           <div className="input-group">
-            <label htmlFor="okna_demolition">Demontaz okien</label>
+            <label htmlFor="okna_demolition">Demontaz starych okien</label>
             <select
               id="okna_demolition"
               value={demolitionMode}
@@ -577,19 +756,36 @@ export default function OknaNestOfferForm() {
             Zakres montazowy
           </h4>
           <div className="options-box">
-            {installationExtras.map((item) => (
-              <label key={item.id} className="option-row">
-                <input
-                  type="checkbox"
-                  checked={Boolean(installationExtrasState[item.id])}
-                  onChange={() => toggleInstallationExtra(item.id)}
-                />
-                <span>{item.label}</span>
-              </label>
-            ))}
-          </div>
+            {installationExtras.map((item) => {
+            const extraState = getInstallationExtraState(item.id);
+            return (
+              <div key={item.id} style={{ marginBottom: '12px' }}>
+                <label className="option-row" style={{ alignItems: 'flex-start' }}>
+                  <input
+                    type="checkbox"
+                    checked={extraState.selected}
+                    onChange={() => toggleInstallationExtra(item.id)}
+                  />
+                  <span>{item.label}</span>
+                </label>
+                <div className="input-group" style={{ marginLeft: '28px', marginTop: '6px' }}>
+                  <label style={{ fontSize: '0.8rem' }}>Cena (PLN)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={extraState.price}
+                    onChange={(event) => updateInstallationExtraPrice(item.id, event.target.value)}
+                    placeholder="np. 1500"
+                    disabled={!extraState.selected}
+                  />
+                </div>
+              </div>
+            );
+          })}
         </div>
-      </fieldset>
+      </div>
+    </fieldset>
 
       <fieldset className="component-fieldset">
         <legend>Zalacznik do oferty</legend>
@@ -617,24 +813,42 @@ export default function OknaNestOfferForm() {
               Elementy konfigurowalne
             </h4>
             <div className="options-box">
-              {optionalWindowOptions.map((option) => (
-                <label key={option.id} className="option-row">
-                  <input
-                    type="checkbox"
-                    checked={selectedOptionIds.includes(option.id)}
-                    onChange={() => toggleOption(option.id)}
-                  />
-                  <span>
-                    <strong>{option.label}</strong>
-                    {option.summaryBullet && (
-                      <>
-                        <br />
-                        <small>{option.summaryBullet}</small>
-                      </>
-                    )}
-                  </span>
-                </label>
-              ))}
+              {optionalWindowOptions.map((option) => {
+                const selected = selectedOptionIds.includes(option.id);
+                const priceValue = optionPriceState[option.id]?.price || '';
+                return (
+                  <div key={option.id} style={{ marginBottom: '12px' }}>
+                    <label className="option-row" style={{ alignItems: 'flex-start' }}>
+                      <input
+                        type="checkbox"
+                        checked={selected}
+                        onChange={() => toggleOption(option.id)}
+                      />
+                      <span>
+                        <strong>{option.label}</strong>
+                        {option.summaryBullet && (
+                          <>
+                            <br />
+                            <small>{option.summaryBullet}</small>
+                          </>
+                        )}
+                      </span>
+                    </label>
+                    <div className="input-group" style={{ marginLeft: '28px', marginTop: '6px' }}>
+                      <label style={{ fontSize: '0.8rem' }}>Cena (PLN)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={priceValue}
+                        onChange={(event) => updateOptionPrice(option.id, event.target.value)}
+                        placeholder="np. 2500"
+                        disabled={!selected}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </section>
         )}
@@ -652,6 +866,9 @@ export default function OknaNestOfferForm() {
                 </h5>
                 <div className="options-box">
                   {group.items.map((item) => {
+                    if (excludedFeatureIdsInForm.has(item.id)) {
+                      return null;
+                    }
                     const entry = featureSelections[item.id] || { enabled: false, detail: '' };
                     return (
                       <div key={item.id} style={{ marginBottom: '10px' }}>
