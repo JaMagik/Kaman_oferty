@@ -1,20 +1,31 @@
-﻿// src/components/OknaNestOfferForm.jsx
+// src/components/OknaNestOfferForm.jsx
 import React, { useMemo, useState } from 'react';
 import { generateOknaNestPDF } from '../utils/oknaNestPdfGenerator';
 import {
   assemblyTypeOptions,
   hardwareThicknessOptions,
-  profileColorOptions,
-  profileTypeOptions,
   windowOptionDefinitions,
   optionalFeatureGroups,
-  installationVariants,
   installationExtras,
+  additionalServiceOptions,
+  demolitionOptions,
 } from '../data/windowsOfferConfig';
 
 const defaultSelectedWindowOptionIds = windowOptionDefinitions
   .filter((option) => option.defaultSelected)
   .map((option) => option.id);
+
+const vatPresetOptions = [
+  { value: '23', label: '23%' },
+  { value: '8', label: '8%' },
+  { value: '0', label: '0%' },
+  { value: 'custom', label: 'Inna stawka' },
+];
+
+const hingeOptions = [
+  { value: 'hidden', label: 'Zawiasy ukryte' },
+  { value: 'standard', label: 'Zawiasy widoczne' },
+];
 
 const parsePreviewNumber = (value) => {
   if (!value) {
@@ -43,23 +54,38 @@ const buildDefaultInstallationExtrasState = () => {
   return state;
 };
 
+const buildDefaultServiceAddonsState = () => {
+  const state = {};
+  additionalServiceOptions.forEach((item) => {
+    state[item.id] = false;
+  });
+  return state;
+};
 export default function OknaNestOfferForm() {
   const [userName, setUserName] = useState('');
   const [investmentAddress, setInvestmentAddress] = useState('');
   const [catalogPrice, setCatalogPrice] = useState('');
-  const [discountPercent, setDiscountPercent] = useState('');
+  const [discountValue, setDiscountValue] = useState('');
+  const [marginPercent, setMarginPercent] = useState('');
   const [installationPrice, setInstallationPrice] = useState('');
   const [windowPerimeter, setWindowPerimeter] = useState('');
   const [windowArea, setWindowArea] = useState('');
-  const [profileType, setProfileType] = useState(profileTypeOptions[0]?.value || '');
+  const [profileType, setProfileType] = useState('');
   const [hardwareThickness, setHardwareThickness] = useState(hardwareThicknessOptions[0]?.value || '');
   const [assemblyType, setAssemblyType] = useState(assemblyTypeOptions[0]?.value || '');
-  const [profileColor, setProfileColor] = useState(profileColorOptions[0]?.value || '');
+  const [profileColor, setProfileColor] = useState('');
+  const [hingeType, setHingeType] = useState(hingeOptions[0]?.value || '');
+  const [lazikIncluded, setLazikIncluded] = useState('yes');
+  const [demolitionMode, setDemolitionMode] = useState(demolitionOptions[0]?.value || '');
+  const [vatPreset, setVatPreset] = useState('23');
+  const [vatCustom, setVatCustom] = useState('');
+  const [attachmentFile, setAttachmentFile] = useState(null);
+  const [attachmentInputKey, setAttachmentInputKey] = useState(0);
   const [selectedOptionIds, setSelectedOptionIds] = useState(defaultSelectedWindowOptionIds);
   const [additionalNotes, setAdditionalNotes] = useState('');
   const [featureSelections, setFeatureSelections] = useState(() => buildDefaultFeatureState());
-  const [installationVariant, setInstallationVariant] = useState(installationVariants[0]?.value || '');
   const [installationExtrasState, setInstallationExtrasState] = useState(() => buildDefaultInstallationExtrasState());
+  const [serviceAddonsState, setServiceAddonsState] = useState(() => buildDefaultServiceAddonsState());
   const [isProcessing, setIsProcessing] = useState(false);
 
   const gridStyle = {
@@ -108,25 +134,48 @@ export default function OknaNestOfferForm() {
     }));
   };
 
+  const toggleServiceAddon = (addonId) => {
+    setServiceAddonsState((current) => ({
+      ...current,
+      [addonId]: !current[addonId],
+    }));
+  };
+
+  const handleAttachmentChange = (event) => {
+    const file = event.target.files && event.target.files[0] ? event.target.files[0] : null;
+    setAttachmentFile(file);
+  };
+
   const pricePreview = useMemo(() => {
     const catalog = parsePreviewNumber(catalogPrice);
-    const discount = parsePreviewNumber(discountPercent);
     const installation = parsePreviewNumber(installationPrice);
+    const discount = parsePreviewNumber(discountValue);
+    const marginRate = parsePreviewNumber(marginPercent);
+    const vatRaw = vatPreset === 'custom' ? vatCustom : vatPreset;
+    const vatRateValue = Math.max(parsePreviewNumber(vatRaw), 0);
 
-    if (catalog <= 0) {
+    const baseSum = catalog + installation;
+    if (baseSum <= 0) {
       return null;
     }
 
-    const discountedValue = catalog * (1 - discount / 100);
-    const discountValue = catalog - discountedValue;
-    const total = discountedValue + installation;
+    const netAfterDiscount = Math.max(baseSum - discount, 0);
+    const marginAmount = netAfterDiscount * (marginRate / 100);
+    const netWithMargin = netAfterDiscount + marginAmount;
+    const vatAmount = netWithMargin * (vatRateValue / 100);
+    const grossTotal = netWithMargin + vatAmount;
 
     return {
-      discountedValue,
-      discountValue,
-      total,
+      baseSum,
+      discount,
+      marginAmount,
+      netAfterDiscount,
+      netWithMargin,
+      vatAmount,
+      grossTotal,
+      vatRateValue,
     };
-  }, [catalogPrice, discountPercent, installationPrice]);
+  }, [catalogPrice, installationPrice, discountValue, marginPercent, vatPreset, vatCustom]);
 
   const handleGeneratePDF = async (event) => {
     event.preventDefault();
@@ -141,32 +190,45 @@ export default function OknaNestOfferForm() {
       return;
     }
 
-    if (!windowArea || !windowPerimeter) {
-      alert('Podaj obwod oraz laczna powierzchnie okien.');
-      return;
-    }
+  if (!windowArea || !windowPerimeter) {
+    alert('Podaj obwod oraz laczna powierzchnie okien.');
+    return;
+  }
 
-    setIsProcessing(true);
+  if (vatPreset === 'custom' && !vatCustom) {
+    alert('Podaj wartosc podatku VAT.');
+    return;
+  }
 
-    try {
-      const pdfBlob = await generateOknaNestPDF({
-        userName: userName.trim(),
-        investmentAddress: investmentAddress.trim(),
-        catalogPrice,
-        discountPercent,
-        installationPrice,
-        windowPerimeter,
-        windowArea,
-        profileType,
-        hardwareThickness,
-        assemblyType,
-        profileColor,
-        selectedOptionIds,
-        additionalNotes,
-        featureSelections,
-        installationVariant,
-        installationExtras: installationExtrasState,
-      });
+  setIsProcessing(true);
+
+  try {
+    const hingeLabel = hingeOptions.find((option) => option.value === hingeType)?.label || hingeType;
+    const resolvedVatRate = vatPreset === 'custom' ? vatCustom : vatPreset;
+    const pdfBlob = await generateOknaNestPDF({
+      userName: userName.trim(),
+      investmentAddress: investmentAddress.trim(),
+      catalogPrice,
+      discountValue,
+      marginPercent,
+      installationPrice,
+      windowPerimeter,
+      windowArea,
+      profileType: profileType.trim(),
+      hardwareThickness,
+      assemblyType,
+      profileColor: profileColor.trim(),
+      hingeType: hingeLabel,
+      lazikIncluded,
+      demolitionMode,
+      selectedOptionIds,
+      additionalNotes,
+      featureSelections,
+      installationExtras: installationExtrasState,
+      serviceAddons: serviceAddonsState,
+      vatRate: resolvedVatRate,
+      attachmentFile,
+    });
 
       if (pdfBlob) {
         const url = URL.createObjectURL(pdfBlob);
@@ -181,19 +243,27 @@ export default function OknaNestOfferForm() {
         setUserName('');
         setInvestmentAddress('');
         setCatalogPrice('');
-        setDiscountPercent('');
+        setDiscountValue('');
+        setMarginPercent('');
         setInstallationPrice('');
         setWindowPerimeter('');
         setWindowArea('');
-        setProfileType(profileTypeOptions[0]?.value || '');
+        setProfileType('');
         setHardwareThickness(hardwareThicknessOptions[0]?.value || '');
         setAssemblyType(assemblyTypeOptions[0]?.value || '');
-        setProfileColor(profileColorOptions[0]?.value || '');
+        setProfileColor('');
+        setHingeType(hingeOptions[0]?.value || '');
+        setLazikIncluded('yes');
+        setDemolitionMode(demolitionOptions[0]?.value || '');
+        setVatPreset('23');
+        setVatCustom('');
+        setAttachmentFile(null);
+        setAttachmentInputKey((value) => value + 1);
         setSelectedOptionIds(defaultSelectedWindowOptionIds);
         setAdditionalNotes('');
         setFeatureSelections(buildDefaultFeatureState());
-        setInstallationVariant(installationVariants[0]?.value || '');
         setInstallationExtrasState(buildDefaultInstallationExtrasState());
+        setServiceAddonsState(buildDefaultServiceAddonsState());
       }
     } catch (error) {
       console.error('Blad podczas generowania PDF dla Okien Nest:', error);
@@ -250,15 +320,27 @@ export default function OknaNestOfferForm() {
             />
           </div>
           <div className="input-group">
-            <label htmlFor="okna_discount">Rabat (%)</label>
+            <label htmlFor="okna_discount">Rabat (PLN)</label>
             <input
               id="okna_discount"
               type="number"
+              step="0.01"
+              min="0"
+              value={discountValue}
+              onChange={(event) => setDiscountValue(event.target.value)}
+              placeholder="np. 3500"
+            />
+          </div>
+          <div className="input-group">
+            <label htmlFor="okna_margin">Marza (%)</label>
+            <input
+              id="okna_margin"
+              type="number"
               step="0.1"
               min="0"
-              value={discountPercent}
-              onChange={(event) => setDiscountPercent(event.target.value)}
-              placeholder="np. 8"
+              value={marginPercent}
+              onChange={(event) => setMarginPercent(event.target.value)}
+              placeholder="np. 15"
             />
           </div>
           <div className="input-group">
@@ -274,15 +356,51 @@ export default function OknaNestOfferForm() {
               required
             />
           </div>
+          <div className="input-group">
+            <label htmlFor="okna_vatPreset">Podatek VAT</label>
+            <select
+              id="okna_vatPreset"
+              value={vatPreset}
+              onChange={(event) => setVatPreset(event.target.value)}
+            >
+              {vatPresetOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            {vatPreset === 'custom' && (
+              <input
+                id="okna_vatCustom"
+                type="number"
+                step="0.1"
+                min="0"
+                value={vatCustom}
+                onChange={(event) => setVatCustom(event.target.value)}
+                placeholder="np. 23"
+                style={{ marginTop: '8px' }}
+              />
+            )}
+          </div>
         </div>
         {pricePreview && (
           <div className="input-group">
             <label>Podglad wyliczenia</label>
             <div>
+              <div>Suma bazowa netto: {pricePreview.baseSum.toFixed(2)} PLN</div>
+              {pricePreview.discount > 0 && (
+                <div>Po odjeciu rabatu: {pricePreview.netAfterDiscount.toFixed(2)} PLN</div>
+              )}
+              {pricePreview.marginAmount !== 0 && (
+                <div>
+                  Marza ({marginPercent || 0}%): {pricePreview.marginAmount.toFixed(2)} PLN
+                </div>
+              )}
+              <div>Cena netto oferty: {pricePreview.netWithMargin.toFixed(2)} PLN</div>
               <div>
-                Cena po rabacie: {pricePreview.discountedValue.toFixed(2)} PLN (oszczednosc {pricePreview.discountValue.toFixed(2)} PLN)
+                VAT ({pricePreview.vatRateValue.toFixed(2)}%): {pricePreview.vatAmount.toFixed(2)} PLN
               </div>
-              <div>Cena koncowa z montazem: {pricePreview.total.toFixed(2)} PLN</div>
+              <div>Cena brutto oferty: {pricePreview.grossTotal.toFixed(2)} PLN</div>
             </div>
           </div>
         )}
@@ -319,17 +437,13 @@ export default function OknaNestOfferForm() {
           </div>
           <div className="input-group">
             <label htmlFor="okna_profileType">Rodzaj profili</label>
-            <select
+            <input
               id="okna_profileType"
+              type="text"
               value={profileType}
               onChange={(event) => setProfileType(event.target.value)}
-            >
-              {profileTypeOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+              placeholder="np. Nest 82 (7-komorowy, 82 mm)"
+            />
           </div>
           <div className="input-group">
             <label htmlFor="okna_hardware">Grubosc okuc</label>
@@ -361,12 +475,51 @@ export default function OknaNestOfferForm() {
           </div>
           <div className="input-group">
             <label htmlFor="okna_profileColor">Kolor profili</label>
-            <select
+            <input
               id="okna_profileColor"
+              type="text"
               value={profileColor}
               onChange={(event) => setProfileColor(event.target.value)}
+              placeholder="np. Antracyt struktura RAL 7016"
+            />
+          </div>
+        </div>
+        <div className="input-grid" style={gridStyle}>
+          <div className="input-group">
+            <label htmlFor="okna_hinges">Rodzaj zawiasow</label>
+            <select
+              id="okna_hinges"
+              value={hingeType}
+              onChange={(event) => setHingeType(event.target.value)}
             >
-              {profileColorOptions.map((option) => (
+              {hingeOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <div className="input-grid" style={gridStyle}>
+          <div className="input-group">
+            <label htmlFor="okna_lazik">Lazik w cenie</label>
+            <select
+              id="okna_lazik"
+              value={lazikIncluded}
+              onChange={(event) => setLazikIncluded(event.target.value)}
+            >
+              <option value="yes">Tak</option>
+              <option value="no">Nie</option>
+            </select>
+          </div>
+          <div className="input-group">
+            <label htmlFor="okna_demolition">Demontaz okien</label>
+            <select
+              id="okna_demolition"
+              value={demolitionMode}
+              onChange={(event) => setDemolitionMode(event.target.value)}
+            >
+              {demolitionOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
@@ -377,87 +530,100 @@ export default function OknaNestOfferForm() {
       </fieldset>
 
       <fieldset className="component-fieldset">
-        <legend>Elementy w zakresie</legend>
+        <legend>Dodatkowe uslugi</legend>
         <div className="options-box">
-          {windowOptionDefinitions.map((option) => (
-            <label key={option.id} className="option-row">
+          {additionalServiceOptions.map((item) => (
+            <label key={item.id} className="option-row">
               <input
                 type="checkbox"
-                checked={selectedOptionIds.includes(option.id)}
-                onChange={() => toggleOption(option.id)}
+                checked={Boolean(serviceAddonsState[item.id])}
+                onChange={() => toggleServiceAddon(item.id)}
               />
-              <span>
-                <strong>{option.label}</strong>
-                {option.summaryBullet && (
-                  <>
-                    <br />
-                    <small>{option.summaryBullet}</small>
-                  </>
-                )}
-                {option.description && option.description !== option.summaryBullet && (
-                  <>
-                    <br />
-                    <small style={{ color: '#555' }}>{option.description}</small>
-                  </>
-                )}
-              </span>
+              <span>{item.label}</span>
             </label>
           ))}
         </div>
       </fieldset>
 
       <fieldset className="component-fieldset">
-        <legend>Opcje dodatkowe (TAK/NIE)</legend>
-        {optionalFeatureGroups.map((group) => (
-          <div key={group.id} style={{ marginBottom: '18px' }}>
-            <h4 style={{ fontSize: '0.95rem', fontWeight: 600, color: '#333', marginBottom: '8px' }}>{group.label}</h4>
-            <div className="options-box">
-              {group.items.map((item) => {
-                const entry = featureSelections[item.id] || { enabled: false, detail: '' };
-                return (
-                  <div key={item.id} style={{ marginBottom: '10px' }}>
-                    <label className="option-row" style={{ alignItems: 'flex-start' }}>
-                      <input
-                        type="checkbox"
-                        checked={entry.enabled}
-                        onChange={() => toggleFeatureSelection(item.id)}
-                      />
-                      <span>{item.label}</span>
-                    </label>
-                    {entry.enabled && item.detailLabel && (
-                      <div className="input-group" style={{ marginTop: '6px', marginLeft: '28px' }}>
-                        <label style={{ fontSize: '0.8rem' }}>{item.detailLabel}</label>
-                        <input
-                          type="text"
-                          value={entry.detail}
-                          onChange={(event) => updateFeatureDetail(item.id, event.target.value)}
-                          placeholder={item.detailPlaceholder || ''}
-                        />
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        ))}
+        <legend>Zalacznik do oferty</legend>
+        <div className="input-group">
+          <label htmlFor="okna_attachment">Zalacznik PDF (parametry okien / rysunki)</label>
+          <input
+            key={attachmentInputKey}
+            id="okna_attachment"
+            type="file"
+            accept="application/pdf"
+            onChange={handleAttachmentChange}
+          />
+          {attachmentFile && (
+            <small>Wybrano: {attachmentFile.name}</small>
+          )}
+        </div>
       </fieldset>
 
       <fieldset className="component-fieldset">
-        <legend>Montaz - wariant</legend>
-        <div className="options-box">
-          {installationVariants.map((variant) => (
-            <label key={variant.value} className="option-row">
-              <input
-                type="radio"
-                name="installationVariant"
-                value={variant.value}
-                checked={installationVariant === variant.value}
-                onChange={() => setInstallationVariant(variant.value)}
-              />
-              <span>{variant.label}</span>
-            </label>
-          ))}
+        <legend>Zakres i opcje dodatkowe</legend>
+        <div style={{ marginBottom: '18px' }}>
+          <h4 style={{ fontSize: '0.95rem', fontWeight: 600, color: '#333', marginBottom: '8px' }}>Elementy w cenie</h4>
+          <div className="options-box">
+            {windowOptionDefinitions.map((option) => (
+              <label key={option.id} className="option-row">
+                <input
+                  type="checkbox"
+                  checked={selectedOptionIds.includes(option.id)}
+                  onChange={() => toggleOption(option.id)}
+                />
+                <span>
+                  <strong>{option.label}</strong>
+                  {option.summaryBullet && (
+                    <>
+                      <br />
+                      <small>{option.summaryBullet}</small>
+                    </>
+                  )}
+                </span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <h4 style={{ fontSize: '0.95rem', fontWeight: 600, color: '#333', marginBottom: '8px' }}>Opcje dodatkowe (TAK/NIE)</h4>
+          {optionalFeatureGroups
+            .filter((group) => group.items.length > 0)
+            .map((group) => (
+              <div key={group.id} style={{ marginBottom: '16px' }}>
+                <div className="options-box">
+                  {group.items.map((item) => {
+                    const entry = featureSelections[item.id] || { enabled: false, detail: '' };
+                    return (
+                      <div key={item.id} style={{ marginBottom: '10px' }}>
+                        <label className="option-row" style={{ alignItems: 'flex-start' }}>
+                          <input
+                            type="checkbox"
+                            checked={entry.enabled}
+                            onChange={() => toggleFeatureSelection(item.id)}
+                          />
+                          <span>{item.label}</span>
+                        </label>
+                        {entry.enabled && item.detailLabel && (
+                          <div className="input-group" style={{ marginTop: '6px', marginLeft: '28px' }}>
+                            <label style={{ fontSize: '0.8rem' }}>{item.detailLabel}</label>
+                            <input
+                              type="text"
+                              value={entry.detail}
+                              onChange={(event) => updateFeatureDetail(item.id, event.target.value)}
+                              placeholder={item.detailPlaceholder || ''}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
         </div>
       </fieldset>
 

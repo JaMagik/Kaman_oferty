@@ -30,13 +30,12 @@ export const profileColorOptions = [
 export const windowOptionDefinitions = [
   {
     id: 'internal-sills',
-    label: 'Parapety wewnetrzne MDF lakierowane',
-    summaryBullet: 'Kompleksowe przygotowanie i montaz parapetow wewnetrznych lakierowanych w kolorze dobranym do stolarki.',
-    description: 'Parapety MDF przygotowane na wymiar wraz z zabezpieczeniem powierzchni i spadkow, silikonowaniem oraz finalnym czyszczeniem stanowiska.',
+    label: 'Parapety wewnetrzne kamienne',
+    summaryBullet: 'Kamienne parapety dociete na wymiar i osadzone po montazu stolarki.',
+    description: 'Naturalny kamien lub konglomerat montowany na kleju i silikonie dopasowanym do stolarki.',
     details: [
-      'Pomiary w stanie surowym oraz po montazu okien z kontrola spadkow i wysokosci',
-      'Dociecie elementow z uwzglednieniem obrobki otworow, oslony czoelowe i listwy dylatacyjne',
-      'Uszczelnienie styku z rama i sciana silikonem w kolorze stolarki oraz czyszczenie koncowe',
+      'Pomiary i dociecia pod skosy oraz wneki',
+      'Stabilne osadzenie i silikonowanie w kolorze stolarki',
     ],
     unit: 'kpl.',
     quantity: '1',
@@ -46,13 +45,12 @@ export const windowOptionDefinitions = [
   },
   {
     id: 'external-sills',
-    label: 'Parapety zewnetrzne stal powlekana',
-    summaryBullet: 'Systemowe parapety zewnetrzne w kolorze stolarki z uszczelnieniem podokiennym i zabezpieczeniem akustycznym.',
-    description: 'Dostawa oraz montaz parapetow stalowych powlekanych wraz z tasma uszczelniajaca, klinami antyhalasowymi i obrobka boczna.',
+    label: 'Parapety zewnetrzne stal powlekana 0,5-0,7 mm',
+    summaryBullet: 'Parapety stalowe 0,5-0,7 mm w kolorze stolarki z kompletnym uszczelnieniem podokiennym.',
+    description: 'Dostawa oraz montaz parapetow stalowych powlekanych wraz z tasma uszczelniajaca, obrobkami bocznymi i zabezpieczeniem krawedzi.',
     details: [
-      'Dociecie parapetow pod katem i dopasowanie do obrobki elewacyjnej',
-      'Zastosowanie tasmy podokiennej oraz klinow wyciszajacych kapanie deszczu',
-      'Szczelne uszczelnienie styku z murem oraz zabezpieczenie antykorozyjne krawedzi',
+      'Dociecie parapetow pod katem i dopasowanie do elewacji',
+      'Zastosowanie tasmy podokiennej i zabezpieczenie krawedzi przed korozja',
     ],
     unit: 'kpl.',
     quantity: '1',
@@ -62,13 +60,13 @@ export const windowOptionDefinitions = [
   },
   {
     id: 'external-blinds',
-    label: 'Rolety zewnetrzne adaptacyjne Z90',
-    summaryBullet: 'Kaseta adaptacyjna z lamela Z90 sterowana automatycznie, przygotowana do integracji z systemem inteligentnego domu.',
-    description: 'Kompletny system rolet adaptacyjnych z lamela aluminiowa Z90, prowadz nicami i napedem rurowym z mozliwoscia sterowania zdalnego.',
+    label: 'Zaluzje fasadowe',
+    summaryBullet: 'Aluminiowe zaluzje fasadowe z automatyka i dopasowaniem kolorystycznym do elewacji.',
+    description: 'System zaluzji fasadowych z prowadnicami, napedem rurowym oraz przygotowaniem pod sterowanie inteligentne.',
     details: [
-      'Kaseta aluminiowa z rewizja zewnetrzna i izolacja akustyczna',
-      'Prowadnice w kolorze stolarki, uszczelki szczotkowe ograniczajace halas i swiatlo',
-      'Sterowanie radiowe, pilot wielostrefowy oraz przygotowanie do integracji KAMAN Smart',
+      'Kaseta i prowadnice w kolorze stolarki',
+      'Sterowanie automatyczne z pilotem lub aplikacja',
+      'Integracja z systemem sterowania inteligentnego domu',
     ],
     unit: 'kpl.',
     quantity: '1',
@@ -78,13 +76,13 @@ export const windowOptionDefinitions = [
   },
   {
     id: 'insect-screens',
-    label: 'Moskitiera ramkowa Slim',
-    summaryBullet: 'Moskitiera o waskim profilu aluminiowym dopasowanym do stolarki, zdejmowana sezonowo bez narzedzi.',
-    description: 'Lekka moskitiera ramkowa typu Slim z lacznikami stalowymi i siatka w kolorze antracyt, montowana na zaczepy obrotowe.',
+    label: 'Moskitiera ramkowa plisowana',
+    summaryBullet: 'Plisowana moskitiera ramkowa z latwym demontazem sezonowym.',
+    description: 'Aluminiowa moskitiera plisowana dopasowana do profilu okna, montowana na zaczepy obrotowe.',
     details: [
-      'Profil aluminiowy o wysokosci 11 mm, lakier proszkowy dopasowany do stolarki',
-      'Siatka z wlokien szklanych w kolorze czarnym, zabezpieczona przed UV i rozciaganiem',
-      'Zestaw zaczepow obrotowych oraz paskow montazowych ulatwiajacych sezonowy demontaz',
+      'Profil aluminiowy lakierowany proszkowo',
+      'Plisowana siatka w kolorze grafitowym',
+      'Zaczepy obrotowe do szybkiego demontazu',
     ],
     unit: 'szt.',
     quantity: 'wg liczby otwieranych skrzydel',
@@ -93,30 +91,14 @@ export const windowOptionDefinitions = [
     defaultSelected: false,
   },
   {
-    id: 'trickle-vents',
-    label: 'Nawiewniki higrosterowane',
-    summaryBullet: 'Samoregulujace nawiewniki montowane w ramie okiennej dla poprawy wentylacji i kontroli wilgotnosci.',
-    description: 'Dostawa i montaz nawiewnikow sterowanych wilgotnoscia z zabudowa w gornym profilu skrzydla lub ramy.',
-    details: [
-      'Dobor wydajnosci na podstawie projektu wentylacji i kubatury pomieszczen',
-      'Wykonanie frezow w profilu, uszczelnienie i maskowanie elementow montazowych',
-      'Instruktaz obslugi dla uzytkownika oraz karta serwisowa dla przegladow okresowych',
-    ],
-    unit: 'szt.',
-    quantity: 'wg projektu',
-    priceNote: 'Opcja dodatkowa, dostosowana do wymogow wentylacyjnych',
-    pdfPath: '/pdf_templates/okna_nest/opcje/nawiewniki.pdf',
-    defaultSelected: false,
-  },
-  {
     id: 'security-package',
-    label: 'Pakiet antywlamaniowy RC2',
-    summaryBullet: 'Wzmocnione okucia z zaczepami antywywazeniowymi, klamki z kluczem i szyby P4 zgodne z klasa RC2.',
-    description: 'Rozszerzony pakiet bezpieczenstwa obejmujacy dodatkowe zaczepy, okucia klasy RC2 oraz zabezpieczenia klamki.',
+    label: 'Pakiet antywlamaniowy RC 1-8',
+    summaryBullet: 'Konfiguracja zabezpieczen w klasach RC 1-8 wraz z wzmocnionymi okuciami i klamkami z kluczem.',
+    description: 'Dobor akcesoriow antywlamaniowych w zakresie klas RC, dodatkowe zaczepy, blokady oraz okucia o podwyzszonej odpornosci.',
     details: [
-      'Blokady otwarcia z podniesionym poziomem zabezpieczen na skrzydlach uchylno-rozwieranych',
-      'Klamki z kluczem i zabezpieczeniem przeciw przesuwaniu zabkow meczka',
-      'Mozliwosc doplaty do szyb laminowanych P4 z ramkami cieplnymi',
+      'Dobor zaczepow i blokad zgodnie z wymagana klasa RC',
+      'Klamki z kluczem oraz oslonami antyrozwierceniowymi',
+      'Opcja szyb laminowanych P4 i dodatkowych czujnikow otwarcia',
     ],
     unit: 'kpl.',
     quantity: '1',
@@ -126,13 +108,13 @@ export const windowOptionDefinitions = [
   },
   {
     id: 'smart-control',
-    label: 'Sterowanie inteligentne KAMAN Smart',
-    summaryBullet: 'Integracja okien, rolet i czujnikow z platforma KAMAN Smart wraz z aplikacja mobilna.',
-    description: 'Projekt oraz wdrozenie systemu inteligentnego sterowania oknami i roletami z panelem mobilnym i scenami automatycznymi.',
+    label: 'Sterowanie inteligentne',
+    summaryBullet: 'Integracja okien, oslon i napedow z systemem sterowania inteligentnego domu.',
+    description: 'Projekt oraz wdrozenie systemu sterowania oknami i zaluzjami z aplikacja mobilna, harmonogramami i scenami automatycznymi.',
     details: [
-      'Centralka KAMAN Smart z komunikacja Wi-Fi/LAN oraz wsparciem dla sterowania rolet i nawiewnikow',
-      'Konfiguracja scen (np. noc, urlop, szybkie wietrzenie) wraz z harmonogramami',
-      'Szkolenie uzytkownikow i przekazanie instrukcji wraz z dokumentacja konfiguracyjna',
+      'Centralka komunikujaca sie przez Wi-Fi lub LAN do sterowania napedami',
+      'Konfiguracja scen (noc, urlop, wietrzenie) wraz z harmonogramami',
+      'Szkolenie uzytkownikow i przekazanie instrukcji z dokumentacja konfiguracji',
     ],
     unit: 'kpl.',
     quantity: '1',
@@ -155,13 +137,8 @@ export const optionalFeatureGroups = [
     items: [
       {
         id: 'feature-rc2',
-        label: 'Pakiet RC2 (okucia + klamka z kluczem)',
-        summaryLabel: 'Pakiet RC2',
-      },
-      {
-        id: 'feature-vsg',
-        label: 'Szyba laminowana VSG / P4A',
-        summaryLabel: 'Szyba laminowana',
+        label: 'Pakiet antywlamaniowy RC (1-8)',
+        summaryLabel: 'Pakiet RC',
       },
     ],
   },
@@ -169,13 +146,6 @@ export const optionalFeatureGroups = [
     id: 'comfort',
     label: 'Wentylacja i wygoda',
     items: [
-      {
-        id: 'feature-trickle',
-        label: 'Nawiewnik (podaj typ: higro/manualny)',
-        summaryLabel: 'Nawiewniki',
-        detailLabel: 'Typ nawiewnika',
-        detailPlaceholder: 'np. higrosterowany',
-      },
       {
         id: 'feature-microvent',
         label: 'Mikrowentylacja / stopniowanie uchylu',
@@ -225,45 +195,7 @@ export const optionalFeatureGroups = [
   {
     id: 'terrace',
     label: 'Taras / balkon',
-    items: [
-      {
-        id: 'feature-low-threshold',
-        label: 'Niski prog w drzwiach balkonowych',
-        summaryLabel: 'Niski prog',
-      },
-      {
-        id: 'feature-mosquito',
-        label: 'Moskitiera (ramkowa/rolo/plisa/przesuwna)',
-        summaryLabel: 'Moskitiera',
-        detailLabel: 'Typ moskitiery',
-        detailPlaceholder: 'np. rolo w kasecie',
-      },
-      {
-        id: 'feature-external-blinds',
-        label: 'Rolety zewnetrzne (adapt./podtynk./nadstawne - podaj typ)',
-        summaryLabel: 'Rolety zewnetrzne',
-        detailLabel: 'Typ rolet',
-        detailPlaceholder: 'np. adaptacyjne Z90',
-      },
-    ],
-  },
-];
-
-export const installationVariants = [
-  {
-    value: 'standard',
-    label: 'Standard (piana PUR + uszczelnienie zewnetrzne)',
-    summaryLabel: 'Standard (piana + uszczelnienie zewn)',
-  },
-  {
-    value: 'warm-tapes',
-    label: 'Cieply montaz (tasmy) - wew. paroszczelna + PUR + zew. paroprzepuszczalna',
-    summaryLabel: 'Cieply montaz (tasmy)',
-  },
-  {
-    value: 'insulation-layer',
-    label: 'W warstwie ocieplenia (konsolki / system ram + tasmy)',
-    summaryLabel: 'Montaz w warstwie ocieplenia',
+    items: [],
   },
 ];
 
@@ -278,5 +210,18 @@ export const installationExtras = [
   { id: 'extra-threshold-extensions', label: 'Poszerzenia / podklad progowy pod drzwi balkonowe', summaryLabel: 'Poszerzenia progowe' },
   { id: 'extra-hst-drainage', label: 'Odwodnienie / odprowadzenie skroplin dla HST', summaryLabel: 'Odwodnienie HST' },
   { id: 'extra-hst-reinforced', label: 'Wzmocniony prog HST', summaryLabel: 'Prog HST wzmocniony' },
+];
+
+export const demolitionOptions = [
+  { value: 'cut-frames', label: 'Przeciecie ram' },
+  { value: 'whole', label: 'Demontaz calosciowy' },
+];
+
+export const additionalServiceOptions = [
+  { id: 'service-warm-sills', label: 'Cieple parapety' },
+  { id: 'service-extensions', label: 'Poszerzenia' },
+  { id: 'service-tight-installation', label: 'Szczelny montaz' },
+  { id: 'service-tight-thresholds', label: 'Szczelny montaz progow' },
+  { id: 'service-reveal-prep', label: 'Przygotowanie glifow' },
 ];
 

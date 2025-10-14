@@ -1,16 +1,15 @@
-﻿// src/utils/oknaNestPdfGenerator.jsx
+// src/utils/oknaNestPdfGenerator.jsx
 import { PDFDocument, rgb } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 import {
   assemblyTypeOptions,
   getOptionLabel,
   hardwareThicknessOptions,
-  profileColorOptions,
-  profileTypeOptions,
   windowOptionDefinitions,
   optionalFeatureGroups,
-  installationVariants,
   installationExtras,
+  additionalServiceOptions,
+  demolitionOptions,
 } from '../data/windowsOfferConfig';
 
 const OKNA_NEST_COVER_PATH = '/pdf_templates/okna_nest/1_okladka_okna_nest.pdf';
@@ -42,6 +41,11 @@ const wrapText = (font, text, size, maxWidth) => {
 
 const sanitizeNbsp = (value) => String(value).replace(/\u00a0/g, ' ');
 
+const resolveTextValue = (value) => {
+  const trimmed = String(value ?? '').trim();
+  return trimmed ? sanitizeNbsp(trimmed) : '---';
+};
+
 const ensureSentence = (value) => {
   const trimmed = String(value ?? '').trim();
   if (!trimmed) {
@@ -71,13 +75,20 @@ const parseInputNumber = (value) => {
 
 const findOptionLabel = (options, value) => getOptionLabel(options, value) || value;
 
-const buildOptionTableDescription = (option) => {
-  const base = ensureSentence(option.description || option.summaryBullet || option.label);
-  if (option.details && option.details.length > 0) {
-    const detailSentence = ensureSentence(`Zakres szczegolowy: ${option.details.join('; ')}`);
-    return `${base} ${detailSentence}`;
+const resolveAttachmentBytes = async (file) => {
+  if (!file) {
+    return null;
   }
-  return base;
+  if (typeof file.arrayBuffer === 'function') {
+    return await file.arrayBuffer();
+  }
+  if (file instanceof ArrayBuffer) {
+    return file;
+  }
+  if (file && file.buffer instanceof ArrayBuffer) {
+    return file.buffer;
+  }
+  return null;
 };
 
 const scaleImageToFit = (image, maxWidth, maxHeight) => {
@@ -324,154 +335,171 @@ const drawSimpleTable = (pdfDoc, startPage, fonts, rows, startY, customConfig = 
   return { finalPage: page, yPosition: y };
 };
 
-const drawKeyValueSection = (page, fonts, entries, startX, startY, rowHeight = 18) => {
-  let y = startY;
-  entries.forEach((entry) => {
-    page.drawText(entry.label, {
-      x: startX,
-      y,
-      size: 10,
-      font: fonts.bold,
-      color: rgb(0.18, 0.18, 0.18),
-    });
-    page.drawText(entry.value, {
-      x: startX + 190,
-      y,
-      size: 10,
-      font: fonts.regular,
-      color: rgb(0.1, 0.1, 0.1),
-    });
-    y -= rowHeight;
-  });
-  return y;
-};
-
-const renderOptionsSection = (pdfDoc, fonts, logos, options, config) => {
-  if (!options || options.length === 0) {
-    return null;
+const drawFlexibleTable = (
+  pdfDoc,
+  startPage,
+  fonts,
+  rows,
+  columns,
+  startY,
+  customConfig = {},
+  onNewPage,
+) => {
+  if (!rows || rows.length === 0) {
+    return { page: startPage, y: startY };
   }
 
-  const {
-    heading,
-    subtitle,
-    continuationSubtitle = `${heading} - kontynuacja`,
-    intro,
-    numberingStart = 1,
-    priceLabel = 'Informacja cenowa',
-  } = config;
+  const config = {
+    headerHeight: 22,
+    headerFontSize: 9,
+    rowFontSize: 9,
+    lineHeight: 1.3,
+    paddingX: 8,
+    paddingY: 6,
+    headerBgColor: rgb(0.72, 0.0, 0.16),
+    headerFontColor: rgb(1, 1, 1),
+    rowFontColor: rgb(0.12, 0.12, 0.12),
+    evenRowBgColor: rgb(0.98, 0.96, 0.96),
+    lineColor: rgb(0.82, 0.82, 0.82),
+    topMargin: 60,
+    bottomMargin: 60,
+    align: 'left',
+    widthMode: 'center',
+    ...customConfig,
+  };
 
-  let page = pdfDoc.addPage();
-  let pageIndex = 0;
-  let y = drawPageBranding(page, fonts, logos, {
-    title: heading,
-    subtitle,
-    titleSize: 18,
-    subtitleSize: 10,
-    extraSpacing: 18,
-  });
+  let page = startPage;
+  let cursorY = typeof startY === 'number' ? startY : page.getSize().height - config.topMargin;
+  const tableWidth = columns.reduce((sum, column) => sum + column.width, 0);
 
-  const contentWidth = page.getSize().width - 120;
+  const computeStartX = () => {
+    if (config.widthMode === 'left') {
+      return config.leftMargin || 60;
+    }
+    const { width } = page.getSize();
+    return (width - tableWidth) / 2;
+  };
 
-  const ensureSpace = (requiredSpace = 160) => {
-    if (y < requiredSpace) {
-      page = pdfDoc.addPage();
-      pageIndex += 1;
-      y = drawPageBranding(page, fonts, logos, {
-        title: heading,
-        subtitle: continuationSubtitle,
-        titleSize: 18,
-        subtitleSize: 10,
-        extraSpacing: 18,
+  let tableStartX = computeStartX();
+
+  const drawHeader = () => {
+    cursorY -= config.headerHeight;
+    page.drawRectangle({
+      x: tableStartX,
+      y: cursorY,
+      width: tableWidth,
+      height: config.headerHeight,
+      color: config.headerBgColor,
+    });
+
+    let columnX = tableStartX;
+    columns.forEach((column) => {
+      const headerText = column.header || '';
+      const textWidth = fonts.bold.widthOfTextAtSize(headerText, config.headerFontSize);
+      let textX = columnX + config.paddingX;
+      const alignment = column.align || config.align;
+      if (alignment === 'center') {
+        textX = columnX + (column.width - textWidth) / 2;
+      } else if (alignment === 'right') {
+        textX = columnX + column.width - config.paddingX - textWidth;
+      }
+      page.drawText(headerText, {
+        x: textX,
+        y: cursorY + (config.headerHeight - config.headerFontSize) / 2,
+        size: config.headerFontSize,
+        font: fonts.bold,
+        color: config.headerFontColor,
       });
+      columnX += column.width;
+    });
+  };
+
+  const ensureSpace = (requiredHeight) => {
+    if (cursorY - requiredHeight < config.bottomMargin) {
+      const newPage = pdfDoc.addPage();
+      cursorY =
+        typeof onNewPage === 'function'
+          ? onNewPage(newPage)
+          : newPage.getSize().height - config.topMargin;
+      page = newPage;
+      tableStartX = computeStartX();
+      drawHeader();
     }
   };
 
-  if (intro) {
-    const introLines = wrapText(fonts.regular, intro, 10, contentWidth);
-    introLines.forEach((line) => {
-      page.drawText(line, {
-        x: 60,
-        y,
-        size: 10,
-        font: fonts.regular,
-        color: rgb(0.14, 0.14, 0.14),
+  drawHeader();
+
+  rows.forEach((row, rowIndex) => {
+    const columnContent = columns.map((column) => {
+      const raw = row[column.key];
+      const text = raw === null || raw === undefined ? '' : String(raw);
+      const maxWidth = column.width - config.paddingX * 2;
+      const lines = wrapText(fonts.regular, text, config.rowFontSize, Math.max(maxWidth, 10));
+      return { lines };
+    });
+
+    const lineHeight = config.rowFontSize * config.lineHeight;
+    const contentHeight = columnContent.reduce(
+      (max, entry) => Math.max(max, entry.lines.length * lineHeight),
+      config.rowFontSize,
+    );
+    const rowHeight = contentHeight + config.paddingY * 2;
+
+    ensureSpace(rowHeight);
+
+    const rowBottomY = cursorY - rowHeight;
+    if (rowIndex % 2 === 1) {
+      page.drawRectangle({
+        x: tableStartX,
+        y: rowBottomY,
+        width: tableWidth,
+        height: rowHeight,
+        color: config.evenRowBgColor,
       });
-      y -= 13;
-    });
-    y -= 10;
-  }
-
-  options.forEach((option, index) => {
-    ensureSpace();
-
-    const numberLabel = `${numberingStart + index}. ${option.label}`;
-    page.drawText(numberLabel, {
-      x: 60,
-      y,
-      size: 12,
-      font: fonts.bold,
-      color: rgb(0.18, 0.18, 0.18),
-    });
-    y -= 16;
-
-    const narrativeBlocks = [];
-    if (option.summaryBullet) {
-      narrativeBlocks.push(option.summaryBullet);
-    }
-    if (option.description && option.description !== option.summaryBullet) {
-      narrativeBlocks.push(option.description);
     }
 
-    narrativeBlocks.forEach((block) => {
-      const lines = wrapText(fonts.regular, block, 10, contentWidth);
-      lines.forEach((line) => {
+    let columnX = tableStartX;
+    columnContent.forEach((entry, columnIndex) => {
+      let textY = cursorY - config.paddingY - config.rowFontSize;
+      entry.lines.forEach((line) => {
+        const textWidth = fonts.regular.widthOfTextAtSize(line, config.rowFontSize);
+        let textX = columnX + config.paddingX;
+        const alignment = columns[columnIndex].align || 'left';
+        if (alignment === 'center') {
+          textX = columnX + (columns[columnIndex].width - textWidth) / 2;
+        } else if (alignment === 'right') {
+          textX = columnX + columns[columnIndex].width - config.paddingX - textWidth;
+        }
         page.drawText(line, {
-          x: 70,
-          y,
-          size: 10,
+          x: textX,
+          y: textY,
+          size: config.rowFontSize,
           font: fonts.regular,
-          color: rgb(0.12, 0.12, 0.12),
+          color: config.rowFontColor,
         });
-        y -= 12;
+        textY -= lineHeight;
       });
-      y -= 5;
+      columnX += columns[columnIndex].width;
     });
 
-    if (option.details && option.details.length > 0) {
-      option.details.forEach((detail) => {
-        const bulletLines = wrapText(fonts.regular, `- ${detail}`, 9.5, contentWidth - 20);
-        bulletLines.forEach((line) => {
-          page.drawText(line, {
-            x: 80,
-            y,
-            size: 9.5,
-            font: fonts.regular,
-            color: rgb(0.28, 0.28, 0.28),
-          });
-          y -= 11;
-        });
-      });
-      y -= 6;
-    }
+    page.drawLine({
+      start: { x: tableStartX, y: cursorY },
+      end: { x: tableStartX + tableWidth, y: cursorY },
+      thickness: 0.5,
+      color: config.lineColor,
+    });
 
-    if (option.priceNote) {
-      const priceLines = wrapText(fonts.regular, `${priceLabel}: ${option.priceNote}`, 9.5, contentWidth);
-      priceLines.forEach((line) => {
-        page.drawText(line, {
-          x: 70,
-          y,
-          size: 9.5,
-          font: fonts.regular,
-          color: rgb(0.32, 0.32, 0.32),
-        });
-        y -= 11;
-      });
-    }
-
-    y -= 16;
+    cursorY = rowBottomY;
   });
 
-  return page;
+  page.drawLine({
+    start: { x: tableStartX, y: cursorY },
+    end: { x: tableStartX + tableWidth, y: cursorY },
+    thickness: 0.5,
+    color: config.lineColor,
+  });
+
+  return { page, y: cursorY - 16 };
 };
 
 const fetchAsset = async (path, label, { optional = false } = {}) => {
@@ -499,20 +527,26 @@ export async function generateOknaNestPDF(formData) {
     userName,
     investmentAddress,
     catalogPrice,
-    discountPercent,
+    discountValue,
+    marginPercent,
     installationPrice,
     windowPerimeter,
     windowArea,
     profileType,
     hardwareThickness,
-    assemblyType,
-    profileColor,
-    selectedOptionIds,
-    additionalNotes,
-    featureSelections = {},
-    installationVariant: selectedInstallationVariant,
+  assemblyType,
+  profileColor,
+  hingeType = '',
+  lazikIncluded = 'yes',
+  demolitionMode,
+  selectedOptionIds,
+  additionalNotes,
+  featureSelections = {},
     installationExtras: installationExtrasState = {},
-  } = formData || {};
+    serviceAddons: serviceAddonsState = {},
+    vatRate,
+  attachmentFile,
+} = formData || {};
 
   if (!userName || !investmentAddress) {
     alert('Brakuje podstawowych danych klienta.');
@@ -520,80 +554,67 @@ export async function generateOknaNestPDF(formData) {
   }
 
   const catalogPriceNumber = parseInputNumber(catalogPrice);
-  const discountPercentNumber = parseInputNumber(discountPercent);
+  const discountValueNumber = Math.max(parseInputNumber(discountValue), 0);
+  const marginPercentNumber = Math.max(parseInputNumber(marginPercent), 0);
   const installationPriceNumber = parseInputNumber(installationPrice);
   const windowPerimeterNumber = parseInputNumber(windowPerimeter);
   const windowAreaNumber = parseInputNumber(windowArea);
+  const vatRateNumber = Math.max(parseInputNumber(vatRate), 0);
 
   if (windowPerimeterNumber <= 0 || windowAreaNumber <= 0) {
     alert('Podaj laczna powierzchnie oraz obwod okien.');
     return null;
   }
 
-  const discountedPrice = catalogPriceNumber * (1 - discountPercentNumber / 100);
-  const discountValue = catalogPriceNumber - discountedPrice;
-  const finalPrice = discountedPrice + installationPriceNumber;
+  const baseNetValue = catalogPriceNumber + installationPriceNumber;
+  const netAfterDiscount = Math.max(baseNetValue - discountValueNumber, 0);
+  const marginValueNumber = netAfterDiscount * (marginPercentNumber / 100);
+  const finalNetPrice = netAfterDiscount + marginValueNumber;
+  const vatAmount = finalNetPrice * (vatRateNumber / 100);
+  const finalGrossPrice = finalNetPrice + vatAmount;
+  const windowsNetPrice = Math.max(catalogPriceNumber - discountValueNumber, 0);
 
   const includedOptions = windowOptionDefinitions.filter((option) => selectedOptionIds?.includes(option.id));
   const optionalOptions = windowOptionDefinitions.filter((option) => !selectedOptionIds?.includes(option.id));
 
-  const featureSummaryEntries = [];
+  const excludedFeatureIds = new Set([
+    'feature-premium-color',
+    'feature-muntins',
+    'feature-acoustic',
+    'feature-warm-spacer',
+  ]);
+
+  const featureStatusRows = [];
   optionalFeatureGroups.forEach((group) => {
     group.items.forEach((item) => {
+      if (excludedFeatureIds.has(item.id)) {
+        return;
+      }
       const selection = featureSelections[item.id] || {};
       const enabled = Boolean(selection.enabled);
       const detail = (selection.detail || '').trim();
       const summaryLabel = item.summaryLabel || item.label;
-      let valueText = enabled ? 'TAK' : 'NIE';
-      if (enabled && detail) {
-        valueText = `${valueText} (${detail})`;
-      }
-      featureSummaryEntries.push(`${summaryLabel}: ${valueText}`);
+      featureStatusRows.push({
+        group: group.label,
+        label: `${group.label} - ${summaryLabel}`,
+        status: enabled ? 'TAK' : 'NIE',
+        detail: enabled && detail ? detail : '',
+      });
     });
   });
 
-  const resolvedInstallationVariantValue = selectedInstallationVariant || installationVariants[0]?.value || '';
-  const installationVariantSummary =
-    installationVariants.find((variant) => variant.value === resolvedInstallationVariantValue)?.summaryLabel ||
-    installationVariants[0]?.summaryLabel ||
-    resolvedInstallationVariantValue;
+  const installationExtrasRows = installationExtras.map((extra, index) => ({
+    lp: String(index + 1),
+    label: extra.label,
+    status: installationExtrasState[extra.id] ? 'TAK' : 'NIE',
+  }));
 
-  const installationExtrasEntries = installationExtras.map((extra) => {
-    const enabled = Boolean(installationExtrasState[extra.id]);
-    return `${extra.summaryLabel}: ${enabled ? 'TAK' : 'NIE'}`;
-  });
-
-  const profileLabel = findOptionLabel(profileTypeOptions, profileType);
+  const profileLabel = resolveTextValue(profileType);
   const hardwareLabel = findOptionLabel(hardwareThicknessOptions, hardwareThickness);
-  const assemblyLabel = findOptionLabel(assemblyTypeOptions, assemblyType);
-  const colorLabel = findOptionLabel(profileColorOptions, profileColor);
-
-  const tableRows = [
-    {
-      lp: '1',
-      name: 'Okna Nest',
-      description: ensureSentence(`Profil ${profileLabel} w kolorze ${colorLabel} z okuciami ${hardwareLabel}. Powierzchnia: ${formatNumber(windowAreaNumber)} m2, obwod: ${formatNumber(windowPerimeterNumber)} mb. Rabat: ${formatNumber(discountPercentNumber, 1)}%.`),
-      quantity: formatNumber(windowAreaNumber),
-      price: formatCurrency(discountedPrice),
-    },
-    {
-      lp: '2',
-      name: `Montaz - ${assemblyLabel}`,
-      description: ensureSentence('Zakres obejmuje przygotowanie otworow, ustawienie, kotwienie, piankowanie, zastosowanie tasm uszczelniajacych oraz regulacje i odbior stolarki.'),
-      quantity: formatNumber(windowPerimeterNumber),
-      price: formatCurrency(installationPriceNumber),
-    },
-  ];
-
-  includedOptions.forEach((option, index) => {
-    tableRows.push({
-      lp: String(index + 3),
-      name: option.label,
-      description: buildOptionTableDescription(option),
-      quantity: option.quantity || '1',
-      price: option.priceNote || 'w zakresie',
-    });
-  });
+  const assemblyLabel = resolveTextValue(
+    assemblyTypeOptions.find((option) => option.value === assemblyType)?.label || assemblyType,
+  );
+  const colorLabel = resolveTextValue(profileColor);
 
   try {
     const [
@@ -627,88 +648,396 @@ export async function generateOknaNestPDF(formData) {
     }
 
     const offerDate = sanitizeNbsp(new Intl.DateTimeFormat('pl-PL').format(new Date()));
-    const tablePage = pdfDoc.addPage();
+    const headerTitle = '';
+    let tablePage = pdfDoc.addPage();
     let currentY = drawPageBranding(tablePage, fonts, logos, {
-      title: 'Oferta Okna Nest',
+      title: headerTitle,
       subtitle: `Data oferty: ${offerDate}`,
       titleSize: 22,
       subtitleSize: 11,
-      extraSpacing: 22,
+      extraSpacing: 10,
     });
 
-    const introLines = [
-      `Oferta dla: ${userName}`,
-      `Adres inwestycji: ${investmentAddress}`,
-      `Profil i kolor: ${profileLabel} / ${colorLabel}`,
-      `Okucia i montaz: ${hardwareLabel} / ${assemblyLabel}`,
+    const leftColumnEntries = [
+      { label: 'Oferta', value: 'Okna Nest' },
+      { label: 'Adres inwestycji', value: investmentAddress },
+      { label: 'Data oferty', value: offerDate },
+      { label: 'Waznosc oferty', value: '14 dni' },
     ];
 
-    introLines.forEach((line) => {
-      tablePage.drawText(line, {
-        x: 60,
-        y: currentY,
-        size: 11,
-        font: regularFont,
-        color: rgb(0.18, 0.18, 0.18),
+    const rightColumnEntries = [
+      { label: 'Powierzchnia okien', value: `${formatNumber(windowAreaNumber)} m2` },
+      { label: 'Obwod okien', value: `${formatNumber(windowPerimeterNumber)} mb` },
+      { label: 'Profil', value: profileLabel },
+      { label: 'Kolor', value: colorLabel },
+      { label: 'Okucia', value: hardwareLabel },
+      { label: 'Rodzaj montazu', value: assemblyLabel },
+    ];
+
+    const separatorColor = rgb(0.82, 0.82, 0.82);
+    const infoBlockTop = currentY + 4;
+
+    const drawInfoColumn = (entries, startX, startY, columnWidth) => {
+      let y = startY;
+      entries.forEach(({ label, value }, index) => {
+        tablePage.drawText(label, {
+          x: startX,
+          y,
+          size: 11,
+          font: boldFont,
+          color: rgb(0.15, 0.15, 0.15),
+        });
+        tablePage.drawText(resolveTextValue(value), {
+          x: startX,
+          y: y - 9,
+          size: 10,
+          font: regularFont,
+          color: rgb(0.18, 0.18, 0.18),
+        });
+        y -= 18;
+
+        if (index < entries.length - 1) {
+          const lineY = y + 6;
+          tablePage.drawLine({
+            start: { x: startX, y: lineY },
+            end: { x: startX + columnWidth, y: lineY },
+            thickness: 0.5,
+            color: separatorColor,
+          });
+          y -= 6;
+        }
       });
-      currentY -= 16;
+      return y;
+
+    };
+
+    const infoColumnWidth = (tablePage.getSize().width - 160) / 2;
+    const leftStartX = 60;
+    const rightStartX = leftStartX + infoColumnWidth + 40;
+
+    const leftBottom = drawInfoColumn(leftColumnEntries, leftStartX, currentY, infoColumnWidth);
+    const rightBottom = drawInfoColumn(rightColumnEntries, rightStartX, currentY, infoColumnWidth);
+
+    const infoBottom = Math.min(leftBottom, rightBottom);
+
+    tablePage.drawLine({
+      start: { x: leftStartX + infoColumnWidth + 20, y: infoBlockTop + 6 },
+      end: { x: leftStartX + infoColumnWidth + 20, y: infoBottom - 8 },
+      thickness: 0.5,
+      color: separatorColor,
     });
 
-    currentY -= 12;
+    tablePage.drawLine({
+      start: { x: leftStartX, y: infoBottom - 10 },
+      end: { x: tablePage.getSize().width - leftStartX, y: infoBottom - 10 },
+      thickness: 1,
+      color: separatorColor,
+    });
 
-    if (featureSummaryEntries.length > 0) {
-      const featureSummaryText = `Opcje dodatkowe: ${featureSummaryEntries.join(' | ')}`;
-      const featureLines = wrapText(regularFont, featureSummaryText, 9.5, tablePage.getSize().width - 120);
-      featureLines.forEach((line) => {
-        tablePage.drawText(line, {
-          x: 60,
-          y: currentY,
-          size: 9.5,
-          font: regularFont,
-          color: rgb(0.16, 0.16, 0.16),
-        });
-        currentY -= 12;
-      });
-      currentY -= 10;
-    }
+    currentY = infoBottom - 18;
 
-    drawSimpleTable(
+    const demolitionLabel =
+      demolitionOptions.find((option) => option.value === demolitionMode)?.label ||
+      resolveTextValue(demolitionMode);
+    const lazikLabel = lazikIncluded === 'yes' ? 'Tak' : 'Nie';
+
+    const configurationRows = [
+      { parameter: 'Profil', value: profileLabel },
+      { parameter: 'Kolor profili', value: colorLabel },
+      { parameter: 'Rodzaj okuc', value: hardwareLabel },
+      { parameter: 'Zawiasy', value: resolveTextValue(hingeType) },
+      { parameter: 'Rodzaj montazu', value: assemblyLabel },
+      { parameter: 'Lazik w cenie', value: lazikLabel },
+      { parameter: 'Demontaz okien', value: demolitionLabel },
+      { parameter: 'Powierzchnia', value: `${formatNumber(windowAreaNumber)} m2` },
+      { parameter: 'Obwod', value: `${formatNumber(windowPerimeterNumber)} mb` },
+    ];
+
+    currentY -= 10;
+
+    tablePage.drawText('Parametry zestawu', {
+      x: 60,
+      y: currentY,
+      size: 12,
+      font: boldFont,
+      color: rgb(0.15, 0.15, 0.15),
+    });
+    currentY -= 16;
+
+    const configurationResult = drawFlexibleTable(
       pdfDoc,
       tablePage,
       fonts,
-      tableRows,
+      configurationRows,
+      [
+        { key: 'parameter', header: 'Parametr', width: 240 },
+        { key: 'value', header: 'Wartosc', width: 300 },
+      ],
       currentY,
-      tableRows.length > 16
-        ? {
-            contentFontSize: 7.5,
-            descriptionFontSize: 7,
-            lineHeight: 1.2,
-            pageMargins: { top: 58, bottom: 50 },
-          }
-        : {},
-      (newPage) => drawPageBranding(newPage, fonts, logos, {
-        title: 'Oferta Okna Nest',
-        subtitle: 'Tabela zakresu (kontynuacja)',
-        titleSize: 20,
-        subtitleSize: 10,
-        extraSpacing: 18,
-      }),
+      { topMargin: 70, bottomMargin: 50, paddingY: 5 },
+      (newPage) =>
+        drawPageBranding(newPage, fonts, logos, {
+          title: headerTitle,
+          subtitle: `Data oferty: ${offerDate}`,
+          titleSize: 22,
+          subtitleSize: 11,
+          extraSpacing: 14,
+        }),
+    );
+    tablePage = configurationResult.page;
+    currentY = configurationResult.y - 12;
+
+    const discountedWindowsPrice = Math.max(catalogPriceNumber - discountValueNumber, 0);
+    const priceTableRows = [
+      { element: 'Cena katalogowa', amount: formatCurrency(catalogPriceNumber) },
+      { element: 'Rabat', amount: `-${formatCurrency(discountValueNumber)}` },
+      { element: 'Cena po rabacie', amount: formatCurrency(discountedWindowsPrice) },
+    ];
+    priceTableRows.push(
+      { element: 'Cena netto oferty', amount: formatCurrency(finalNetPrice) },
+      { element: `VAT (${formatNumber(vatRateNumber, 2)}%)`, amount: formatCurrency(vatAmount) },
+      { element: 'Cena brutto oferty', amount: formatCurrency(finalGrossPrice) },
     );
 
-    renderOptionsSection(pdfDoc, fonts, logos, includedOptions, {
-      heading: 'Zakres uslug w cenie',
-      subtitle: 'Elementy potwierdzone w generatorze oferty',
-      intro: 'Materialy i czynnosci ponizej sa juz uwzglednione w wartosci glownej oferty. Pokazuja one standard wykonania w ramach zamowionej uslugi.',
-      priceLabel: 'Rozliczenie',
+    if (currentY < 120) {
+      tablePage = pdfDoc.addPage();
+      currentY = drawPageBranding(tablePage, fonts, logos, {
+        title: headerTitle,
+        subtitle: `Data oferty: ${offerDate}`,
+        titleSize: 22,
+        subtitleSize: 11,
+        extraSpacing: 10,
+      });
+    }
+
+    tablePage.drawText('Podsumowanie cenowe', {
+      x: 60,
+      y: currentY,
+      size: 12,
+      font: boldFont,
+      color: rgb(0.15, 0.15, 0.15),
+    });
+    currentY -= 16;
+
+    const priceTableResult = drawFlexibleTable(
+      pdfDoc,
+      tablePage,
+      fonts,
+      priceTableRows,
+      [
+        { key: 'element', header: 'Element', width: 280 },
+        { key: 'amount', header: 'Kwota (PLN)', width: 220, align: 'right' },
+      ],
+      currentY,
+      { topMargin: 70, bottomMargin: 50, paddingY: 5, headerHeight: 20 },
+      (newPage) =>
+        drawPageBranding(newPage, fonts, logos, {
+          title: headerTitle,
+          subtitle: `Data oferty: ${offerDate}`,
+          titleSize: 22,
+          subtitleSize: 11,
+          extraSpacing: 14,
+        }),
+    );
+    tablePage = priceTableResult.page;
+    currentY = priceTableResult.y - 12;
+
+    const priceHighlightY = currentY;
+    const highlightColor = rgb(0.72, 0.0, 0.16);
+
+    tablePage.drawText('Cena brutto oferty', {
+      x: 60,
+      y: priceHighlightY,
+      size: 12,
+      font: boldFont,
+      color: highlightColor,
+    });
+    const totalText = formatCurrency(finalGrossPrice);
+    const totalWidth = boldFont.widthOfTextAtSize(totalText, 12);
+    tablePage.drawText(totalText, {
+      x: tablePage.getSize().width - 60 - totalWidth,
+      y: priceHighlightY,
+      size: 12,
+      font: boldFont,
+      color: highlightColor,
+    });
+    currentY = priceHighlightY - 18;
+
+    const scopeSummaryRows = [];
+    let scopeIndex = 1;
+    const seenScopeLabels = new Set();
+
+    windowOptionDefinitions.forEach((option) => {
+      const selected = selectedOptionIds?.includes(option.id);
+      const normalized = option.label.trim().toLowerCase();
+      if (seenScopeLabels.has(normalized)) {
+        return;
+      }
+      seenScopeLabels.add(normalized);
+      scopeSummaryRows.push({
+        lp: String(scopeIndex++),
+        label: option.label,
+        status: selected ? 'TAK' : 'NIE',
+        detail: selected ? 'W cenie' : 'Poza zakresem',
+      });
     });
 
-    renderOptionsSection(pdfDoc, fonts, logos, optionalOptions, {
-      heading: 'Opcje dodatkowe rekomendowane klientowi',
-      subtitle: 'Elementy dostepne jako rozbudowa zakresu',
-      continuationSubtitle: 'Opcje dodatkowe - kontynuacja',
-      intro: 'Opcje ponizej pozostaja poza zakresem podstawowym. Po ich zaznaczeniu w generatorze zostana przeniesione do glownej tabeli wraz z aktualizacja cen i opisem.',
-      priceLabel: 'Informacja cenowa',
+    featureStatusRows.forEach((row) => {
+      const normalized = row.label.trim().toLowerCase();
+      if (seenScopeLabels.has(normalized)) {
+        return;
+      }
+      seenScopeLabels.add(normalized);
+      scopeSummaryRows.push({
+        lp: String(scopeIndex++),
+        label: row.label,
+        status: row.status,
+        detail: row.detail || '---',
+      });
     });
+
+    additionalServiceOptions.forEach((item) => {
+      const enabled = Boolean(serviceAddonsState[item.id]);
+      const normalized = item.label.trim().toLowerCase();
+      if (seenScopeLabels.has(normalized)) {
+        return;
+      }
+      seenScopeLabels.add(normalized);
+      scopeSummaryRows.push({
+        lp: String(scopeIndex++),
+        label: item.label,
+        status: enabled ? 'TAK' : 'NIE',
+        detail: enabled ? 'Wybrane' : '---',
+      });
+    });
+
+    const installationExclusions = new Set([
+      'extra-warm-sill',
+      'extra-interior-sills',
+      'extra-exterior-sills',
+      'extra-threshold-extensions',
+    ]);
+
+    installationExtras.forEach((item) => {
+      if (installationExclusions.has(item.id)) {
+        return;
+      }
+      const enabled = Boolean(installationExtrasState[item.id]);
+      const normalized = item.label.trim().toLowerCase();
+      if (seenScopeLabels.has(normalized)) {
+        return;
+      }
+      seenScopeLabels.add(normalized);
+      scopeSummaryRows.push({
+        lp: String(scopeIndex++),
+        label: item.label,
+        status: enabled ? 'TAK' : 'NIE',
+        detail: enabled ? 'W cenie' : 'Poza zakresem',
+      });
+    });
+
+    if (scopeSummaryRows.length > 0) {
+      tablePage = pdfDoc.addPage();
+      currentY = drawPageBranding(tablePage, fonts, logos, {
+        title: headerTitle,
+        subtitle: `Data oferty: ${offerDate}`,
+        titleSize: 22,
+        subtitleSize: 11,
+        extraSpacing: 14,
+      });
+
+      tablePage.drawText('Zakres i opcje', {
+        x: 60,
+        y: currentY,
+        size: 12,
+        font: boldFont,
+        color: rgb(0.18, 0.18, 0.18),
+      });
+      currentY -= 14;
+
+      const scopeTableResult = drawFlexibleTable(
+        pdfDoc,
+        tablePage,
+        fonts,
+        scopeSummaryRows,
+        [
+          { key: 'lp', header: 'Lp.', width: 36, align: 'center' },
+          { key: 'label', header: 'Pozycja', width: 260 },
+          { key: 'status', header: 'Status', width: 90, align: 'center' },
+          { key: 'detail', header: 'Uwagi', width: 150 },
+        ],
+        currentY,
+        { topMargin: 70, bottomMargin: 50, paddingY: 5 },
+        (newPage) =>
+          drawPageBranding(newPage, fonts, logos, {
+            title: headerTitle,
+            subtitle: `Data oferty: ${offerDate}`,
+            titleSize: 22,
+            subtitleSize: 11,
+            extraSpacing: 14,
+          }),
+      );
+      tablePage = scopeTableResult.page;
+      currentY = scopeTableResult.y - 16;
+    }
+
+    if (additionalNotes) {
+      if (currentY < 100) {
+        tablePage = pdfDoc.addPage();
+        currentY = drawPageBranding(tablePage, fonts, logos, {
+          title: headerTitle,
+          subtitle: `Data oferty: ${offerDate}`,
+          titleSize: 22,
+          subtitleSize: 11,
+          extraSpacing: 14,
+        });
+      }
+      tablePage.drawText('Uwagi do oferty', {
+        x: 60,
+        y: currentY,
+        size: 12,
+        font: boldFont,
+        color: rgb(0.18, 0.18, 0.18),
+      });
+      currentY -= 16;
+      const noteLines = wrapText(regularFont, additionalNotes, 10, tablePage.getSize().width - 120);
+      noteLines.forEach((line) => {
+        if (currentY < 80) {
+          tablePage = pdfDoc.addPage();
+          currentY = drawPageBranding(tablePage, fonts, logos, {
+            title: headerTitle,
+            subtitle: `Data oferty: ${offerDate}`,
+            titleSize: 22,
+            subtitleSize: 11,
+            extraSpacing: 14,
+          });
+        }
+        tablePage.drawText(line, {
+          x: 60,
+          y: currentY,
+          size: 10,
+          font: regularFont,
+          color: rgb(0.12, 0.12, 0.12),
+        });
+        currentY -= 12;
+      });
+    }
+
+    if (attachmentFile) {
+      try {
+        const attachmentBytes = await resolveAttachmentBytes(attachmentFile);
+        if (attachmentBytes) {
+          const attachmentDoc = await PDFDocument.load(attachmentBytes);
+          const attachmentPageCount = attachmentDoc.getPageCount();
+          for (let index = 0; index < attachmentPageCount; index += 1) {
+            const [copiedPage] = await pdfDoc.copyPages(attachmentDoc, [index]);
+            pdfDoc.addPage(copiedPage);
+          }
+        }
+      } catch (error) {
+        console.warn('Nie udalo sie dodac zalacznika formularza:', error);
+      }
+    }
 
     const optionalPdfBuffers = await Promise.all(
       optionalOptions
@@ -736,126 +1065,6 @@ export async function generateOknaNestPDF(formData) {
       } catch (error) {
         console.warn('Nie udalo sie dodac zalacznika PDF:', error);
       }
-    }
-
-    const summaryPage = pdfDoc.addPage();
-    let summaryY = drawPageBranding(summaryPage, fonts, logos, {
-      title: 'Podsumowanie finansowe i parametry',
-      subtitle: `Oferta dla: ${userName}`,
-      titleSize: 18,
-      subtitleSize: 10,
-      extraSpacing: 24,
-    });
-
-    const summaryIntro = 'Zestawienie obejmuje wartosci po rabacie, koszt montazu oraz kluczowe parametry techniczne zaproponowanej konfiguracji.';
-    const summaryIntroLines = wrapText(regularFont, summaryIntro, 10, summaryPage.getSize().width - 120);
-    summaryIntroLines.forEach((line) => {
-      summaryPage.drawText(line, {
-        x: 60,
-        y: summaryY,
-        size: 10,
-        font: regularFont,
-        color: rgb(0.12, 0.12, 0.12),
-      });
-      summaryY -= 13;
-    });
-
-    summaryY -= 12;
-
-    summaryPage.drawText('Montaz - jak wykonujemy', {
-      x: 60,
-      y: summaryY,
-      size: 12,
-      font: boldFont,
-      color: rgb(0.18, 0.18, 0.18),
-    });
-    summaryY -= 16;
-
-    const variantLine = `Wybrany wariant: ${installationVariantSummary}`;
-    const extrasLine = `W tej ofercie: ${installationExtrasEntries.join(' | ')}`;
-    const variantLines = wrapText(regularFont, variantLine, 10, summaryPage.getSize().width - 120);
-    variantLines.forEach((line) => {
-      summaryPage.drawText(line, {
-        x: 60,
-        y: summaryY,
-        size: 10,
-        font: regularFont,
-        color: rgb(0.12, 0.12, 0.12),
-      });
-      summaryY -= 12;
-    });
-    const extrasWrapped = wrapText(regularFont, extrasLine, 10, summaryPage.getSize().width - 120);
-    extrasWrapped.forEach((line) => {
-      summaryPage.drawText(line, {
-        x: 60,
-        y: summaryY,
-        size: 10,
-        font: regularFont,
-        color: rgb(0.12, 0.12, 0.12),
-      });
-      summaryY -= 12;
-    });
-
-    summaryY -= 14;
-
-    summaryY = drawKeyValueSection(
-      summaryPage,
-      fonts,
-      [
-        { label: 'Cena katalogowa', value: formatCurrency(catalogPriceNumber) },
-        { label: `Rabat (${formatNumber(discountPercentNumber, 1)}%)`, value: `-${formatCurrency(discountValue)}` },
-        { label: 'Cena po rabacie', value: formatCurrency(discountedPrice) },
-        { label: 'Cena montazu', value: formatCurrency(installationPriceNumber) },
-      ],
-      60,
-      summaryY,
-    ) - 10;
-
-    summaryPage.drawText(`Cena koncowa oferty: ${formatCurrency(finalPrice)}`, {
-      x: 60,
-      y: summaryY,
-      size: 16,
-      font: boldFont,
-      color: rgb(0.72, 0.0, 0.16),
-    });
-
-    summaryY -= 32;
-
-    summaryY = drawKeyValueSection(
-      summaryPage,
-      fonts,
-      [
-        { label: 'Profil', value: profileLabel },
-        { label: 'Kolor', value: colorLabel },
-        { label: 'Okucia', value: hardwareLabel },
-        { label: 'Rodzaj montazu', value: assemblyLabel },
-        { label: 'Powierzchnia okien', value: `${formatNumber(windowAreaNumber)} m2` },
-        { label: 'Obwod okien', value: `${formatNumber(windowPerimeterNumber)} mb` },
-      ],
-      60,
-      summaryY,
-    ) - 12;
-
-    if (additionalNotes) {
-      summaryPage.drawText('Uwagi do oferty', {
-        x: 60,
-        y: summaryY,
-        size: 12,
-        font: boldFont,
-        color: rgb(0.18, 0.18, 0.18),
-      });
-      summaryY -= 16;
-      const noteLines = wrapText(regularFont, additionalNotes, 10, summaryPage.getSize().width - 120);
-      noteLines.forEach((line) => {
-        summaryPage.drawText(line, {
-          x: 60,
-          y: summaryY,
-          size: 10,
-          font: regularFont,
-          color: rgb(0.12, 0.12, 0.12),
-        });
-        summaryY -= 12;
-      });
     }
 
     if (contactBytes) {

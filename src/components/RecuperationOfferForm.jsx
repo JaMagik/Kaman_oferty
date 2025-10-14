@@ -1,17 +1,19 @@
 // src/components/RecuperationOfferForm.jsx
 
-import React, { useState, useEffect } from 'react';
-// ZMIANA: Import nowych tabel z zakresem prac
-import { 
-    recuperationDevices, 
-    getRecommendedRecuperator, 
-    installationSystems, 
-    otherElements,
-    centralRecuperationBaseScope,
-    decentralRecuperationBaseScope
+import React, { useState, useEffect, useMemo } from 'react';
+import {
+  recuperationDevices,
+  getRecommendedRecuperator,
+  recuperationVariants,
+  DRILLING_ITEM_ID,
 } from '../data/tables/recuperationData';
 import { generateRecuperationOfferPDF } from '../utils/recuperationPdfGenerator';
 import TrelloActions from './TrelloActions';
+
+const drillingOptions = [
+  { key: 'main', label: 'W zakresie głównym' },
+  { key: 'addon', label: 'Jako opcja dodatkowa' },
+];
 
 export default function RecuperationOfferForm() {
   const [isProcessing, setIsProcessing] = useState(false);
@@ -20,16 +22,24 @@ export default function RecuperationOfferForm() {
   const [isNetto, setIsNetto] = useState(false);
   const [showPrice, setShowPrice] = useState(true);
   const [generatedPdfData, setGeneratedPdfData] = useState(null);
-  
+
   const [offerMode, setOfferMode] = useState('dobor');
   const [surfaceArea, setSurfaceArea] = useState('100');
-  
-  const [installationSystemKey, setInstallationSystemKey] = useState(Object.keys(installationSystems)[0]);
-  const [otherElementsKey, setOtherElementsKey] = useState(Object.keys(otherElements)[0]);
-  const [selectedDeviceKey, setSelectedDeviceKey] = useState(getRecommendedRecuperator(surfaceArea));
 
-  // Pobieramy pełny obiekt wybranego urządzenia, aby mieć dostęp do jego typu
-  const selectedDeviceObject = recuperationDevices[selectedDeviceKey] || {};
+  const [variantKey, setVariantKey] = useState('installationOnly');
+  const [drillingMode, setDrillingMode] = useState('main');
+
+  const variantOptions = useMemo(
+    () => Object.values(recuperationVariants),
+    []
+  );
+
+  const variantConfig =
+    recuperationVariants[variantKey] || recuperationVariants.installationOnly;
+
+  const [selectedDeviceKey, setSelectedDeviceKey] = useState(
+    getRecommendedRecuperator(surfaceArea)
+  );
 
   useEffect(() => {
     if (offerMode === 'dobor') {
@@ -39,37 +49,56 @@ export default function RecuperationOfferForm() {
       }
     }
   }, [surfaceArea, offerMode]);
-  
+
   const handleGenerateAndSetPdf = async (e) => {
     e.preventDefault();
     if (showPrice && !price.trim()) {
-      alert('Uzupełnij pole Ceny lub odznacz opcję pokazywania jej w ofercie.');
+      alert(
+        'Uzupełnij pole Ceny lub odznacz opcję wyświetlania jej w ofercie.'
+      );
       return;
     }
-    setIsProcessing(true);
-    setGeneratedPdfData(null); 
 
-    // ZMIANA: Wybór odpowiedniej tabeli z zakresem prac
-    const scope = selectedDeviceObject.type === 'central' 
-        ? centralRecuperationBaseScope 
-        : decentralRecuperationBaseScope;
+    const baseMainIds = [...(variantConfig?.itemIds || [])];
+    let mainItemIds = baseMainIds;
+    let addonItemIds = [];
 
-    const formData = {
-      userName, price, isNetto, showPrice, offerMode,
-      deviceKey: selectedDeviceKey,
-      surfaceArea: surfaceArea,
-      // Przekazujemy klucze tylko jeśli system jest centralny
-      installationSystemKey: selectedDeviceObject.type === 'central' ? installationSystemKey : null,
-      otherElementsKey: selectedDeviceObject.type === 'central' ? otherElementsKey : null,
-      scope, // Przekazujemy wybraną tabelę do generatora PDF
-    };
-    
-    // Zakładając, że generateRecuperationOfferPDF jest dostosowany do przyjęcia `formData`
-    const pdfBlob = await generateRecuperationOfferPDF(formData);
-    if (pdfBlob) {
-      setGeneratedPdfData(pdfBlob);
+    if (drillingMode === 'addon') {
+      mainItemIds = baseMainIds.filter((id) => id !== DRILLING_ITEM_ID);
+      if (baseMainIds.includes(DRILLING_ITEM_ID)) {
+        addonItemIds = [DRILLING_ITEM_ID];
+      }
     }
-    setIsProcessing(false);
+
+    setIsProcessing(true);
+    setGeneratedPdfData(null);
+
+    try {
+      const formData = {
+        userName,
+        price,
+        isNetto,
+        showPrice,
+        offerMode,
+        surfaceArea,
+        deviceKey: selectedDeviceKey,
+        variantKey: variantConfig.key,
+        variantLabel: variantConfig.label,
+        mainItemIds,
+        addonItemIds,
+        drillingMode,
+      };
+
+      const pdfBlob = await generateRecuperationOfferPDF(formData);
+      if (pdfBlob) {
+        setGeneratedPdfData(pdfBlob);
+      }
+    } catch (error) {
+      console.error('Błąd podczas generowania oferty na rekuperację:', error);
+      alert(`Wystąpił błąd: ${error.message}.`);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleDownloadPdf = () => {
@@ -83,102 +112,160 @@ export default function RecuperationOfferForm() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
-  
+
   return (
     <form className="form-container" onSubmit={handleGenerateAndSetPdf}>
       <h2>Generator Ofert - Rekuperacja</h2>
-      
+
       <div className="input-group">
         <label>Imię i Nazwisko Klienta:</label>
-        <input type="text" value={userName} onChange={(e) => setUserName(e.target.value)} required />
+        <input
+          type="text"
+          value={userName}
+          onChange={(e) => setUserName(e.target.value)}
+          required
+        />
       </div>
       <div className="input-group">
         <label>Cena Końcowa (PLN):</label>
-        <input type="text" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Podaj cenę" />
+        <input
+          type="text"
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+          placeholder="Podaj cenę"
+        />
       </div>
 
       <div className="input-group">
-          <label>Typ oferty:</label>
-          <div className="form-mode-switcher">
-              <button type="button" className={offerMode === 'dobor' ? 'active' : ''} onClick={() => setOfferMode('dobor')}>
-                  Dobór i Wycena
-              </button>
-              <button type="button" className={offerMode === 'wycena' ? 'active' : ''} onClick={() => setOfferMode('wycena')}>
-                  Wycena
-              </button>
-          </div>
+        <label>Typ oferty:</label>
+        <div className="form-mode-switcher">
+          <button
+            type="button"
+            className={offerMode === 'dobor' ? 'active' : ''}
+            onClick={() => setOfferMode('dobor')}
+          >
+            Dobór i Wycena
+          </button>
+          <button
+            type="button"
+            className={offerMode === 'wycena' ? 'active' : ''}
+            onClick={() => setOfferMode('wycena')}
+          >
+            Wycena
+          </button>
+        </div>
       </div>
 
       {offerMode === 'dobor' && (
         <div className="input-group">
           <label htmlFor="surfaceArea">Powierzchnia domu (m²):</label>
-          <input 
+          <input
             id="surfaceArea"
-            type="number" 
-            value={surfaceArea} 
-            onChange={(e) => setSurfaceArea(e.target.value)} 
+            type="number"
+            value={surfaceArea}
+            onChange={(e) => setSurfaceArea(e.target.value)}
             placeholder="np. 150"
           />
         </div>
       )}
-      
+
       <fieldset className="component-fieldset">
         <legend>Konfiguracja systemu</legend>
-        
-        <div className="input-group">
-            <label htmlFor="rekuDevice">Jednostka wentylacyjna:</label>
-            <select id="rekuDevice" value={selectedDeviceKey} onChange={(e) => setSelectedDeviceKey(e.target.value)}>
-                {Object.keys(recuperationDevices).map(key => (
-                    <option key={key} value={key}>{recuperationDevices[key].name}</option>
-                ))}
-            </select>
-            {offerMode === 'dobor' && <small>Urządzenie dobrane automatycznie. Możesz je zmienić.</small>}
-        </div>
 
-        {/* ZMIANA: Warunkowe renderowanie pól tylko dla rekuperacji centralnej */}
-        {selectedDeviceObject.type === 'central' && (
-            <>
-                <div className="input-group">
-                    <label htmlFor="installationSystem">System przewodów elastycznych:</label>
-                    <select id="installationSystem" value={installationSystemKey} onChange={(e) => setInstallationSystemKey(e.target.value)}>
-                        {Object.keys(installationSystems).map(key => (
-                            <option key={key} value={key}>{installationSystems[key].name}</option>
-                        ))}
-                    </select>
-                </div>
-                <div className="input-group">
-                    <label htmlFor="otherElements">Instalacja Czerpni/Wyrzutni:</label>
-                    <select id="otherElements" value={otherElementsKey} onChange={(e) => setOtherElementsKey(e.target.value)}>
-                        {Object.keys(otherElements).map(key => (
-                            <option key={key} value={key}>{otherElements[key].name}</option>
-                        ))}
-                    </select>
-                </div>
-            </>
-        )}
+        <div className="input-group">
+          <label htmlFor="rekuDevice">Jednostka wentylacyjna:</label>
+          <select
+            id="rekuDevice"
+            value={selectedDeviceKey}
+            onChange={(e) => setSelectedDeviceKey(e.target.value)}
+          >
+            {Object.keys(recuperationDevices).map((key) => (
+              <option key={key} value={key}>
+                {recuperationDevices[key].name}
+              </option>
+            ))}
+          </select>
+          {offerMode === 'dobor' && (
+            <small>
+              Urządzenie dobrane automatycznie na podstawie powierzchni. Możesz
+              je zmienić.
+            </small>
+          )}
+        </div>
       </fieldset>
 
-      <hr/>
+      <fieldset className="component-fieldset">
+        <legend>Zakres montażu</legend>
+
+        <div className="input-group">
+          <label>Wariant prac:</label>
+          <div className="form-mode-switcher">
+            {variantOptions.map((variant) => (
+              <button
+                key={variant.key}
+                type="button"
+                className={variantKey === variant.key ? 'active' : ''}
+                onClick={() => setVariantKey(variant.key)}
+              >
+                {variant.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="input-group">
+          <label>Wiercenie otworów koroną:</label>
+          <div className="form-mode-switcher">
+            {drillingOptions.map((option) => (
+              <button
+                key={option.key}
+                type="button"
+                className={drillingMode === option.key ? 'active' : ''}
+                onClick={() => setDrillingMode(option.key)}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </fieldset>
+
+      <hr />
 
       <div className="input-group-inline">
-        <input type="checkbox" id="reku_isNetto" checked={isNetto} onChange={(e) => setIsNetto(e.target.checked)} />
+        <input
+          type="checkbox"
+          id="reku_isNetto"
+          checked={isNetto}
+          onChange={(e) => setIsNetto(e.target.checked)}
+        />
         <label htmlFor="reku_isNetto">Pokaż cenę jako netto</label>
       </div>
       <div className="input-group-inline">
-        <input type="checkbox" id="reku_showPrice" checked={showPrice} onChange={(e) => setShowPrice(e.target.checked)} />
+        <input
+          type="checkbox"
+          id="reku_showPrice"
+          checked={showPrice}
+          onChange={(e) => setShowPrice(e.target.checked)}
+        />
         <label htmlFor="reku_showPrice">Dołącz cenę do oferty</label>
       </div>
-      
-      <button type="submit" disabled={isProcessing}>{isProcessing ? 'Przetwarzanie...' : 'Generuj Ofertę'}</button>
+
+      <button type="submit" disabled={isProcessing}>
+        {isProcessing ? 'Przetwarzanie...' : 'Generuj Ofertę'}
+      </button>
 
       {generatedPdfData && (
-        <button type="button" onClick={handleDownloadPdf} style={{ marginTop: '10px', background: '#555' }}>Pobierz wygenerowany PDF</button>
+        <button
+          type="button"
+          onClick={handleDownloadPdf}
+          style={{ marginTop: '10px', background: '#555' }}
+        >
+          Pobierz wygenerowany PDF
+        </button>
       )}
 
-      <TrelloActions 
-        generatedPdfData={generatedPdfData}
-        userName={userName}
-      />
+      <TrelloActions generatedPdfData={generatedPdfData} userName={userName} />
     </form>
   );
 }
