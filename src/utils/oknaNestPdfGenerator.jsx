@@ -720,15 +720,13 @@ export async function generateOknaNestPDF(formData) {
     const leftColumnEntries = [
       { label: 'Oferta dla', value: offerRecipient },
       { label: 'Adres inwestycji', value: investmentAddress },
-      { label: 'Data', value: offerDate },
       { label: 'Waznosc oferty', value: '14 dni' },
     ];
 
     const rightColumnEntries = [
-      { label: 'Opiekun klienta', value: advisorName || '---' },
-      { label: 'Telefon opiekuna', value: advisorPhone || '---' },
-      { label: 'Email opiekuna', value: advisorEmail || '---' },
-      { label: 'Osoba przygotowujaca oferte', value: preparedByDisplay || '---' },
+      { label: 'Oferte sporzadzil', value: preparedByDisplay || advisorName || '---' },
+      { label: 'Telefon', value: advisorPhone || '---' },
+      { label: 'Email', value: advisorEmail || '---' },
     ];
 
     const separatorColor = rgb(0.82, 0.82, 0.82);
@@ -980,22 +978,6 @@ export async function generateOknaNestPDF(formData) {
         label: row.label,
         status: row.status,
         detail: row.detail || '---',
-      });
-    });
-
-    installationExtras.forEach((item) => {
-      const extraState = normalizeExtraState(installationExtrasState?.[item.id]);
-      const enabled = Boolean(extraState.selected);
-      const normalized = item.label.trim().toLowerCase();
-      if (seenScopeLabels.has(normalized)) {
-        return;
-      }
-      seenScopeLabels.add(normalized);
-      scopeSummaryRows.push({
-        lp: String(scopeIndex++),
-        label: item.label,
-        status: enabled ? 'TAK' : 'NIE',
-        detail: enabled ? 'W cenie' : 'Poza zakresem',
       });
     });
 

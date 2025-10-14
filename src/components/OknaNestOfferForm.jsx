@@ -118,7 +118,8 @@ const buildDefaultWindowOptionPriceState = () => {
   return state;
 };
 export default function OknaNestOfferForm() {
-const defaultAdvisor = clientAdvisorOptions[0];
+const defaultAdvisor =
+  clientAdvisorOptions.find((advisor) => advisor.value === 'robert') || clientAdvisorOptions[0];
 const [userName, setUserName] = useState('');
 const [investmentAddress, setInvestmentAddress] = useState('');
 const [selectedAdvisorKey, setSelectedAdvisorKey] = useState(defaultAdvisor?.value || '');
@@ -137,7 +138,7 @@ const selectedAdvisor = useMemo(
   const [assemblyType, setAssemblyType] = useState(assemblyTypeOptions[0]?.value || '');
   const [profileColor, setProfileColor] = useState('');
   const [hingeType, setHingeType] = useState(hingeOptions[0]?.value || '');
-  const [warmSpacer, setWarmSpacer] = useState(warmSpacerOptions[0]?.value || 'no');
+  const [warmSpacer, setWarmSpacer] = useState('yes');
   const [glazingPackage, setGlazingPackage] = useState(glazingPackageOptions[1]?.value || 'triple');
   const [rcPackage, setRcPackage] = useState(rcPackageOptions[0]?.value || 'no');
   const [lazikIncluded, setLazikIncluded] = useState('na');
@@ -397,7 +398,7 @@ const selectedAdvisor = useMemo(
         setAssemblyType(assemblyTypeOptions[0]?.value || '');
         setProfileColor('');
         setHingeType(hingeOptions[0]?.value || '');
-        setWarmSpacer(warmSpacerOptions[0]?.value || 'no');
+        setWarmSpacer('yes');
         setGlazingPackage(glazingPackageOptions[1]?.value || 'triple');
         setRcPackage(rcPackageOptions[0]?.value || 'no');
         setLazikIncluded('na');
