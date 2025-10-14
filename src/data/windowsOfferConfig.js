@@ -27,6 +27,14 @@ export const profileColorOptions = [
 ];
 
 // Pliki PDF dla opcji dodatkowych umiesc w public/pdf_templates/okna_nest/opcje/
+export const additionalOfferIds = [
+  'internal-sills',
+  'external-sills',
+  'external-blinds',
+  'insect-screens',
+  'smart-control',
+];
+
 export const windowOptionDefinitions = [
   {
     id: 'internal-sills',
@@ -163,11 +171,6 @@ export const optionalFeatureGroups = [
     label: 'Energia i akustyka',
     items: [
       {
-        id: 'feature-warm-spacer',
-        label: 'Ciepla ramka dystansowa',
-        summaryLabel: 'Ciepla ramka',
-      },
-      {
         id: 'feature-acoustic',
         label: 'Pakiet akustyczny (podwyzszona izolacyjnosc)',
         summaryLabel: 'Pakiet akustyczny',
@@ -177,20 +180,7 @@ export const optionalFeatureGroups = [
   {
     id: 'aesthetics',
     label: 'Estetyka',
-    items: [
-      {
-        id: 'feature-premium-color',
-        label: 'Okleina / kolor premium (w tym dwukolor)',
-        summaryLabel: 'Kolor premium',
-      },
-      {
-        id: 'feature-muntins',
-        label: 'Szprosy (podaj typ/szerokosc)',
-        summaryLabel: 'Szprosy',
-        detailLabel: 'Typ szprosow',
-        detailPlaceholder: 'np. miedzyszybowe 26 mm',
-      },
-    ],
+    items: [],
   },
   {
     id: 'terrace',
@@ -202,26 +192,15 @@ export const optionalFeatureGroups = [
 export const installationExtras = [
   { id: 'extra-demontaz', label: 'Demontaz i utylizacja starych okien', summaryLabel: 'Demontaz' },
   { id: 'extra-delivery', label: 'Dostawa i wniesienie', summaryLabel: 'Dostawa' },
-  { id: 'extra-plaster-trims', label: 'Listwy tynkarskie / maskujace', summaryLabel: 'Listwy tynkarskie' },
   { id: 'extra-warm-sill', label: 'Cieply parapet XPS / listwa podparapetowa', summaryLabel: 'Cieply parapet' },
   { id: 'extra-interior-sills', label: 'Montaz parapetow wewnetrznych', summaryLabel: 'Parapety wew' },
   { id: 'extra-exterior-sills', label: 'Montaz parapetow zewnetrznych', summaryLabel: 'Parapety zewn' },
   { id: 'extra-blinds-install', label: 'Montaz rolet / zaluzji (jesli w zamowieniu)', summaryLabel: 'Montaz rolet' },
   { id: 'extra-threshold-extensions', label: 'Poszerzenia / podklad progowy pod drzwi balkonowe', summaryLabel: 'Poszerzenia progowe' },
-  { id: 'extra-hst-drainage', label: 'Odwodnienie / odprowadzenie skroplin dla HST', summaryLabel: 'Odwodnienie HST' },
-  { id: 'extra-hst-reinforced', label: 'Wzmocniony prog HST', summaryLabel: 'Prog HST wzmocniony' },
 ];
 
 export const demolitionOptions = [
   { value: 'cut-frames', label: 'Przeciecie ram' },
   { value: 'whole', label: 'Demontaz calosciowy' },
-];
-
-export const additionalServiceOptions = [
-  { id: 'service-warm-sills', label: 'Cieple parapety' },
-  { id: 'service-extensions', label: 'Poszerzenia' },
-  { id: 'service-tight-installation', label: 'Szczelny montaz' },
-  { id: 'service-tight-thresholds', label: 'Szczelny montaz progow' },
-  { id: 'service-reveal-prep', label: 'Przygotowanie glifow' },
 ];
 

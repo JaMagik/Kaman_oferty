@@ -7,13 +7,26 @@ import {
   windowOptionDefinitions,
   optionalFeatureGroups,
   installationExtras,
-  additionalServiceOptions,
   demolitionOptions,
+  additionalOfferIds,
 } from '../data/windowsOfferConfig';
 
-const defaultSelectedWindowOptionIds = windowOptionDefinitions
+const ADDITIONAL_OFFER_ID_SET = new Set(additionalOfferIds);
+
+const coreWindowOptions = windowOptionDefinitions.filter(
+  (option) => !ADDITIONAL_OFFER_ID_SET.has(option.id),
+);
+
+const defaultSelectedWindowOptionIds = coreWindowOptions
   .filter((option) => option.defaultSelected)
   .map((option) => option.id);
+
+const optionalWindowOptions = coreWindowOptions.filter(
+  (option) => !option.defaultSelected && option.id !== 'security-package',
+);
+const complementaryOfferOptions = windowOptionDefinitions.filter((option) =>
+  ADDITIONAL_OFFER_ID_SET.has(option.id),
+);
 
 const vatPresetOptions = [
   { value: '23', label: '23%' },
@@ -53,19 +66,11 @@ const buildDefaultInstallationExtrasState = () => {
   });
   return state;
 };
-
-const buildDefaultServiceAddonsState = () => {
-  const state = {};
-  additionalServiceOptions.forEach((item) => {
-    state[item.id] = false;
-  });
-  return state;
-};
 export default function OknaNestOfferForm() {
   const [userName, setUserName] = useState('');
   const [investmentAddress, setInvestmentAddress] = useState('');
   const [catalogPrice, setCatalogPrice] = useState('');
-  const [discountValue, setDiscountValue] = useState('');
+  const [discountPercent, setDiscountPercent] = useState('');
   const [marginPercent, setMarginPercent] = useState('');
   const [installationPrice, setInstallationPrice] = useState('');
   const [windowPerimeter, setWindowPerimeter] = useState('');
@@ -85,7 +90,6 @@ export default function OknaNestOfferForm() {
   const [additionalNotes, setAdditionalNotes] = useState('');
   const [featureSelections, setFeatureSelections] = useState(() => buildDefaultFeatureState());
   const [installationExtrasState, setInstallationExtrasState] = useState(() => buildDefaultInstallationExtrasState());
-  const [serviceAddonsState, setServiceAddonsState] = useState(() => buildDefaultServiceAddonsState());
   const [isProcessing, setIsProcessing] = useState(false);
 
   const gridStyle = {
@@ -95,6 +99,9 @@ export default function OknaNestOfferForm() {
   };
 
   const toggleOption = (optionId) => {
+    if (!optionalWindowOptions.some((option) => option.id === optionId)) {
+      return;
+    }
     setSelectedOptionIds((current) => {
       if (current.includes(optionId)) {
         return current.filter((id) => id !== optionId);
@@ -134,13 +141,6 @@ export default function OknaNestOfferForm() {
     }));
   };
 
-  const toggleServiceAddon = (addonId) => {
-    setServiceAddonsState((current) => ({
-      ...current,
-      [addonId]: !current[addonId],
-    }));
-  };
-
   const handleAttachmentChange = (event) => {
     const file = event.target.files && event.target.files[0] ? event.target.files[0] : null;
     setAttachmentFile(file);
@@ -149,7 +149,7 @@ export default function OknaNestOfferForm() {
   const pricePreview = useMemo(() => {
     const catalog = parsePreviewNumber(catalogPrice);
     const installation = parsePreviewNumber(installationPrice);
-    const discount = parsePreviewNumber(discountValue);
+    const discountRateRaw = parsePreviewNumber(discountPercent);
     const marginRate = parsePreviewNumber(marginPercent);
     const vatRaw = vatPreset === 'custom' ? vatCustom : vatPreset;
     const vatRateValue = Math.max(parsePreviewNumber(vatRaw), 0);
@@ -159,7 +159,10 @@ export default function OknaNestOfferForm() {
       return null;
     }
 
-    const netAfterDiscount = Math.max(baseSum - discount, 0);
+    const discountRate = Math.min(Math.max(discountRateRaw, 0), 100);
+    const discountAmount = catalog * (discountRate / 100);
+    const discountedWindowsPrice = Math.max(catalog - discountAmount, 0);
+    const netAfterDiscount = discountedWindowsPrice + installation;
     const marginAmount = netAfterDiscount * (marginRate / 100);
     const netWithMargin = netAfterDiscount + marginAmount;
     const vatAmount = netWithMargin * (vatRateValue / 100);
@@ -167,7 +170,9 @@ export default function OknaNestOfferForm() {
 
     return {
       baseSum,
-      discount,
+      discountRate,
+      discountAmount,
+      discountedWindowsPrice,
       marginAmount,
       netAfterDiscount,
       netWithMargin,
@@ -175,7 +180,38 @@ export default function OknaNestOfferForm() {
       grossTotal,
       vatRateValue,
     };
-  }, [catalogPrice, installationPrice, discountValue, marginPercent, vatPreset, vatCustom]);
+  }, [catalogPrice, installationPrice, discountPercent, marginPercent, vatPreset, vatCustom]);
+
+  const complementaryOfferList = useMemo(() => {
+    const base = complementaryOfferOptions
+      .filter((option) => {
+        if (option.id === 'internal-sills' && installationExtrasState['extra-interior-sills']) {
+          return false;
+        }
+        if (option.id === 'external-sills' && installationExtrasState['extra-exterior-sills']) {
+          return false;
+        }
+        if (option.id === 'external-blinds' && installationExtrasState['extra-blinds-install']) {
+          return false;
+        }
+        return true;
+      })
+      .map((option) => ({
+        id: option.id,
+        label: option.label,
+        summaryBullet: option.summaryBullet,
+      }));
+
+    if (!installationExtrasState['extra-threshold-extensions']) {
+      base.push({
+        id: 'threshold-extensions',
+        label: 'Poszerzenia progowe',
+        summaryBullet: 'Dostawa i montaz poszerzen pod drzwi balkonowe / HST.',
+      });
+    }
+
+    return base;
+  }, [installationExtrasState]);
 
   const handleGeneratePDF = async (event) => {
     event.preventDefault();
@@ -209,7 +245,7 @@ export default function OknaNestOfferForm() {
       userName: userName.trim(),
       investmentAddress: investmentAddress.trim(),
       catalogPrice,
-      discountValue,
+      discountPercent,
       marginPercent,
       installationPrice,
       windowPerimeter,
@@ -225,7 +261,6 @@ export default function OknaNestOfferForm() {
       additionalNotes,
       featureSelections,
       installationExtras: installationExtrasState,
-      serviceAddons: serviceAddonsState,
       vatRate: resolvedVatRate,
       attachmentFile,
     });
@@ -243,7 +278,7 @@ export default function OknaNestOfferForm() {
         setUserName('');
         setInvestmentAddress('');
         setCatalogPrice('');
-        setDiscountValue('');
+        setDiscountPercent('');
         setMarginPercent('');
         setInstallationPrice('');
         setWindowPerimeter('');
@@ -263,7 +298,6 @@ export default function OknaNestOfferForm() {
         setAdditionalNotes('');
         setFeatureSelections(buildDefaultFeatureState());
         setInstallationExtrasState(buildDefaultInstallationExtrasState());
-        setServiceAddonsState(buildDefaultServiceAddonsState());
       }
     } catch (error) {
       console.error('Blad podczas generowania PDF dla Okien Nest:', error);
@@ -320,15 +354,16 @@ export default function OknaNestOfferForm() {
             />
           </div>
           <div className="input-group">
-            <label htmlFor="okna_discount">Rabat (PLN)</label>
+            <label htmlFor="okna_discount">Rabat (%)</label>
             <input
               id="okna_discount"
               type="number"
-              step="0.01"
+              step="0.1"
               min="0"
-              value={discountValue}
-              onChange={(event) => setDiscountValue(event.target.value)}
-              placeholder="np. 3500"
+              max="100"
+              value={discountPercent}
+              onChange={(event) => setDiscountPercent(event.target.value)}
+              placeholder="np. 5"
             />
           </div>
           <div className="input-group">
@@ -388,8 +423,14 @@ export default function OknaNestOfferForm() {
             <label>Podglad wyliczenia</label>
             <div>
               <div>Suma bazowa netto: {pricePreview.baseSum.toFixed(2)} PLN</div>
-              {pricePreview.discount > 0 && (
-                <div>Po odjeciu rabatu: {pricePreview.netAfterDiscount.toFixed(2)} PLN</div>
+              {pricePreview.discountAmount > 0 && (
+                <>
+                  <div>
+                    Rabat ({pricePreview.discountRate.toFixed(1)}%): -
+                    {pricePreview.discountAmount.toFixed(2)} PLN
+                  </div>
+                  <div>Po rabacie (okna + montaz): {pricePreview.netAfterDiscount.toFixed(2)} PLN</div>
+                </>
               )}
               {pricePreview.marginAmount !== 0 && (
                 <div>
@@ -530,18 +571,23 @@ export default function OknaNestOfferForm() {
       </fieldset>
 
       <fieldset className="component-fieldset">
-        <legend>Dodatkowe uslugi</legend>
-        <div className="options-box">
-          {additionalServiceOptions.map((item) => (
-            <label key={item.id} className="option-row">
-              <input
-                type="checkbox"
-                checked={Boolean(serviceAddonsState[item.id])}
-                onChange={() => toggleServiceAddon(item.id)}
-              />
-              <span>{item.label}</span>
-            </label>
-          ))}
+        <legend>Prace dodatkowe</legend>
+        <div>
+          <h4 style={{ fontSize: '0.95rem', fontWeight: 600, color: '#333', marginBottom: '8px' }}>
+            Zakres montazowy
+          </h4>
+          <div className="options-box">
+            {installationExtras.map((item) => (
+              <label key={item.id} className="option-row">
+                <input
+                  type="checkbox"
+                  checked={Boolean(installationExtrasState[item.id])}
+                  onChange={() => toggleInstallationExtra(item.id)}
+                />
+                <span>{item.label}</span>
+              </label>
+            ))}
+          </div>
         </div>
       </fieldset>
 
@@ -563,37 +609,47 @@ export default function OknaNestOfferForm() {
       </fieldset>
 
       <fieldset className="component-fieldset">
-        <legend>Zakres i opcje dodatkowe</legend>
-        <div style={{ marginBottom: '18px' }}>
-          <h4 style={{ fontSize: '0.95rem', fontWeight: 600, color: '#333', marginBottom: '8px' }}>Elementy w cenie</h4>
-          <div className="options-box">
-            {windowOptionDefinitions.map((option) => (
-              <label key={option.id} className="option-row">
-                <input
-                  type="checkbox"
-                  checked={selectedOptionIds.includes(option.id)}
-                  onChange={() => toggleOption(option.id)}
-                />
-                <span>
-                  <strong>{option.label}</strong>
-                  {option.summaryBullet && (
-                    <>
-                      <br />
-                      <small>{option.summaryBullet}</small>
-                    </>
-                  )}
-                </span>
-              </label>
-            ))}
-          </div>
-        </div>
+        <legend>Zakres stolarki</legend>
 
-        <div>
-          <h4 style={{ fontSize: '0.95rem', fontWeight: 600, color: '#333', marginBottom: '8px' }}>Opcje dodatkowe (TAK/NIE)</h4>
+        {optionalWindowOptions.length > 0 && (
+          <section style={{ marginBottom: '18px' }}>
+            <h4 style={{ fontSize: '0.95rem', fontWeight: 600, color: '#333', marginBottom: '8px' }}>
+              Elementy konfigurowalne
+            </h4>
+            <div className="options-box">
+              {optionalWindowOptions.map((option) => (
+                <label key={option.id} className="option-row">
+                  <input
+                    type="checkbox"
+                    checked={selectedOptionIds.includes(option.id)}
+                    onChange={() => toggleOption(option.id)}
+                  />
+                  <span>
+                    <strong>{option.label}</strong>
+                    {option.summaryBullet && (
+                      <>
+                        <br />
+                        <small>{option.summaryBullet}</small>
+                      </>
+                    )}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <section style={{ marginBottom: '18px' }}>
+          <h4 style={{ fontSize: '0.95rem', fontWeight: 600, color: '#333', marginBottom: '8px' }}>
+            Opcje funkcjonalne i komfortu (TAK/NIE)
+          </h4>
           {optionalFeatureGroups
             .filter((group) => group.items.length > 0)
             .map((group) => (
               <div key={group.id} style={{ marginBottom: '16px' }}>
+                <h5 style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px', color: '#444' }}>
+                  {group.label}
+                </h5>
                 <div className="options-box">
                   {group.items.map((item) => {
                     const entry = featureSelections[item.id] || { enabled: false, detail: '' };
@@ -624,23 +680,23 @@ export default function OknaNestOfferForm() {
                 </div>
               </div>
             ))}
-        </div>
-      </fieldset>
+        </section>
 
-      <fieldset className="component-fieldset">
-        <legend>Montaz - dodatki (TAK/NIE)</legend>
-        <div className="options-box">
-          {installationExtras.map((item) => (
-            <label key={item.id} className="option-row">
-              <input
-                type="checkbox"
-                checked={Boolean(installationExtrasState[item.id])}
-                onChange={() => toggleInstallationExtra(item.id)}
-              />
-              <span>{item.label}</span>
-            </label>
-          ))}
-        </div>
+        {complementaryOfferList.length > 0 && (
+          <section>
+            <h4 style={{ fontSize: '0.95rem', fontWeight: 600, color: '#333', marginBottom: '8px' }}>
+              Komplementarna oferta Grupy KAMAN
+            </h4>
+            <ul style={{ margin: 0, paddingLeft: '18px', color: '#444', fontSize: '0.9rem' }}>
+              {complementaryOfferList.map((option) => (
+                <li key={option.id} style={{ marginBottom: '6px' }}>
+                  <strong>{option.label}</strong>
+                  {option.summaryBullet ? ` - ${option.summaryBullet}` : ''}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
       </fieldset>
 
       <fieldset className="component-fieldset">
