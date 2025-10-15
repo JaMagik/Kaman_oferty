@@ -45,9 +45,6 @@ const defaultSelectedWindowOptionIds = coreWindowOptions
 const optionalWindowOptions = coreWindowOptions.filter(
   (option) => !option.defaultSelected && option.id !== 'security-package',
 );
-const complementaryOfferOptions = windowOptionDefinitions.filter((option) =>
-  ADDITIONAL_OFFER_ID_SET.has(option.id),
-);
 
 const vatPresetOptions = [
   { value: '23', label: '23%' },
@@ -81,6 +78,11 @@ const lazikOptions = [
   { value: 'yes', label: 'Tak' },
 ];
 
+const gasketOptions = [
+  { value: 'reinforced-2', label: 'Pakiet wzmocniony (2 uszczelki)' },
+  { value: 'premium-3', label: 'Pakiet premium (3 uszczelki)' },
+];
+
 const parsePreviewNumber = (value) => {
   if (!value) {
     return 0;
@@ -99,8 +101,6 @@ const buildDefaultFeatureState = () => {
   });
   return state;
 };
-
-const excludedFeatureIdsInForm = new Set(['feature-hinge-brake', 'feature-rc2']);
 
 const buildDefaultInstallationExtrasState = () => {
   const state = {};
@@ -134,7 +134,7 @@ const selectedAdvisor = useMemo(
   const [windowPerimeter, setWindowPerimeter] = useState('');
   const [windowArea, setWindowArea] = useState('');
   const [profileType, setProfileType] = useState('');
-  const [hardwareThickness, setHardwareThickness] = useState(hardwareThicknessOptions[0]?.value || '');
+  const [hardwareThickness, setHardwareThickness] = useState(hardwareThicknessOptions[1]?.value || '');
   const [assemblyType, setAssemblyType] = useState(assemblyTypeOptions[0]?.value || '');
   const [profileColor, setProfileColor] = useState('');
   const [hingeType, setHingeType] = useState(hingeOptions[0]?.value || '');
@@ -142,8 +142,10 @@ const selectedAdvisor = useMemo(
   const [glazingPackage, setGlazingPackage] = useState(glazingPackageOptions[1]?.value || 'triple');
   const [rcPackage, setRcPackage] = useState(rcPackageOptions[0]?.value || 'no');
   const [lazikIncluded, setLazikIncluded] = useState('na');
-  const [demolitionMode, setDemolitionMode] = useState(demolitionOptions[0]?.value || '');
-  const [vatPreset, setVatPreset] = useState('23');
+  const [demolitionMode, setDemolitionMode] = useState('na');
+  const [glassProducer, setGlassProducer] = useState('Shift Glass');
+  const [gasketPackage, setGasketPackage] = useState(gasketOptions[0]?.value);
+  const [vatPreset, setVatPreset] = useState('8');
   const [vatCustom, setVatCustom] = useState('');
   const [attachmentFile, setAttachmentFile] = useState(null);
   const [attachmentInputKey, setAttachmentInputKey] = useState(0);
@@ -160,50 +162,64 @@ const selectedAdvisor = useMemo(
     gap: '20px',
   };
 
-  const toggleOption = (optionId) => {
-    if (!optionalWindowOptions.some((option) => option.id === optionId)) {
-      return;
+  const handleFillWithSampleData = () => {
+    const selectedAdvisorValue = clientAdvisorOptions[0]?.value || '';
+    const defaultHardware = hardwareThicknessOptions[1]?.value || hardwareThicknessOptions[0]?.value || '';
+    const defaultAssembly = assemblyTypeOptions[0]?.value || '';
+    const defaultHinge = hingeOptions[1]?.value || hingeOptions[0]?.value || '';
+    const defaultGlazing = glazingPackageOptions[1]?.value || glazingPackageOptions[0]?.value || '';
+    const optionalSelection = optionalWindowOptions.slice(0, 2);
+
+    const nextInstallationExtras = buildDefaultInstallationExtrasState();
+    if (nextInstallationExtras['install-sealed-tape']) {
+      nextInstallationExtras['install-sealed-tape'] = { selected: true, price: '2400' };
     }
-    setSelectedOptionIds((current) => {
-      if (current.includes(optionId)) {
-        return current.filter((id) => id !== optionId);
-      }
-      return [...current, optionId];
-    });
-  };
-
-  const updateOptionPrice = (optionId, value) => {
-    if (!optionalWindowOptions.some((option) => option.id === optionId)) {
-      return;
+    if (nextInstallationExtras['install-inner-sills']) {
+      nextInstallationExtras['install-inner-sills'] = { selected: true, price: '1800' };
     }
-    setOptionPriceState((current) => ({
-      ...current,
-      [optionId]: { price: value },
-    }));
-  };
 
-  const toggleFeatureSelection = (featureId) => {
-    setFeatureSelections((current) => {
-      const previous = current[featureId] || { enabled: false, detail: '' };
-      const nextEnabled = !previous.enabled;
-      return {
-        ...current,
-        [featureId]: {
-          enabled: nextEnabled,
-          detail: nextEnabled ? previous.detail : '',
-        },
-      };
+    const optionPricesSample = buildDefaultWindowOptionPriceState();
+    const additionalOptionIds = optionalSelection.map((option, index) => {
+      optionPricesSample[option.id] = { price: String(1500 + index * 500) };
+      return option.id;
     });
-  };
 
-  const updateFeatureDetail = (featureId, value) => {
-    setFeatureSelections((current) => ({
-      ...current,
-      [featureId]: {
-        ...(current[featureId] || { enabled: false, detail: '' }),
-        detail: value,
-      },
-    }));
+    const featureStateSample = buildDefaultFeatureState();
+    if (featureStateSample['feature-microvent']) {
+      featureStateSample['feature-microvent'] = { enabled: true, detail: '' };
+    }
+
+    setUserName('Anna Testowa');
+    setInvestmentAddress('ul. Przykladowa 12, Krakow');
+    setSelectedAdvisorKey(selectedAdvisorValue);
+    setCatalogPrice('55000');
+    setDiscountPercent('15');
+    setMarginPercent('10');
+    setInstallationPrice('8500');
+    setWindowPerimeter('132');
+    setWindowArea('48');
+    setProfileType('Okno Nest Premium 82 mm');
+    setHardwareThickness(defaultHardware);
+    setAssemblyType(defaultAssembly);
+    setProfileColor('Antracyt obustronny');
+    setHingeType(defaultHinge);
+    setWarmSpacer('yes');
+    setGlazingPackage(defaultGlazing);
+    setRcPackage(rcPackageOptions[1]?.value || rcPackageOptions[0]?.value || 'no');
+    setLazikIncluded('yes');
+    setDemolitionMode('yes');
+    setGlassProducer('Shift Glass');
+    setGasketPackage(gasketOptions[1]?.value || gasketOptions[0]?.value);
+    setVatPreset('8');
+    setVatCustom('');
+    setSelectedOptionIds([...new Set([...defaultSelectedWindowOptionIds, ...additionalOptionIds])]);
+    setAdditionalNotes('Oferta demonstracyjna – dane pogladowe do testow.');
+    setFeatureSelections(featureStateSample);
+    setInstallationExtrasState(nextInstallationExtras);
+    setOptionPriceState(optionPricesSample);
+    setAttachmentFile(null);
+    setAttachmentInputKey((value) => value + 1);
+    setIsProcessing(false);
   };
 
   const toggleInstallationExtra = (extraId) => {
@@ -278,37 +294,6 @@ const selectedAdvisor = useMemo(
     };
   }, [catalogPrice, installationPrice, discountPercent, marginPercent, vatPreset, vatCustom]);
 
-  const complementaryOfferList = useMemo(() => {
-    const base = complementaryOfferOptions
-      .filter((option) => {
-        if (option.id === 'internal-sills' && getInstallationExtraState('install-inner-sills').selected) {
-          return false;
-        }
-        if (option.id === 'external-sills' && getInstallationExtraState('install-outer-sills').selected) {
-          return false;
-        }
-        if (option.id === 'external-blinds' && getInstallationExtraState('install-titan-wings').selected) {
-          return false;
-        }
-        return true;
-      })
-      .map((option) => ({
-        id: option.id,
-        label: option.label,
-        summaryBullet: option.summaryBullet,
-      }));
-
-    if (!getInstallationExtraState('install-threshold-seal').selected) {
-      base.push({
-        id: 'threshold-extensions',
-        label: 'Poszerzenia progowe',
-        summaryBullet: 'Dostawa i montaz poszerzen pod drzwi balkonowe / HST.',
-      });
-    }
-
-    return base;
-  }, [installationExtrasState]);
-
   const handleGeneratePDF = async (event) => {
     event.preventDefault();
 
@@ -360,6 +345,8 @@ const selectedAdvisor = useMemo(
       profileColor: profileColor.trim(),
       hingeType,
       hingeLabel,
+      glassProducer,
+      gasketPackage,
       warmSpacer,
       glazingPackage,
       rcPackage,
@@ -394,16 +381,18 @@ const selectedAdvisor = useMemo(
         setWindowPerimeter('');
         setWindowArea('');
         setProfileType('');
-        setHardwareThickness(hardwareThicknessOptions[0]?.value || '');
+        setHardwareThickness(hardwareThicknessOptions[1]?.value || '');
         setAssemblyType(assemblyTypeOptions[0]?.value || '');
         setProfileColor('');
         setHingeType(hingeOptions[0]?.value || '');
+        setGlassProducer('Shift Glass');
+        setGasketPackage(gasketOptions[0]?.value);
         setWarmSpacer('yes');
         setGlazingPackage(glazingPackageOptions[1]?.value || 'triple');
         setRcPackage(rcPackageOptions[0]?.value || 'no');
         setLazikIncluded('na');
-        setDemolitionMode(demolitionOptions[0]?.value || '');
-        setVatPreset('23');
+        setDemolitionMode('na');
+        setVatPreset('8');
         setVatCustom('');
         setAttachmentFile(null);
         setAttachmentInputKey((value) => value + 1);
@@ -424,6 +413,11 @@ const selectedAdvisor = useMemo(
   return (
     <form className="form-container okna-nest-generator" onSubmit={handleGeneratePDF}>
       <h2>Generator Okna Nest</h2>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
+        <button type="button" onClick={handleFillWithSampleData}>
+          Wypelnij danymi testowymi
+        </button>
+      </div>
 
       <fieldset className="component-fieldset">
         <legend>Dane klienta</legend>
@@ -646,18 +640,28 @@ const selectedAdvisor = useMemo(
                 </option>
               ))}
             </select>
+          </div>
+          <div className="input-group">
+            <label htmlFor="okna_profileColor">Kolor profili</label>
+            <input
+              id="okna_profileColor"
+              type="text"
+              value={profileColor}
+              onChange={(event) => setProfileColor(event.target.value)}
+              placeholder="np. Antracyt struktura RAL 7016"
+            />
+          </div>
+          <div className="input-group">
+            <label htmlFor="okna_glassProducer">Rodzaj szyby i producent</label>
+            <input
+              id="okna_glassProducer"
+              type="text"
+              value={glassProducer}
+              onChange={(event) => setGlassProducer(event.target.value)}
+              placeholder="np. Shift Glass"
+            />
+          </div>
         </div>
-        <div className="input-group">
-          <label htmlFor="okna_profileColor">Kolor profili</label>
-          <input
-            id="okna_profileColor"
-            type="text"
-            value={profileColor}
-            onChange={(event) => setProfileColor(event.target.value)}
-            placeholder="np. Antracyt struktura RAL 7016"
-          />
-        </div>
-      </div>
         <div className="input-grid" style={gridStyle}>
           <div className="input-group">
             <label htmlFor="okna_glazing">Pakiet szklenia</label>
@@ -681,6 +685,20 @@ const selectedAdvisor = useMemo(
               onChange={(event) => setWarmSpacer(event.target.value)}
             >
               {warmSpacerOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="input-group">
+            <label htmlFor="okna_gasket">Pakiet uszczelek</label>
+            <select
+              id="okna_gasket"
+              value={gasketPackage}
+              onChange={(event) => setGasketPackage(event.target.value)}
+            >
+              {gasketOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
@@ -804,119 +822,6 @@ const selectedAdvisor = useMemo(
           )}
         </div>
       </fieldset>
-
-      <fieldset className="component-fieldset">
-        <legend>Zakres stolarki</legend>
-
-        {optionalWindowOptions.length > 0 && (
-          <section style={{ marginBottom: '18px' }}>
-            <h4 style={{ fontSize: '0.95rem', fontWeight: 600, color: '#333', marginBottom: '8px' }}>
-              Elementy konfigurowalne
-            </h4>
-            <div className="options-box">
-              {optionalWindowOptions.map((option) => {
-                const selected = selectedOptionIds.includes(option.id);
-                const priceValue = optionPriceState[option.id]?.price || '';
-                return (
-                  <div key={option.id} style={{ marginBottom: '12px' }}>
-                    <label className="option-row" style={{ alignItems: 'flex-start' }}>
-                      <input
-                        type="checkbox"
-                        checked={selected}
-                        onChange={() => toggleOption(option.id)}
-                      />
-                      <span>
-                        <strong>{option.label}</strong>
-                        {option.summaryBullet && (
-                          <>
-                            <br />
-                            <small>{option.summaryBullet}</small>
-                          </>
-                        )}
-                      </span>
-                    </label>
-                    <div className="input-group" style={{ marginLeft: '28px', marginTop: '6px' }}>
-                      <label style={{ fontSize: '0.8rem' }}>Cena (PLN)</label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={priceValue}
-                        onChange={(event) => updateOptionPrice(option.id, event.target.value)}
-                        placeholder="np. 2500"
-                        disabled={!selected}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-        )}
-
-        <section style={{ marginBottom: '18px' }}>
-          <h4 style={{ fontSize: '0.95rem', fontWeight: 600, color: '#333', marginBottom: '8px' }}>
-            Opcje funkcjonalne i komfortu (TAK/NIE)
-          </h4>
-          {optionalFeatureGroups
-            .filter((group) => group.items.length > 0)
-            .map((group) => (
-              <div key={group.id} style={{ marginBottom: '16px' }}>
-                <h5 style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px', color: '#444' }}>
-                  {group.label}
-                </h5>
-                <div className="options-box">
-                  {group.items.map((item) => {
-                    if (excludedFeatureIdsInForm.has(item.id)) {
-                      return null;
-                    }
-                    const entry = featureSelections[item.id] || { enabled: false, detail: '' };
-                    return (
-                      <div key={item.id} style={{ marginBottom: '10px' }}>
-                        <label className="option-row" style={{ alignItems: 'flex-start' }}>
-                          <input
-                            type="checkbox"
-                            checked={entry.enabled}
-                            onChange={() => toggleFeatureSelection(item.id)}
-                          />
-                          <span>{item.label}</span>
-                        </label>
-                        {entry.enabled && item.detailLabel && (
-                          <div className="input-group" style={{ marginTop: '6px', marginLeft: '28px' }}>
-                            <label style={{ fontSize: '0.8rem' }}>{item.detailLabel}</label>
-                            <input
-                              type="text"
-                              value={entry.detail}
-                              onChange={(event) => updateFeatureDetail(item.id, event.target.value)}
-                              placeholder={item.detailPlaceholder || ''}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-        </section>
-
-        {complementaryOfferList.length > 0 && (
-          <section>
-            <h4 style={{ fontSize: '0.95rem', fontWeight: 600, color: '#333', marginBottom: '8px' }}>
-              Komplementarna oferta Grupy KAMAN
-            </h4>
-            <ul style={{ margin: 0, paddingLeft: '18px', color: '#444', fontSize: '0.9rem' }}>
-              {complementaryOfferList.map((option) => (
-                <li key={option.id} style={{ marginBottom: '6px' }}>
-                  <strong>{option.label}</strong>
-                  {option.summaryBullet ? ` - ${option.summaryBullet}` : ''}
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-      </fieldset>
-
       <fieldset className="component-fieldset">
         <legend>Dodatkowe uwagi</legend>
         <div className="input-group">

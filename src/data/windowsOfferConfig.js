@@ -9,7 +9,8 @@ export const profileTypeOptions = [
 
 export const hardwareThicknessOptions = [
   { value: 'standard-12', label: 'Standard 1,2 mm' },
-  { value: 'premium-20', label: 'Wzmocniony 2,0 mm (premium)' },
+  { value: 'reinforced-20', label: 'Wzmocniony 2,0 mm' },
+  { value: 'heavy-20', label: 'Najgrubsza stal 2,0 mm' },
 ];
 
 export const assemblyTypeOptions = [
@@ -190,12 +191,14 @@ export const optionalFeatureGroups = [
 
 export const installationExtras = [
   { id: 'install-sealed-tape', label: 'Montaz szczelny (tasmy)', summaryLabel: 'Montaz szczelny' },
-  { id: 'install-titan-wings', label: 'Montaz Titan Wings', summaryLabel: 'Montaz Titan Wings' },
+  { id: 'install-titan-wings', label: 'Montaz Titan Wings (montaz szczelny)', summaryLabel: 'Montaz Titan Wings' },
   { id: 'install-inner-sills', label: 'Montaz parapetow wewnetrznych', summaryLabel: 'Parapety wewnetrzne' },
   { id: 'install-outer-sills', label: 'Montaz parapetow zewnetrznych', summaryLabel: 'Parapety zewnetrzne' },
   { id: 'install-threshold-seal', label: 'Szczelny montaz progow (membrana EPDM)', summaryLabel: 'Szczelny montaz progow' },
   { id: 'install-reveal-prep', label: 'Przygotowanie glifow pod szczelny montaz', summaryLabel: 'Przygotowanie glifow' },
   { id: 'install-prime-level', label: 'Zagruntowanie i wyrownanie klejem', summaryLabel: 'Gruntowanie i wyrownanie' },
+  { id: 'install-warm-parapets', label: 'Cieple parapety XPS 700 KPA', summaryLabel: 'Cieple parapety XPS' },
+  { id: 'install-purenit-extensions', label: 'Poszerzenia pod okna PURENIT', summaryLabel: 'Poszerzenia PURENIT' },
 ];
 
 export const demolitionOptions = [

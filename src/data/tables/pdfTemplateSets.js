@@ -10,8 +10,8 @@
 
 // Centralna ścieżka do wspólnego pliku kontaktowego, aby unikać duplikacji.
 const commonContactPage = '/pdf_templates/common/5_kontakt.pdf';
-const groupPage = '/pdf_templates/common/7_grupa_kaman_pdf.pdf';
-const groupPage2 = '/pdf_templates/common/8_grupa_kaman_uslugi_pdf.pdf';
+const groupPage = '/pdf_templates/common/8_grupa_kaman_uslugi_pdf.pdf';
+const groupPage2 = '/pdf_templates/common/7_grupa_kaman_pdf.pdf';
 const oNas = '/pdf_templates/common/O_grupie.pdf';
 
 
@@ -639,3 +639,4 @@ export function getTemplatePathsForDevice(deviceType, model) {
   // W przeciwnym razie zwróć standardowy zestaw (który jest tablicą) lub ogólny domyślny
   return templateSet || defaultTemplatePaths;
 }
+

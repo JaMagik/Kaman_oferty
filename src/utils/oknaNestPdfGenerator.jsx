@@ -1,4 +1,4 @@
-// src/utils/oknaNestPdfGenerator.jsx
+﻿// src/utils/oknaNestPdfGenerator.jsx
 import { PDFDocument, rgb } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 import {
@@ -12,14 +12,15 @@ import {
   additionalOfferIds,
 } from '../data/windowsOfferConfig';
 
+const additionalOfferIdSet = new Set(additionalOfferIds);
+
 const OKNA_NEST_COVER_PATH = '/pdf_templates/okna_nest/1_okladka_okna_nest.pdf';
-const COMMON_CONTACT_PAGE_PATH = '/pdf_templates/common/5_kontakt_nest.pdf';
+const COMMON_CONTACT_PAGE_PATH = '/pdf_templates/common/kontakt_NEST.pdf';
 const LOGO_NEST_PATH = '/logos/Kaman%20Nest.png';
 const LOGO_GROUP_PATH = '/logos/Grupa%20Kaman.png';
 const ABOUT_GROUP_PATHS = [
-  '/pdf_templates/common/O_grupie.pdf',
-  '/pdf_templates/common/7_grupa_kaman_pdf.pdf',
-  '/pdf_templates/common/8_grupa_kaman_uslugi_pdf.pdf',
+  '/pdf_templates/common/O_grupie_NEST.pdf',
+  '/pdf_templates/common/Co_robimy_NEST.pdf',
 ];
 const FONT_REGULAR_PATH = '/fonts/OpenSans-Regular.ttf';
 const FONT_BOLD_PATH = '/fonts/OpenSans-Bold.ttf';
@@ -560,13 +561,15 @@ export async function generateOknaNestPDF(formData) {
     hardwareThickness,
     assemblyType,
     profileColor,
-  hingeType = '',
-  hingeLabel,
-  warmSpacer = 'no',
-  glazingPackage = 'triple',
-  rcPackage = 'no',
-  lazikIncluded = 'na',
-  demolitionMode,
+    glassProducer = 'Shift Glass',
+    gasketPackage = 'reinforced-2',
+    hingeType = '',
+    hingeLabel,
+    warmSpacer = 'yes',
+    glazingPackage = 'triple',
+    rcPackage = 'no',
+    lazikIncluded = 'na',
+    demolitionMode = 'na',
   selectedOptionIds,
   additionalNotes,
   featureSelections = {},
@@ -644,6 +647,10 @@ export async function generateOknaNestPDF(formData) {
   const warmSpacerLabel = warmSpacer === 'yes' ? 'Tak' : 'Nie';
   const glazingLabel = glazingPackage === 'double' ? 'Pakiet 2-szybowy' : 'Pakiet 3-szybowy';
   const rcLabel = rcPackage === 'yes' ? 'Tak' : 'Nie';
+  const glassProducerLabel = resolveTextValue(glassProducer || 'Shift Glass');
+  const gasketLabel =
+    gasketPackage === 'premium-3' ? 'Pakiet premium (3 uszczelki)' : 'Pakiet wzmocniony (2 uszczelki)';
+  const microventLabel = featureSelections['feature-microvent']?.enabled ? 'Tak' : 'Nie';
   const lazikLabel =
     lazikIncluded === 'yes' ? 'Tak' : lazikIncluded === 'na' ? 'Nie dotyczy' : resolveTextValue(lazikIncluded);
   const { name: advisorName = '', phone: advisorPhone = '', email: advisorEmail = '' } = clientAdvisor || {};
@@ -833,15 +840,16 @@ export async function generateOknaNestPDF(formData) {
       { parameter: 'Profil', value: profileLabel },
       { parameter: 'Kolor', value: colorLabel },
       { parameter: 'Pakiet szklenia', value: glazingLabel },
-      { parameter: 'Ciepla ramka', value: warmSpacerLabel },
-      { parameter: 'Pakiet RC', value: rcLabel },
-      { parameter: 'Grubosc okucia', value: hardwareLabel },
-      { parameter: 'Rodzaj montazu', value: assemblyLabel },
+      { parameter: 'Rodzaj szyby i producent', value: glassProducerLabel },
       { parameter: 'Zawiasy', value: hingeDisplay },
-      { parameter: 'Lazik', value: lazikLabel },
+      { parameter: 'Grubosc okucia', value: hardwareLabel },
+      { parameter: 'Pakiet uszczelek', value: gasketLabel },
+      { parameter: 'Ciepla ramka', value: warmSpacerLabel },
+      { parameter: 'Mikrowentylacja', value: microventLabel },
+      { parameter: 'Pakiet RC', value: rcLabel },
       { parameter: 'Demontaz starych okien', value: demolitionLabel },
-      { parameter: 'Powierzchnia', value: `${formatNumber(windowAreaNumber)} m2` },
-      { parameter: 'Obwod', value: `${formatNumber(windowPerimeterNumber)} mb` },
+      { parameter: 'Rodzaj montazu', value: assemblyLabel },
+      { parameter: 'Lazik', value: lazikLabel },
     ];
 
     currentY -= 10;
@@ -887,63 +895,24 @@ export async function generateOknaNestPDF(formData) {
     tablePage = parametersTableResult.page;
     currentY = parametersTableResult.y - 20;
 
-    tablePage = pdfDoc.addPage();
-    currentY = drawPageBranding(tablePage, fonts, logos, {
-      title: headerTitle,
-      subtitle: `Data oferty: ${offerDate}`,
-      titleSize: 22,
-      subtitleSize: 11,
-      extraSpacing: 10,
+    const areaText = `Powierzchnia: ${formatNumber(windowAreaNumber)} m2`;
+    tablePage.drawText(areaText, {
+      x: 60,
+      y: currentY,
+      size: 10,
+      font: boldFont,
+      color: themeText,
     });
-
-    const additionalOfferIdSet = new Set(additionalOfferIds);
-
-    let additionalOfferRows = additionalOfferIds
-      .map((id) => {
-        const option = windowOptionDefinitions.find((item) => item.id === id);
-        if (!option) {
-          return null;
-        }
-        return {
-          optionId: id,
-          label: option.label,
-          detail: option.summaryBullet || option.label,
-        };
-      })
-      .filter(Boolean);
-
-    additionalOfferRows = additionalOfferRows.filter((row) => {
-      if (row.optionId === 'internal-sills' && isExtraSelected('install-inner-sills')) {
-        return false;
-      }
-      if (row.optionId === 'external-sills' && isExtraSelected('install-outer-sills')) {
-        return false;
-      }
-      if (row.optionId === 'external-blinds' && isExtraSelected('install-titan-wings')) {
-        return false;
-      }
-      return true;
+    const perimeterText = `Obwod: ${formatNumber(windowPerimeterNumber)} mb`;
+    const perimeterWidth = boldFont.widthOfTextAtSize(perimeterText, 10);
+    tablePage.drawText(perimeterText, {
+      x: tablePage.getSize().width - 60 - perimeterWidth,
+      y: currentY,
+      size: 10,
+      font: boldFont,
+      color: themeText,
     });
-
-    if (!isExtraSelected('install-threshold-seal')) {
-      additionalOfferRows.push({
-        optionId: 'threshold-extensions',
-        label: 'Poszerzenia progowe',
-        detail: 'Dostawa i montaz poszerzen pod drzwi balkonowe / HST.',
-      });
-    }
-
-    additionalOfferRows = additionalOfferRows.map((row, index) => {
-      const isSelected = selectedOptionIds?.includes(row.optionId);
-      const priceEntry = isSelected ? normalizeOptionPrice(optionPricesState?.[row.optionId]) : '';
-      return {
-        lp: String(index + 1),
-        label: row.label,
-        status: isSelected ? 'TAK' : 'Opcja',
-        price: formatOptionalPrice(priceEntry),
-        detail: row.detail,
-      };
-    });
+    currentY -= 18;
 
     const scopeSummaryRows = [];
     let scopeIndex = 1;
@@ -988,159 +957,58 @@ export async function generateOknaNestPDF(formData) {
       detail: '---',
     });
 
-    const mountingRows = [
-      {
-        lp: '1',
-        label: 'Montaz standardowy (piana + kotwa)',
-        status: 'W cenie',
-        price: installationPriceNumber > 0 ? formatCurrency(installationPriceNumber) : 'na indywidualna wycene',
-      },
-    ];
-    installationExtras.forEach((item, index) => {
+    const mountingItems = [];
+    mountingItems.push({
+      id: 'base',
+      label: 'Montaz standardowy (piana + kotwa)',
+      selected: true,
+      price: installationPriceNumber,
+    });
+    installationExtras.forEach((item) => {
       const extraState = normalizeExtraState(installationExtrasState?.[item.id]);
-      mountingRows.push({
-        lp: String(index + 2),
-        label: item.label,
-        status: extraState.selected ? 'TAK' : 'Opcja',
-        price: formatOptionalPrice(extraState.price),
+      let label = item.label;
+      if (item.id === 'install-titan-wings') {
+        label = 'Montaz Titan Wings (montaz szczelny)';
+      }
+      mountingItems.push({
+        id: item.id,
+        label,
+        selected: extraState.selected,
+        price: parseInputNumber(extraState.price),
       });
     });
 
-    let scopePage = tablePage;
-    let scopeY = currentY;
-
-    if (scopeSummaryRows.length > 0) {
-      scopePage.drawText('Zakres oferty', {
-        x: 60,
-        y: scopeY,
-        size: 12,
-        font: boldFont,
-        color: themeBlue,
-      });
-      scopeY -= 8;
-      scopePage.drawLine({
-        start: { x: 60, y: scopeY },
-        end: { x: scopePage.getSize().width - 60, y: scopeY },
-        thickness: 0.6,
-        color: rgb(0.78, 0.86, 0.94),
-      });
-      scopeY -= 12;
-
-      const scopeTableResult = drawFlexibleTable(
-        pdfDoc,
-        scopePage,
-        fonts,
-        scopeSummaryRows,
-        [
-          { key: 'lp', header: 'Lp.', width: 36, align: 'center' },
-          { key: 'label', header: 'Pozycja', width: 260 },
-          { key: 'status', header: 'Status', width: 90, align: 'center' },
-          { key: 'detail', header: 'Uwagi', width: 150 },
-        ],
-        scopeY,
-        {
-          topMargin: 70,
-          bottomMargin: 50,
-          paddingY: 5,
-          headerBgColor: themeBlue,
-          headerFontColor: rgb(1, 1, 1),
-          rowFontColor: themeText,
-          evenRowBgColor: themeBlueLight,
-          lineColor: rgb(0.78, 0.86, 0.94),
-        },
-        (newPage) =>
-          drawPageBranding(newPage, fonts, logos, {
-            title: headerTitle,
-            subtitle: `Data oferty: ${offerDate}`,
-            titleSize: 22,
-            subtitleSize: 11,
-            extraSpacing: 10,
-          }),
-      );
-      scopePage = scopeTableResult.page;
-      scopeY = scopeTableResult.y - 16;
+    const prepIndex = mountingItems.findIndex((entry) => entry.id === 'install-reveal-prep');
+    const primeIndex = mountingItems.findIndex((entry) => entry.id === 'install-prime-level');
+    if (prepIndex !== -1 && primeIndex !== -1) {
+      const prepRow = mountingItems[prepIndex];
+      const primeRow = mountingItems[primeIndex];
+      prepRow.label = 'Przygotowanie glifow + zagruntowanie i wyrownanie klejem';
+      prepRow.selected = prepRow.selected || primeRow.selected;
+      const combinedPrice = (prepRow.price || 0) + (primeRow.price || 0);
+      prepRow.price = combinedPrice;
+      mountingItems.splice(primeIndex, 1);
     }
 
-    if (scopePage) {
-      tablePage = scopePage;
-      currentY = scopeY;
-    }
+    const mountingRows = mountingItems.map((item, index) => ({
+      lp: String(index + 1),
+      label: item.label,
+      status: item.id === 'base' ? 'W cenie' : item.selected ? 'TAK' : 'Opcja',
+      price:
+        item.id === 'base'
+          ? installationPriceNumber > 0
+            ? formatCurrency(installationPriceNumber)
+            : 'na indywidualna wycene'
+          : formatOptionalPrice(item.price),
+    }));
 
-    if (mountingRows.length > 0) {
-      if (currentY < 140) {
-        tablePage = pdfDoc.addPage();
-        currentY = drawPageBranding(tablePage, fonts, logos, {
-          title: headerTitle,
-          subtitle: `Data oferty: ${offerDate}`,
-          titleSize: 22,
-          subtitleSize: 11,
-          extraSpacing: 10,
-        });
-      }
-
-      tablePage.drawText('Zakres montazu', {
-        x: 60,
-        y: currentY,
-        size: 12,
-        font: boldFont,
-        color: themeBlue,
-      });
-      currentY -= 16;
-      tablePage.drawText('Domyslnie: montaz standardowy (piana + kotwa)', {
-        x: 60,
-        y: currentY,
-        size: 10,
-        font: regularFont,
-        color: themeText,
-      });
-      currentY -= 14;
-
-      const mountingTableResult = drawFlexibleTable(
-        pdfDoc,
-        tablePage,
-        fonts,
-        mountingRows,
-        [
-          { key: 'lp', header: 'Lp.', width: 36, align: 'center' },
-          { key: 'label', header: 'Pozycja', width: 260 },
-          { key: 'status', header: 'Status', width: 90, align: 'center' },
-          { key: 'price', header: 'Cena (PLN)', width: 150, align: 'right' },
-        ],
-        currentY,
-        {
-          topMargin: 70,
-          bottomMargin: 50,
-          paddingY: 5,
-          headerBgColor: themeBlue,
-          headerFontColor: rgb(1, 1, 1),
-          rowFontColor: themeText,
-          evenRowBgColor: themeBlueLight,
-          lineColor: rgb(0.78, 0.86, 0.94),
-        },
-        (newPage) =>
-          drawPageBranding(newPage, fonts, logos, {
-            title: headerTitle,
-            subtitle: `Data oferty: ${offerDate}`,
-            titleSize: 22,
-            subtitleSize: 11,
-            extraSpacing: 10,
-          }),
-      );
-      tablePage = mountingTableResult.page;
-      currentY = mountingTableResult.y - 16;
-    }
+    currentY -= 12;
 
     const priceTableRows = [
-      { element: 'Cena katalogowa', amount: formatCurrency(catalogPriceNumber) },
-      { element: 'Cena okien', amount: formatCurrency(discountedWindowsPrice) },
-      {
-        element: 'Montaz standardowy',
-        amount:
-          installationPriceNumber > 0 ? formatCurrency(installationPriceNumber) : 'na indywidualna wycene',
-      },
-      { element: 'Cena netto oferty', amount: formatCurrency(finalNetPrice) },
+      { element: 'Cena katalogowa okien', amount: formatCurrency(catalogPriceNumber) },
+      { element: 'Cena netto oferty (z montazem)', amount: formatCurrency(finalNetPrice) },
       { element: `VAT (${formatNumber(vatRateNumber, 2)}%)`, amount: formatCurrency(vatAmount) },
-      { element: 'Cena brutto oferty', amount: formatCurrency(finalGrossPrice) },
+      { element: 'Cena brutto oferty (z montazem)', amount: formatCurrency(finalGrossPrice) },
     ];
 
     tablePage = pdfDoc.addPage();
@@ -1192,18 +1060,21 @@ export async function generateOknaNestPDF(formData) {
         }),
     );
     tablePage = priceTableResult.page;
-    currentY = priceTableResult.y - 28;
+    currentY = priceTableResult.y - 20;
 
-    tablePage.drawLine({
-      start: { x: 60, y: currentY + 18 },
-      end: { x: tablePage.getSize().width - 60, y: currentY + 18 },
-      thickness: 0.8,
-      color: themeBlue,
-    });
-    currentY -= 12;
+    if (mountingRows.length > 0) {
+      if (currentY < 140) {
+        tablePage = pdfDoc.addPage();
+        currentY = drawPageBranding(tablePage, fonts, logos, {
+          title: headerTitle,
+          subtitle: `Data oferty: ${offerDate}`,
+          titleSize: 22,
+          subtitleSize: 11,
+          extraSpacing: 10,
+        });
+      }
 
-    if (additionalOfferRows.length > 0) {
-      tablePage.drawText('Opcje dodatkowe', {
+      tablePage.drawText('Opcje dodatkowe do montazu', {
         x: 60,
         y: currentY,
         size: 12,
@@ -1211,18 +1082,31 @@ export async function generateOknaNestPDF(formData) {
         color: themeBlue,
       });
       currentY -= 16;
+      const mountingNote =
+        'Opcje dodatkowe nie sa wymagane do prawidlowego montazu okien. Wybor i uzasadnienie ekonomiczno-montazowe uzgodnij ze swoim specjalista technicznym. Tabela ponizej prezentuje dostepne warianty.';
+      const mountingNoteLines = wrapText(regularFont, mountingNote, 9.5, tablePage.getSize().width - 120);
+      mountingNoteLines.forEach((line) => {
+        tablePage.drawText(line, {
+          x: 60,
+          y: currentY,
+          size: 9.5,
+          font: regularFont,
+          color: themeText,
+        });
+        currentY -= 12;
+      });
+      currentY -= 4;
 
-      const optionsTableResult = drawFlexibleTable(
+      const mountingTableResult = drawFlexibleTable(
         pdfDoc,
         tablePage,
         fonts,
-        additionalOfferRows,
+        mountingRows,
         [
           { key: 'lp', header: 'Lp.', width: 36, align: 'center' },
-          { key: 'label', header: 'Pozycja', width: 200 },
-          { key: 'status', header: 'Status', width: 80, align: 'center' },
-          { key: 'price', header: 'Cena (PLN)', width: 120, align: 'right' },
-          { key: 'detail', header: 'Opis', width: 120 },
+          { key: 'label', header: 'Pozycja', width: 260 },
+          { key: 'status', header: 'Status', width: 90, align: 'center' },
+          { key: 'price', header: 'Cena (PLN)', width: 150, align: 'right' },
         ],
         currentY,
         {
@@ -1244,8 +1128,8 @@ export async function generateOknaNestPDF(formData) {
             extraSpacing: 10,
           }),
       );
-      tablePage = optionsTableResult.page;
-      currentY = optionsTableResult.y - 14;
+      tablePage = mountingTableResult.page;
+      currentY = mountingTableResult.y - 16;
     }
 
     if (additionalNotes) {
@@ -1288,6 +1172,188 @@ export async function generateOknaNestPDF(formData) {
         });
         currentY -= 12;
       });
+    }
+
+    const complementaryItems = [];
+    const complementaryIdSet = new Set();
+    const addComplementaryItem = (optionId, label, detail) => {
+      if (!optionId || complementaryIdSet.has(optionId)) {
+        return;
+      }
+      complementaryIdSet.add(optionId);
+      complementaryItems.push({
+        optionId,
+        label,
+        detail,
+      });
+    };
+
+    additionalOfferIds.forEach((id) => {
+      const option = windowOptionDefinitions.find((item) => item.id === id);
+      if (!option) {
+        return;
+      }
+      addComplementaryItem(id, option.label, option.summaryBullet || option.description || option.label);
+    });
+
+    optionalOptions.forEach((option) => {
+      if (option.id === 'security-package') {
+        return;
+      }
+      addComplementaryItem(option.id, option.label, option.summaryBullet || option.description || option.label);
+    });
+
+    if (!isExtraSelected('install-threshold-seal')) {
+      addComplementaryItem(
+        'threshold-extensions',
+        'Poszerzenia progowe',
+        'Dostawa i montaz poszerzen pod drzwi balkonowe / HST.',
+      );
+    }
+
+    let complementaryRows = complementaryItems.filter((row) => {
+      if (row.optionId === 'internal-sills' && isExtraSelected('install-inner-sills')) {
+        return false;
+      }
+      if (row.optionId === 'external-sills' && isExtraSelected('install-outer-sills')) {
+        return false;
+      }
+      if (row.optionId === 'external-blinds' && isExtraSelected('install-titan-wings')) {
+        return false;
+      }
+      return true;
+    });
+
+    complementaryRows = complementaryRows.map((row, index) => {
+      const isSelected = selectedOptionIds?.includes(row.optionId);
+      const priceEntry = isSelected ? normalizeOptionPrice(optionPricesState?.[row.optionId]) : '';
+      return {
+        lp: String(index + 1),
+        label: row.label,
+        status: isSelected ? 'TAK' : 'Opcja',
+        price: formatOptionalPrice(priceEntry),
+        detail: row.detail || '',
+      };
+    });
+
+    if (complementaryRows.length > 0) {
+      tablePage = pdfDoc.addPage();
+      currentY = drawPageBranding(tablePage, fonts, logos, {
+        title: headerTitle,
+        subtitle: `Data oferty: ${offerDate}`,
+        titleSize: 22,
+        subtitleSize: 11,
+        extraSpacing: 12,
+      });
+
+      tablePage.drawText('Dodatkowe doposazenie Twoich okien', {
+        x: 60,
+        y: currentY,
+        size: 12,
+        font: boldFont,
+        color: themeBlue,
+      });
+      currentY -= 16;
+
+      const complementaryTableResult = drawFlexibleTable(
+        pdfDoc,
+        tablePage,
+        fonts,
+        complementaryRows,
+        [
+          { key: 'lp', header: 'Lp.', width: 36, align: 'center' },
+          { key: 'label', header: 'Pozycja', width: 200 },
+          { key: 'status', header: 'Status', width: 80, align: 'center' },
+          { key: 'price', header: 'Cena (PLN)', width: 120, align: 'right' },
+          { key: 'detail', header: 'Opis', width: 150 },
+        ],
+        currentY,
+        {
+          topMargin: 70,
+          bottomMargin: 50,
+          paddingY: 5,
+          headerBgColor: themeBlue,
+          headerFontColor: rgb(1, 1, 1),
+          rowFontColor: themeText,
+          evenRowBgColor: themeBlueLight,
+          lineColor: rgb(0.78, 0.86, 0.94),
+        },
+        (newPage) =>
+          drawPageBranding(newPage, fonts, logos, {
+            title: headerTitle,
+            subtitle: `Data oferty: ${offerDate}`,
+            titleSize: 22,
+            subtitleSize: 11,
+            extraSpacing: 12,
+          }),
+      );
+      tablePage = complementaryTableResult.page;
+      currentY = complementaryTableResult.y - 16;
+
+      const requiredSpace = 70;
+      if (currentY < requiredSpace) {
+        tablePage = pdfDoc.addPage();
+        currentY = drawPageBranding(tablePage, fonts, logos, {
+          title: headerTitle,
+          subtitle: `Data oferty: ${offerDate}`,
+          titleSize: 22,
+          subtitleSize: 11,
+          extraSpacing: 12,
+        });
+      }
+
+      const pageWidth = tablePage.getSize().width;
+      const headline = 'Grupa Kaman to nie tylko okna...';
+      const subline = 'Znajdziesz u nas rowniez';
+      const headlineSize = 13;
+      const sublineSize = 11;
+      const headlineWidth = boldFont.widthOfTextAtSize(headline, headlineSize);
+      const sublineWidth = regularFont.widthOfTextAtSize(subline, sublineSize);
+      const headlineX = (pageWidth - headlineWidth) / 2;
+      const sublineX = (pageWidth - sublineWidth) / 2;
+
+      tablePage.drawText(headline, {
+        x: headlineX,
+        y: currentY,
+        size: headlineSize,
+        font: boldFont,
+        color: themeBlue,
+      });
+      currentY -= headlineSize + 6;
+
+      tablePage.drawText(subline, {
+        x: sublineX,
+        y: currentY,
+        size: sublineSize,
+        font: regularFont,
+        color: themeBlue,
+      });
+      currentY -= sublineSize + 12;
+
+      const centerX = pageWidth / 2;
+      const arrowHeight = 14;
+      const arrowHalfWidth = 8;
+      const arrowTopY = currentY;
+
+      tablePage.drawLine({
+        start: { x: centerX, y: arrowTopY },
+        end: { x: centerX, y: arrowTopY - arrowHeight },
+        thickness: 1.4,
+        color: themeBlue,
+      });
+      tablePage.drawLine({
+        start: { x: centerX - arrowHalfWidth, y: arrowTopY - arrowHeight + 4 },
+        end: { x: centerX, y: arrowTopY - arrowHeight },
+        thickness: 1.4,
+        color: themeBlue,
+      });
+      tablePage.drawLine({
+        start: { x: centerX + arrowHalfWidth, y: arrowTopY - arrowHeight + 4 },
+        end: { x: centerX, y: arrowTopY - arrowHeight },
+        thickness: 1.4,
+        color: themeBlue,
+      });
+      currentY = arrowTopY - arrowHeight - 12;
     }
 
     if (attachmentFile) {
@@ -1367,4 +1433,3 @@ export async function generateOknaNestPDF(formData) {
     return null;
   }
 }
-
