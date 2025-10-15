@@ -1,4 +1,4 @@
-﻿// src/data/windowsOfferConfig.js
+// src/data/windowsOfferConfig.js
 
 export const profileTypeOptions = [
   { value: 'nest-82', label: 'Nest 82 (7-komorowy, 82 mm)' },
@@ -8,15 +8,15 @@ export const profileTypeOptions = [
 ];
 
 export const hardwareThicknessOptions = [
-  { value: 'standard-12', label: 'Standard 1,2 mm' },
-  { value: 'reinforced-20', label: 'Wzmocniony 2,0 mm' },
-  { value: 'heavy-20', label: 'Najgrubsza stal 2,0 mm' },
+  { value: 'standard-12', label: 'Standard (wzmocnienie profilu 1,2-2,0 mm)' },
+  { value: 'reinforced-20', label: 'Premium (stal 2,0 mm w kazdym oknie)' },
+  { value: 'heavy-20', label: 'Specjalne wzmocnienie (stal 2,0 mm do konstrukcji ciezkich)' },
 ];
 
 export const assemblyTypeOptions = [
   { value: 'standard-foam', label: 'Standardowy (piana + kotwa)' },
-  { value: 'sealed-tape', label: 'Szczelny (tasmy)' },
-  { value: 'titan-wings', label: 'Titan Wings' },
+  { value: 'sealed-tape', label: 'Szczelny montaz (tasmy)' },
+  { value: 'titan-wings', label: 'Szczelny montaz (Titan Wings)' },
 ];
 
 export const profileColorOptions = [
@@ -32,13 +32,15 @@ export const additionalOfferIds = [
   'external-sills',
   'external-blinds',
   'insect-screens',
+  'insect-screens-plisse',
+  'system-extensions',
   'smart-control',
 ];
 
 export const windowOptionDefinitions = [
   {
     id: 'internal-sills',
-    label: 'Parapety wewnetrzne kamienne',
+    label: 'Parapety wewnetrzne (kamienne)',
     summaryBullet: 'Kamienne parapety dociete na wymiar i osadzone po montazu stolarki.',
     description: 'Naturalny kamien lub konglomerat montowany na kleju i silikonie dopasowanym do stolarki.',
     details: [
@@ -53,7 +55,7 @@ export const windowOptionDefinitions = [
   },
   {
     id: 'external-sills',
-    label: 'Parapety zewnetrzne stal powlekana 0,5-0,7 mm',
+    label: 'Parapety zewnetrzne - stal powlekana',
     summaryBullet: 'Parapety stalowe 0,5-0,7 mm w kolorze stolarki z kompletnym uszczelnieniem podokiennym.',
     description: 'Dostawa oraz montaz parapetow stalowych powlekanych wraz z tasma uszczelniajaca, obrobkami bocznymi i zabezpieczeniem krawedzi.',
     details: [
@@ -68,9 +70,9 @@ export const windowOptionDefinitions = [
   },
   {
     id: 'external-blinds',
-    label: 'Zaluzje fasadowe',
-    summaryBullet: 'Aluminiowe zaluzje fasadowe z automatyka i dopasowaniem kolorystycznym do elewacji.',
-    description: 'System zaluzji fasadowych z prowadnicami, napedem rurowym oraz przygotowaniem pod sterowanie inteligentne.',
+    label: 'Rolety zewnetrzne',
+    summaryBullet: 'Rolety zewnetrzne z automatyka i dopasowaniem kolorystycznym do elewacji.',
+    description: 'System rolet zewnetrznych z prowadnicami, napedem rurowym oraz przygotowaniem pod sterowanie inteligentne.',
     details: [
       'Kaseta i prowadnice w kolorze stolarki',
       'Sterowanie automatyczne z pilotem lub aplikacja',
@@ -84,18 +86,48 @@ export const windowOptionDefinitions = [
   },
   {
     id: 'insect-screens',
-    label: 'Moskitiera ramkowa plisowana',
-    summaryBullet: 'Plisowana moskitiera ramkowa z latwym demontazem sezonowym.',
-    description: 'Aluminiowa moskitiera plisowana dopasowana do profilu okna, montowana na zaczepy obrotowe.',
+    label: 'Moskitiera ramkowa',
+    summaryBullet: 'Moskitiera ramkowa dopasowana do profilu okna z szybkim demontazem sezonowym.',
+    description: 'Aluminiowa moskitiera ramkowa montowana na zaczepy obrotowe, dostosowana do profili Nest.',
     details: [
       'Profil aluminiowy lakierowany proszkowo',
-      'Plisowana siatka w kolorze grafitowym',
+      'Siatka w kolorze grafitowym',
       'Zaczepy obrotowe do szybkiego demontazu',
     ],
     unit: 'szt.',
     quantity: 'wg liczby otwieranych skrzydel',
     priceNote: 'Opcja dodatkowa, kalkulacja po inwentaryzacji',
     pdfPath: '/pdf_templates/okna_nest/opcje/moskitiera.pdf',
+    defaultSelected: false,
+  },
+  {
+    id: 'insect-screens-plisse',
+    label: 'Moskitiera plisowana',
+    summaryBullet: 'Moskitiera plisowana do duzych przeszklen i drzwi tarasowych.',
+    description: 'System moskitier plisowanych z niskim progiem i prowadnicami bocznymi.',
+    details: [
+      'Stabilna prowadnica dolna o niskim progu',
+      'Plisowana siatka odporna na UV',
+      'Latwe czyszczenie i demontaz',
+    ],
+    unit: 'szt.',
+    quantity: 'wg szerokosci przejscia',
+    priceNote: 'Opcja dodatkowa, kalkulacja po inwentaryzacji',
+    defaultSelected: false,
+  },
+  {
+    id: 'system-extensions',
+    label: 'Poszerzenia systemowe / podwaliny systemowe',
+    summaryBullet: 'Fabryczne poszerzenia systemowe oraz podwaliny stabilizujace montaz stolarki.',
+    description: 'Dostarczamy i montujemy poszerzenia systemowe oraz podwaliny stabilizujace prog i ramy.',
+    details: [
+      'Dobor elementow systemowych zgodnie z projektem',
+      'Stabilizacja progow i ram okiennych',
+      'Dostosowanie wysokosci posadowienia do podlogi finalnej',
+    ],
+    unit: 'kpl.',
+    quantity: 'wg projektu',
+    priceNote: 'Opcja dodatkowa, kalkulacja po inwentaryzacji',
     defaultSelected: false,
   },
   {
@@ -190,15 +222,30 @@ export const optionalFeatureGroups = [
 ];
 
 export const installationExtras = [
-  { id: 'install-sealed-tape', label: 'Montaz szczelny (tasmy)', summaryLabel: 'Montaz szczelny' },
-  { id: 'install-titan-wings', label: 'Montaz Titan Wings (montaz szczelny)', summaryLabel: 'Montaz Titan Wings' },
-  { id: 'install-inner-sills', label: 'Montaz parapetow wewnetrznych', summaryLabel: 'Parapety wewnetrzne' },
-  { id: 'install-outer-sills', label: 'Montaz parapetow zewnetrznych', summaryLabel: 'Parapety zewnetrzne' },
-  { id: 'install-threshold-seal', label: 'Szczelny montaz progow (membrana EPDM)', summaryLabel: 'Szczelny montaz progow' },
-  { id: 'install-reveal-prep', label: 'Przygotowanie glifow pod szczelny montaz', summaryLabel: 'Przygotowanie glifow' },
+  { id: 'install-sealed-tape', label: 'Szczelny montaz (tasmy)', summaryLabel: 'Szczelny montaz (tasmy)' },
+  { id: 'install-titan-wings', label: 'Szczelny montaz (Titan Wings)', summaryLabel: 'Szczelny montaz (Titan Wings)' },
+  { id: 'install-threshold-seal', label: 'Szczelny montaz progow (EPDM)', summaryLabel: 'Szczelny montaz progow' },
+  { id: 'install-reveal-prep', label: 'Przygotowanie glifow', summaryLabel: 'Przygotowanie glifow' },
   { id: 'install-prime-level', label: 'Zagruntowanie i wyrownanie klejem', summaryLabel: 'Gruntowanie i wyrownanie' },
   { id: 'install-warm-parapets', label: 'Cieple parapety XPS 700 KPA', summaryLabel: 'Cieple parapety XPS' },
-  { id: 'install-purenit-extensions', label: 'Poszerzenia pod okna PURENIT', summaryLabel: 'Poszerzenia PURENIT' },
+  { id: 'install-purenit-extensions', label: 'Poszerzenia pod okna Purenit', summaryLabel: 'Poszerzenia Purenit' },
+  {
+    id: 'install-system-extensions',
+    label: 'Poszerzenia systemowe / podwaliny systemowe',
+    summaryLabel: 'Poszerzenia systemowe',
+  },
+  {
+    id: 'install-inner-sills',
+    label: 'Montaz parapetow wewnetrznych (kamien)',
+    summaryLabel: 'Parapety wewnetrzne',
+    supportsQuantity: true,
+  },
+  {
+    id: 'install-outer-sills',
+    label: 'Montaz parapetow zewnetrznych (stal powlekana)',
+    summaryLabel: 'Parapety zewnetrzne',
+    supportsQuantity: true,
+  },
 ];
 
 export const demolitionOptions = [
@@ -206,4 +253,18 @@ export const demolitionOptions = [
   { value: 'na', label: 'Nie dotyczy' },
   { value: 'yes', label: 'Tak' },
 ];
+
+export const demolitionTypeOptions = [
+  { value: 'na', label: 'Nie dotyczy' },
+  { value: 'full', label: 'Calosciowy demontaz ramy' },
+  { value: 'cut', label: 'Demontaz przez przeciecie' },
+];
+
+export const demolitionDirectionOptions = [
+  { value: 'inside', label: 'Od wewnatrz' },
+  { value: 'outside', label: 'Od zewnatrz' },
+  { value: 'both', label: 'Dwustronnie' },
+  { value: 'na', label: 'Do uzgodnienia' },
+];
+
 

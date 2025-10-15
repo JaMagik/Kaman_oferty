@@ -8,6 +8,8 @@ import {
   optionalFeatureGroups,
   installationExtras,
   demolitionOptions,
+  demolitionTypeOptions,
+  demolitionDirectionOptions,
   additionalOfferIds,
 } from '../data/windowsOfferConfig';
 
@@ -105,7 +107,7 @@ const buildDefaultFeatureState = () => {
 const buildDefaultInstallationExtrasState = () => {
   const state = {};
   installationExtras.forEach((item) => {
-    state[item.id] = { selected: false, price: '' };
+    state[item.id] = { selected: false, price: '', quantity: '' };
   });
   return state;
 };
@@ -143,7 +145,9 @@ const selectedAdvisor = useMemo(
   const [rcPackage, setRcPackage] = useState(rcPackageOptions[0]?.value || 'no');
   const [lazikIncluded, setLazikIncluded] = useState('na');
   const [demolitionMode, setDemolitionMode] = useState('na');
-  const [glassProducer, setGlassProducer] = useState('Shift Glass');
+  const [demolitionType, setDemolitionType] = useState('na');
+  const [demolitionDirection, setDemolitionDirection] = useState('na');
+  const [glassProducer, setGlassProducer] = useState('Shift - producent szyb');
   const [gasketPackage, setGasketPackage] = useState(gasketOptions[0]?.value);
   const [vatPreset, setVatPreset] = useState('8');
   const [vatCustom, setVatCustom] = useState('');
@@ -172,10 +176,13 @@ const selectedAdvisor = useMemo(
 
     const nextInstallationExtras = buildDefaultInstallationExtrasState();
     if (nextInstallationExtras['install-sealed-tape']) {
-      nextInstallationExtras['install-sealed-tape'] = { selected: true, price: '2400' };
+      nextInstallationExtras['install-sealed-tape'] = { selected: true, price: '2400', quantity: '' };
     }
     if (nextInstallationExtras['install-inner-sills']) {
-      nextInstallationExtras['install-inner-sills'] = { selected: true, price: '1800' };
+      nextInstallationExtras['install-inner-sills'] = { selected: true, price: '1800', quantity: '6' };
+    }
+    if (nextInstallationExtras['install-outer-sills']) {
+      nextInstallationExtras['install-outer-sills'] = { selected: true, price: '2100', quantity: '6' };
     }
 
     const optionPricesSample = buildDefaultWindowOptionPriceState();
@@ -208,12 +215,14 @@ const selectedAdvisor = useMemo(
     setRcPackage(rcPackageOptions[1]?.value || rcPackageOptions[0]?.value || 'no');
     setLazikIncluded('yes');
     setDemolitionMode('yes');
-    setGlassProducer('Shift Glass');
+    setDemolitionType('full');
+    setDemolitionDirection('inside');
+    setGlassProducer('Shift - producent szyb');
     setGasketPackage(gasketOptions[1]?.value || gasketOptions[0]?.value);
     setVatPreset('8');
     setVatCustom('');
     setSelectedOptionIds([...new Set([...defaultSelectedWindowOptionIds, ...additionalOptionIds])]);
-    setAdditionalNotes('Oferta demonstracyjna – dane pogladowe do testow.');
+    setAdditionalNotes('Oferta demonstracyjna - dane pogladowe do testow.');
     setFeatureSelections(featureStateSample);
     setInstallationExtrasState(nextInstallationExtras);
     setOptionPriceState(optionPricesSample);
@@ -224,12 +233,15 @@ const selectedAdvisor = useMemo(
 
   const toggleInstallationExtra = (extraId) => {
     setInstallationExtrasState((current) => {
-      const previous = current[extraId] || { selected: false, price: '' };
+      const previous = current[extraId] || { selected: false, price: '', quantity: '' };
+      const nextSelected = !previous.selected;
       return {
         ...current,
         [extraId]: {
           ...previous,
-          selected: !previous.selected,
+          selected: nextSelected,
+          price: nextSelected ? previous.price : '',
+          quantity: nextSelected ? previous.quantity : '',
         },
       };
     });
@@ -239,8 +251,18 @@ const selectedAdvisor = useMemo(
     setInstallationExtrasState((current) => ({
       ...current,
       [extraId]: {
-        ...(current[extraId] || { selected: false, price: '' }),
+        ...(current[extraId] || { selected: false, price: '', quantity: '' }),
         price: value,
+      },
+    }));
+  };
+
+  const updateInstallationExtraQuantity = (extraId, value) => {
+    setInstallationExtrasState((current) => ({
+      ...current,
+      [extraId]: {
+        ...(current[extraId] || { selected: false, price: '', quantity: '' }),
+        quantity: value,
       },
     }));
   };
@@ -248,9 +270,13 @@ const selectedAdvisor = useMemo(
   const getInstallationExtraState = (extraId) => {
     const entry = installationExtrasState[extraId];
     if (entry && typeof entry === 'object') {
-      return entry;
+      return {
+        selected: Boolean(entry.selected),
+        price: entry.price ?? '',
+        quantity: entry.quantity ?? '',
+      };
     }
-    return { selected: Boolean(entry), price: '' };
+    return { selected: Boolean(entry), price: '', quantity: '' };
   };
 
   const handleAttachmentChange = (event) => {
@@ -352,6 +378,8 @@ const selectedAdvisor = useMemo(
       rcPackage,
       lazikIncluded,
       demolitionMode,
+      demolitionType,
+      demolitionDirection,
       selectedOptionIds,
       additionalNotes,
       featureSelections,
@@ -658,7 +686,7 @@ const selectedAdvisor = useMemo(
               type="text"
               value={glassProducer}
               onChange={(event) => setGlassProducer(event.target.value)}
-              placeholder="np. Shift Glass"
+              placeholder="np. Shift - producent szyb"
             />
           </div>
         </div>
@@ -766,6 +794,36 @@ const selectedAdvisor = useMemo(
             </select>
           </div>
         </div>
+        <div className="input-grid" style={gridStyle}>
+          <div className="input-group">
+            <label htmlFor="okna_demolitionType">Rodzaj demontazu</label>
+            <select
+              id="okna_demolitionType"
+              value={demolitionType}
+              onChange={(event) => setDemolitionType(event.target.value)}
+            >
+              {demolitionTypeOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="input-group">
+            <label htmlFor="okna_demolitionDirection">Kierunek demontazu</label>
+            <select
+              id="okna_demolitionDirection"
+              value={demolitionDirection}
+              onChange={(event) => setDemolitionDirection(event.target.value)}
+            >
+              {demolitionDirectionOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
       </fieldset>
 
       <fieldset className="component-fieldset">
@@ -799,6 +857,19 @@ const selectedAdvisor = useMemo(
                     disabled={!extraState.selected}
                   />
                 </div>
+                {item.supportsQuantity && (
+                  <div className="input-group" style={{ marginLeft: '28px', marginTop: '6px' }}>
+                    <label style={{ fontSize: '0.8rem' }}>Sztuk</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={extraState.quantity}
+                      onChange={(event) => updateInstallationExtraQuantity(item.id, event.target.value)}
+                      placeholder="np. 6"
+                      disabled={!extraState.selected}
+                    />
+                  </div>
+                )}
               </div>
             );
           })}
@@ -842,3 +913,4 @@ const selectedAdvisor = useMemo(
     </form>
   );
 }
+
