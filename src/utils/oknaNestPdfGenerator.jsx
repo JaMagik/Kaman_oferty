@@ -550,6 +550,7 @@ export async function generateOknaNestPDF(formData) {
   const {
     userName,
     investmentAddress,
+    investmentAddressDetails = {},
     clientAdvisor = {},
     preparedBy,
     preparedByLabel,
@@ -557,6 +558,9 @@ export async function generateOknaNestPDF(formData) {
     discountPercent,
     marginPercent,
     installationPrice,
+    installationRatePerMeter,
+    installationPriceComputed,
+    installationPriceOverride,
     windowPerimeter,
     windowArea,
     profileType,
@@ -564,11 +568,11 @@ export async function generateOknaNestPDF(formData) {
     assemblyType,
     profileColor,
     glassProducer = 'Shift - producent szyb',
-    gasketPackage = 'reinforced-2',
+    glassType = 'Standardowa grubosc 4-6 mm',
+    gasketPackage = 'premium-3',
     hingeType = '',
     hingeLabel,
     warmSpacer = 'yes',
-    glazingPackage = 'triple',
     rcPackage = 'no',
     lazikIncluded = 'na',
     demolitionMode = 'na',
@@ -592,13 +596,33 @@ export async function generateOknaNestPDF(formData) {
   const discountPercentRaw = Math.max(parseInputNumber(discountPercent), 0);
   const discountPercentNumber = Math.min(discountPercentRaw, 100);
   const marginPercentNumber = Math.max(parseInputNumber(marginPercent), 0);
-  const installationPriceNumber = parseInputNumber(installationPrice);
   const windowPerimeterNumber = parseInputNumber(windowPerimeter);
   const windowAreaNumber = parseInputNumber(windowArea);
+  const installationRateNumber = parseInputNumber(installationRatePerMeter);
+  const explicitComputedInstallation = parseInputNumber(installationPriceComputed);
+  const installationOverrideNumber = parseInputNumber(installationPriceOverride);
+  const derivedComputedInstallation =
+    explicitComputedInstallation > 0
+      ? explicitComputedInstallation
+      : windowPerimeterNumber > 0 && installationRateNumber > 0
+        ? windowPerimeterNumber * installationRateNumber
+        : 0;
+  const installationPriceNumberRaw = parseInputNumber(installationPrice);
+  const installationPriceNumber =
+    installationPriceNumberRaw > 0
+      ? installationPriceNumberRaw
+      : installationOverrideNumber > 0
+        ? installationOverrideNumber
+        : derivedComputedInstallation;
   const vatRateNumber = Math.max(parseInputNumber(vatRate), 0);
 
   if (windowPerimeterNumber <= 0 || windowAreaNumber <= 0) {
     alert('Podaj laczna powierzchnie oraz obwod okien.');
+    return null;
+  }
+
+  if (installationPriceNumber <= 0) {
+    alert('Brakuje informacji o lacznej cenie montazu.');
     return null;
   }
 
@@ -655,18 +679,18 @@ export async function generateOknaNestPDF(formData) {
         ? 'Pakiet Premium: stal 2,0 mm w kazdym oknie'
         : hardwareLabel;
   const warmSpacerLabel = warmSpacer === 'yes' ? 'Tak' : 'Nie';
-  const glazingLabel = glazingPackage === 'double' ? 'Dwuszybowe' : 'Trzyszybowe';
-  const glassTypeLabel = 'Szklo laminowane / hartowane 4-6 mm';
+  const glazingLabel = 'Pakiet 3-szybowy (standard)';
+  const glassTypeLabel = resolveTextValue(glassType || 'Standardowa grubosc 4-6 mm');
   const rcLabel = rcPackage === 'yes' ? 'Tak' : 'Nie';
   const glassProducerLabel = resolveTextValue(glassProducer || 'Shift - producent szyb');
   const gasketLabel =
     gasketPackage === 'premium-3'
-      ? 'Pakiet premium: 3 uszczelki (potwierdz z Robertem wariant mikrowentylacji)'
-      : 'Pakiet standard: 2 uszczelki (potwierdzic wariant mikrowentylacji)';
+      ? 'W standardzie: pakiet 3 uszczelek'
+      : 'Pakiet 2 uszczelek (na zamowienie)';
   const microventEnabled = Boolean(featureSelections['feature-microvent']?.enabled);
   const microventLabel = microventEnabled
-    ? 'Tak (klamka z funkcja mikrowentylacji)'
-    : 'Do ustalenia: rozszerzenie okna lub klamka z mikrowentylacja';
+    ? 'W zestawie: klamka z funkcja mikrowentylacji'
+    : 'Opcjonalnie: klamka z funkcja mikrowentylacji';
   const lazikLabel =
     lazikIncluded === 'yes' ? 'Tak' : lazikIncluded === 'na' ? 'Nie dotyczy' : resolveTextValue(lazikIncluded);
   const { name: advisorName = '', phone: advisorPhone = '', email: advisorEmail = '' } = clientAdvisor || {};
@@ -732,6 +756,23 @@ export async function generateOknaNestPDF(formData) {
     const offerDate = sanitizeNbsp(new Intl.DateTimeFormat('pl-PL').format(new Date()));
     const offerRecipient = resolveTextValue(userName);
     const headerTitle = '';
+    const addressTown = resolveTextValue(investmentAddressDetails.town);
+    const addressStreet = resolveTextValue(investmentAddressDetails.street);
+    const addressPostalCode = resolveTextValue(investmentAddressDetails.postalCode);
+    const addressCity = resolveTextValue(investmentAddressDetails.city);
+    const addressSegments = [];
+    if (addressTown && addressTown !== '---') {
+      addressSegments.push(`Miejscowosc: ${addressTown}`);
+    }
+    if (addressStreet && addressStreet !== '---') {
+      addressSegments.push(`Ulica: ${addressStreet}`);
+    }
+    const postalCityLine = [addressPostalCode, addressCity].filter((part) => part && part !== '---').join(' ');
+    if (postalCityLine) {
+      addressSegments.push(`Kod pocztowy i miasto: ${postalCityLine}`);
+    }
+    const investmentAddressDisplay =
+      addressSegments.length > 0 ? addressSegments.join('\n') : resolveTextValue(investmentAddress);
     let tablePage = pdfDoc.addPage();
     let currentY = drawPageBranding(tablePage, fonts, logos, {
       title: headerTitle,
@@ -745,7 +786,7 @@ export async function generateOknaNestPDF(formData) {
 
     const leftColumnEntries = [
       { label: 'Oferta dla', value: offerRecipient },
-      { label: 'Adres inwestycji', value: investmentAddress },
+      { label: 'Adres inwestycji', value: investmentAddressDisplay },
       { label: 'Waznosc oferty', value: '14 dni' },
     ];
 
@@ -768,17 +809,27 @@ export async function generateOknaNestPDF(formData) {
           font: boldFont,
           color: rgb(0.15, 0.15, 0.15),
         });
-        const valueLines = wrapText(regularFont, resolveTextValue(value), 10, Math.max(columnWidth - 8, 40));
+        const rawValue = resolveTextValue(value);
+        const blockSegments = rawValue.split('\n').filter(Boolean);
         let valueY = y - 11;
-        valueLines.forEach((line) => {
-          tablePage.drawText(line, {
-            x: startX,
-            y: valueY,
-            size: 10,
-            font: regularFont,
-            color: rgb(0.18, 0.18, 0.18),
+        if (blockSegments.length === 0) {
+          blockSegments.push('---');
+        }
+        blockSegments.forEach((segment, segmentIndex) => {
+          const segmentLines = wrapText(regularFont, segment, 10, Math.max(columnWidth - 8, 40));
+          segmentLines.forEach((line) => {
+            tablePage.drawText(line, {
+              x: startX,
+              y: valueY,
+              size: 10,
+              font: regularFont,
+              color: rgb(0.18, 0.18, 0.18),
+            });
+            valueY -= 11;
           });
-          valueY -= 11;
+          if (segmentIndex < blockSegments.length - 1) {
+            valueY -= 4;
+          }
         });
         y = valueY - 4;
 
@@ -869,13 +920,22 @@ export async function generateOknaNestPDF(formData) {
       { parameter: 'Wzmocnienie profilu', value: reinforcementLabel },
       { parameter: 'Zawiasy', value: hingeDisplay },
       { parameter: 'Pakiet uszczelek', value: gasketLabel },
-      { parameter: 'Mikrowentylacja', value: microventLabel },
+      { parameter: 'Klamka z mikrowentylacja', value: microventLabel },
       { parameter: 'Ciepla ramka', value: warmSpacerLabel },
       { parameter: 'Pakiet RC', value: rcLabel },
       { parameter: 'Demontaz starych okien', value: demolitionLabel },
       { parameter: 'Rodzaj demontazu', value: demolitionTypeLabel },
       { parameter: 'Kierunek demontazu', value: demolitionDirectionLabel },
       { parameter: 'Rodzaj montazu', value: assemblyLabel },
+      {
+        parameter: 'Cena montazu (1 mb obwodu)',
+        value: installationRateNumber > 0 ? `${formatNumber(installationRateNumber, 2)} PLN/mb` : '---',
+      },
+      {
+        parameter: 'Cena montazu (wg obwodu)',
+        value: derivedComputedInstallation > 0 ? formatCurrency(derivedComputedInstallation) : '---',
+      },
+      { parameter: 'Cena montazu (wariant uzyty)', value: formatCurrency(installationPriceNumber) },
       { parameter: 'Lazik', value: lazikLabel },
     ];
 
@@ -922,24 +982,44 @@ export async function generateOknaNestPDF(formData) {
     tablePage = parametersTableResult.page;
     currentY = parametersTableResult.y - 20;
 
+    const boxPaddingX = 18;
+    const boxHeight = 34;
+    const metricsPageWidth = tablePage.getSize().width;
+    const boxWidth = metricsPageWidth - 96;
+    const boxX = 48;
+    currentY -= 8;
+    const boxBottomY = currentY - boxHeight;
+
+    tablePage.drawRectangle({
+      x: boxX,
+      y: boxBottomY,
+      width: boxWidth,
+      height: boxHeight,
+      borderColor: themeBlue,
+      borderWidth: 1.2,
+      color: rgb(0.93, 0.97, 1),
+    });
+
+    const baselineY = boxBottomY + (boxHeight - 12) / 2 + 2;
     const areaText = `Powierzchnia okien: ${formatNumber(windowAreaNumber)} m2`;
     tablePage.drawText(areaText, {
-      x: 60,
-      y: currentY,
+      x: boxX + boxPaddingX,
+      y: baselineY,
       size: 12,
       font: boldFont,
       color: themeBlue,
     });
+
     const perimeterText = `Obwod okien: ${formatNumber(windowPerimeterNumber)} mb`;
     const perimeterWidth = boldFont.widthOfTextAtSize(perimeterText, 12);
     tablePage.drawText(perimeterText, {
-      x: tablePage.getSize().width - 60 - perimeterWidth,
-      y: currentY,
+      x: boxX + boxWidth - boxPaddingX - perimeterWidth,
+      y: baselineY,
       size: 12,
       font: boldFont,
       color: themeBlue,
     });
-    currentY -= 22;
+    currentY = boxBottomY - 18;
 
     const scopeSummaryRows = [];
     let scopeIndex = 1;
@@ -1056,10 +1136,9 @@ export async function generateOknaNestPDF(formData) {
     currentY -= 12;
 
     const priceTableRows = [
-      { element: 'Cena katalogowa okien', amount: formatCurrency(catalogPriceNumber) },
-      { element: 'Cena netto oferty (z montazem)', amount: formatCurrency(finalNetPrice) },
-      { element: `VAT (${formatNumber(vatRateNumber, 2)}%)`, amount: formatCurrency(vatAmount) },
-      { element: 'Cena brutto oferty (z montazem)', amount: formatCurrency(finalGrossPrice) },
+      { element: 'CENA NETTO OFERTY Z MONTAZEM', amount: formatCurrency(finalNetPrice) },
+      { element: `VAT (${formatNumber(vatRateNumber, 0)})`, amount: formatCurrency(vatAmount) },
+      { element: 'CENA BRUTTO OFERTY Z MONTAZEM', amount: formatCurrency(finalGrossPrice) },
     ];
 
     tablePage = pdfDoc.addPage();
@@ -1247,9 +1326,6 @@ export async function generateOknaNestPDF(formData) {
       });
     };
 
-    pushOptionCandidate('external-sills', 1, 'Parapety zewnetrzne');
-    pushOptionCandidate('internal-sills', 2, 'Parapety wewnetrzne (kamienne)');
-    pushOptionCandidate('external-blinds', 3, 'Rolety zewnetrzne');
     pushOptionCandidate('insect-screens', 4, 'Moskitiera ramkowa');
     pushOptionCandidate('insect-screens-plisse', 5, 'Moskitiera plisowana');
     pushOptionCandidate('smart-control', 6, 'Sterowanie inteligentne');
@@ -1264,14 +1340,36 @@ export async function generateOknaNestPDF(formData) {
       detail: thresholdDetail,
     });
 
-    deferredParapetRows.forEach((row) => {
-      complementaryCandidates.push({
-        priority: row.detailId === 'install-outer-sills' ? 1.5 : 2.5,
-        label: row.label,
-        status: row.status,
-        price: row.price,
-        detail: `Montaz parapetow (ilosc: ${row.quantity || 'wg projektu'})`,
-      });
+    const innerSillsExtra = getExtraState('install-inner-sills');
+    const outerSillsExtra = getExtraState('install-outer-sills');
+    const internalSillsOptionSelected = selectedOptionIds?.includes('internal-sills');
+    const externalSillsOptionSelected = selectedOptionIds?.includes('external-sills');
+    const externalBlindsOptionSelected = selectedOptionIds?.includes('external-blinds');
+    const aggregatedSelected =
+      innerSillsExtra.selected ||
+      outerSillsExtra.selected ||
+      internalSillsOptionSelected ||
+      externalSillsOptionSelected ||
+      externalBlindsOptionSelected;
+
+    const aggregatedPriceNumber =
+      parseInputNumber(innerSillsExtra.price) +
+      parseInputNumber(outerSillsExtra.price) +
+      parseInputNumber(normalizeOptionPrice(optionPricesState?.['internal-sills'])) +
+      parseInputNumber(normalizeOptionPrice(optionPricesState?.['external-sills'])) +
+      parseInputNumber(normalizeOptionPrice(optionPricesState?.['external-blinds']));
+
+    const parapetQuantityInfo =
+      innerSillsExtra.quantity || outerSillsExtra.quantity
+        ? ` (ilosc: ${innerSillsExtra.quantity || outerSillsExtra.quantity})`
+        : '';
+
+    complementaryCandidates.push({
+      priority: 1.2,
+      label: 'Parapety wewnetrzne i rolety zewnetrzne (automatyka, kolor elewacji)',
+      status: aggregatedSelected ? 'TAK' : 'Opcja',
+      price: formatOptionalPrice(aggregatedPriceNumber),
+      detail: `Montaz parapetow wewnetrznych oraz rolety zewnetrzne z automatyka dopasowana do koloru elewacji${parapetQuantityInfo}.`,
     });
 
     complementaryCandidates.sort((a, b) => a.priority - b.priority);
@@ -1310,10 +1408,10 @@ export async function generateOknaNestPDF(formData) {
         complementaryRows,
         [
           { key: 'lp', header: 'Lp.', width: 36, align: 'center' },
-          { key: 'label', header: 'Pozycja', width: 185 },
-          { key: 'status', header: 'Status', width: 70, align: 'center' },
-          { key: 'price', header: 'Cena (PLN)', width: 90, align: 'right' },
-          { key: 'detail', header: 'Opis', width: 95 },
+          { key: 'label', header: 'Pozycja', width: 165 },
+          { key: 'status', header: 'Status', width: 60, align: 'center' },
+          { key: 'price', header: 'Cena (PLN)', width: 95, align: 'left' },
+          { key: 'detail', header: 'Opis', width: 150 },
         ],
         currentY,
         {

@@ -1,10 +1,18 @@
 // src/data/windowsOfferConfig.js
 
 export const profileTypeOptions = [
-  { value: 'nest-82', label: 'Nest 82 (7-komorowy, 82 mm)' },
-  { value: 'nest-92', label: 'Nest 92 (8-komorowy, 92 mm)' },
-  { value: 'nest-aluline', label: 'Nest AluLine (profil aluminiowy nakladkowy)' },
-  { value: 'nest-slim', label: 'Nest Slim (profil waski do fasad)' },
+  { value: 'veka', label: 'VEKA' },
+  { value: 'vital', label: 'VITAL' },
+  { value: 'deko', label: 'DEKO' },
+  { value: 'rehau', label: 'REHAU' },
+  { value: 'custom', label: 'Dopisz recznie' },
+];
+
+export const glassTypeOptions = [
+  { value: 'standard', label: 'Standardowa grubosc 4-6 mm' },
+  { value: 'tempered', label: 'Hartowana szyba' },
+  { value: 'laminated', label: 'Laminowana szyba' },
+  { value: 'custom', label: 'Dopisz recznie' },
 ];
 
 export const hardwareThicknessOptions = [
@@ -188,8 +196,8 @@ export const optionalFeatureGroups = [
     items: [
       {
         id: 'feature-microvent',
-        label: 'Mikrowentylacja / stopniowanie uchylu',
-        summaryLabel: 'Mikrowentylacja',
+        label: 'Klamka z funkcja mikrowentylacji',
+        summaryLabel: 'Klamka z mikrowentylacja',
       },
       {
         id: 'feature-hinge-brake',
@@ -225,7 +233,7 @@ export const installationExtras = [
   { id: 'install-sealed-tape', label: 'Szczelny montaz (tasmy)', summaryLabel: 'Szczelny montaz (tasmy)' },
   { id: 'install-titan-wings', label: 'Szczelny montaz (Titan Wings)', summaryLabel: 'Szczelny montaz (Titan Wings)' },
   { id: 'install-threshold-seal', label: 'Szczelny montaz progow (EPDM)', summaryLabel: 'Szczelny montaz progow' },
-  { id: 'install-reveal-prep', label: 'Przygotowanie glifow', summaryLabel: 'Przygotowanie glifow' },
+  { id: 'install-reveal-prep', label: 'Przygotowanie glifow pod szczelny montaz', summaryLabel: 'Przygotowanie glifow' },
   { id: 'install-prime-level', label: 'Zagruntowanie i wyrownanie klejem', summaryLabel: 'Gruntowanie i wyrownanie' },
   { id: 'install-warm-parapets', label: 'Cieple parapety XPS 700 KPA', summaryLabel: 'Cieple parapety XPS' },
   { id: 'install-purenit-extensions', label: 'Poszerzenia pod okna Purenit', summaryLabel: 'Poszerzenia Purenit' },
@@ -257,7 +265,7 @@ export const demolitionOptions = [
 export const demolitionTypeOptions = [
   { value: 'na', label: 'Nie dotyczy' },
   { value: 'full', label: 'Calosciowy demontaz ramy' },
-  { value: 'cut', label: 'Demontaz przez przeciecie' },
+  { value: 'cut', label: 'Demontaz przez przeciecie ram' },
 ];
 
 export const demolitionDirectionOptions = [

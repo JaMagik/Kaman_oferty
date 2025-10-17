@@ -2,6 +2,7 @@
 import React, { useMemo, useState } from 'react';
 import { generateOknaNestPDF } from '../utils/oknaNestPdfGenerator';
 import {
+  profileTypeOptions,
   assemblyTypeOptions,
   hardwareThicknessOptions,
   windowOptionDefinitions,
@@ -11,6 +12,7 @@ import {
   demolitionTypeOptions,
   demolitionDirectionOptions,
   additionalOfferIds,
+  glassTypeOptions,
 } from '../data/windowsOfferConfig';
 
 const clientAdvisorOptions = [
@@ -31,6 +33,12 @@ const clientAdvisorOptions = [
     label: 'Robert Mularczyk',
     phone: '574 571 100',
     email: 'robert.mularczyk@kaman.eu',
+  },
+  {
+    value: 'kamil',
+    label: 'Kamil Porzucek',
+    phone: '733 803 033',
+    email: 'biuro@kaman.eu',
   },
 ];
 
@@ -65,11 +73,6 @@ const warmSpacerOptions = [
   { value: 'yes', label: 'Tak' },
 ];
 
-const glazingPackageOptions = [
-  { value: 'double', label: 'Pakiet 2-szybowy' },
-  { value: 'triple', label: 'Pakiet 3-szybowy' },
-];
-
 const rcPackageOptions = [
   { value: 'no', label: 'Nie' },
   { value: 'yes', label: 'Tak' },
@@ -81,9 +84,33 @@ const lazikOptions = [
 ];
 
 const gasketOptions = [
-  { value: 'reinforced-2', label: 'Pakiet wzmocniony (2 uszczelki)' },
-  { value: 'premium-3', label: 'Pakiet premium (3 uszczelki)' },
+  { value: 'premium-3', label: 'Pakiet standardowy (3 uszczelki)' },
+  { value: 'reinforced-2', label: 'Pakiet 2 uszczelki (na zamowienie)' },
 ];
+
+const normalizeString = (value) => (value ? value.trim() : '');
+
+const composeInvestmentAddressDisplay = (town, street, postalCode, city) => {
+  const segments = [];
+  const normalizedTown = normalizeString(town);
+  const normalizedStreet = normalizeString(street);
+  const normalizedPostalCode = normalizeString(postalCode);
+  const normalizedCity = normalizeString(city);
+
+  if (normalizedTown) {
+    segments.push(`Miejscowosc: ${normalizedTown}`);
+  }
+  if (normalizedStreet) {
+    segments.push(`Ulica: ${normalizedStreet}`);
+  }
+
+  const postalCityLine = [normalizedPostalCode, normalizedCity].filter(Boolean).join(' ');
+  if (postalCityLine) {
+    segments.push(`Kod pocztowy i miasto: ${postalCityLine}`);
+  }
+
+  return segments.join('\n');
+};
 
 const parsePreviewNumber = (value) => {
   if (!value) {
@@ -119,36 +146,60 @@ const buildDefaultWindowOptionPriceState = () => {
   });
   return state;
 };
+
 export default function OknaNestOfferForm() {
-const defaultAdvisor =
-  clientAdvisorOptions.find((advisor) => advisor.value === 'robert') || clientAdvisorOptions[0];
-const [userName, setUserName] = useState('');
-const [investmentAddress, setInvestmentAddress] = useState('');
-const [selectedAdvisorKey, setSelectedAdvisorKey] = useState(defaultAdvisor?.value || '');
-const selectedAdvisor = useMemo(
-  () => clientAdvisorOptions.find((option) => option.value === selectedAdvisorKey) || defaultAdvisor || {},
-  [selectedAdvisorKey, defaultAdvisor],
-);
+  const defaultAdvisor =
+    clientAdvisorOptions.find((advisor) => advisor.value === 'robert') || clientAdvisorOptions[0];
+  const firstProfileOption =
+    profileTypeOptions.find((option) => option.value !== 'custom')?.value ||
+    profileTypeOptions[0]?.value ||
+    'custom';
+  const firstProfileLabel =
+    profileTypeOptions.find((option) => option.value === firstProfileOption)?.label || '';
+  const firstGlassOption =
+    glassTypeOptions.find((option) => option.value !== 'custom')?.value ||
+    glassTypeOptions[0]?.value ||
+    'custom';
+  const firstGlassLabel =
+    glassTypeOptions.find((option) => option.value === firstGlassOption)?.label || '';
+
+  const [userName, setUserName] = useState('');
+  const [investmentTown, setInvestmentTown] = useState('');
+  const [investmentStreet, setInvestmentStreet] = useState('');
+  const [investmentPostalCode, setInvestmentPostalCode] = useState('');
+  const [investmentCity, setInvestmentCity] = useState('');
+  const [selectedAdvisorKey, setSelectedAdvisorKey] = useState(defaultAdvisor?.value || '');
+  const selectedAdvisor = useMemo(
+    () => clientAdvisorOptions.find((option) => option.value === selectedAdvisorKey) || defaultAdvisor || {},
+    [selectedAdvisorKey, defaultAdvisor],
+  );
   const [catalogPrice, setCatalogPrice] = useState('');
   const [discountPercent, setDiscountPercent] = useState('');
   const [marginPercent, setMarginPercent] = useState('');
-  const [installationPrice, setInstallationPrice] = useState('');
+  const [installationRatePerMeter, setInstallationRatePerMeter] = useState('');
+  const [installationTotalOverride, setInstallationTotalOverride] = useState('');
   const [windowPerimeter, setWindowPerimeter] = useState('');
   const [windowArea, setWindowArea] = useState('');
-  const [profileType, setProfileType] = useState('');
-  const [hardwareThickness, setHardwareThickness] = useState(hardwareThicknessOptions[1]?.value || '');
+  const [profileTypeSelection, setProfileTypeSelection] = useState(firstProfileOption);
+  const [profileType, setProfileType] = useState(firstProfileOption === 'custom' ? '' : firstProfileLabel);
+  const [hardwareThickness, setHardwareThickness] = useState(
+    hardwareThicknessOptions[1]?.value || hardwareThicknessOptions[0]?.value || '',
+  );
   const [assemblyType, setAssemblyType] = useState(assemblyTypeOptions[0]?.value || '');
   const [profileColor, setProfileColor] = useState('');
   const [hingeType, setHingeType] = useState(hingeOptions[0]?.value || '');
   const [warmSpacer, setWarmSpacer] = useState('yes');
-  const [glazingPackage, setGlazingPackage] = useState(glazingPackageOptions[1]?.value || 'triple');
+  const [glassTypeSelection, setGlassTypeSelection] = useState(firstGlassOption);
+  const [glassType, setGlassType] = useState(firstGlassOption === 'custom' ? '' : firstGlassLabel);
   const [rcPackage, setRcPackage] = useState(rcPackageOptions[0]?.value || 'no');
   const [lazikIncluded, setLazikIncluded] = useState('na');
   const [demolitionMode, setDemolitionMode] = useState('na');
   const [demolitionType, setDemolitionType] = useState('na');
   const [demolitionDirection, setDemolitionDirection] = useState('na');
   const [glassProducer, setGlassProducer] = useState('Shift - producent szyb');
-  const [gasketPackage, setGasketPackage] = useState(gasketOptions[0]?.value);
+  const defaultGasketValue =
+    gasketOptions.find((option) => option.value === 'premium-3')?.value || gasketOptions[0]?.value;
+  const [gasketPackage, setGasketPackage] = useState(defaultGasketValue);
   const [vatPreset, setVatPreset] = useState('8');
   const [vatCustom, setVatCustom] = useState('');
   const [attachmentFile, setAttachmentFile] = useState(null);
@@ -171,7 +222,13 @@ const selectedAdvisor = useMemo(
     const defaultHardware = hardwareThicknessOptions[1]?.value || hardwareThicknessOptions[0]?.value || '';
     const defaultAssembly = assemblyTypeOptions[0]?.value || '';
     const defaultHinge = hingeOptions[1]?.value || hingeOptions[0]?.value || '';
-    const defaultGlazing = glazingPackageOptions[1]?.value || glazingPackageOptions[0]?.value || '';
+    const defaultGlassSelection =
+      glassTypeOptions.find((option) => option.value === 'standard')?.value ||
+      glassTypeOptions.find((option) => option.value !== 'custom')?.value ||
+      glassTypeOptions[0]?.value ||
+      'custom';
+    const defaultGlassLabel =
+      glassTypeOptions.find((option) => option.value === defaultGlassSelection)?.label || '';
     const optionalSelection = optionalWindowOptions.slice(0, 2);
 
     const nextInstallationExtras = buildDefaultInstallationExtrasState();
@@ -197,28 +254,34 @@ const selectedAdvisor = useMemo(
     }
 
     setUserName('Anna Testowa');
-    setInvestmentAddress('ul. Przykladowa 12, Krakow');
+    setInvestmentTown('Krakow');
+    setInvestmentStreet('ul. Przykladowa 12');
+    setInvestmentPostalCode('30-001');
+    setInvestmentCity('Krakow');
     setSelectedAdvisorKey(selectedAdvisorValue);
     setCatalogPrice('55000');
     setDiscountPercent('15');
     setMarginPercent('10');
-    setInstallationPrice('8500');
+    setInstallationRatePerMeter('64.39');
+    setInstallationTotalOverride('8500');
     setWindowPerimeter('132');
     setWindowArea('48');
-    setProfileType('Okno Nest Premium 82 mm');
+    setProfileTypeSelection('veka');
+    setProfileType('VEKA');
     setHardwareThickness(defaultHardware);
     setAssemblyType(defaultAssembly);
-    setProfileColor('Antracyt obustronny');
+    setProfileColor('Kolor stolarki zgodny z projektem');
     setHingeType(defaultHinge);
     setWarmSpacer('yes');
-    setGlazingPackage(defaultGlazing);
+    setGlassTypeSelection(defaultGlassSelection);
+    setGlassType(defaultGlassSelection === 'custom' ? '' : defaultGlassLabel);
     setRcPackage(rcPackageOptions[1]?.value || rcPackageOptions[0]?.value || 'no');
     setLazikIncluded('yes');
     setDemolitionMode('yes');
     setDemolitionType('full');
     setDemolitionDirection('inside');
     setGlassProducer('Shift - producent szyb');
-    setGasketPackage(gasketOptions[1]?.value || gasketOptions[0]?.value);
+    setGasketPackage(defaultGasketValue);
     setVatPreset('8');
     setVatCustom('');
     setSelectedOptionIds([...new Set([...defaultSelectedWindowOptionIds, ...additionalOptionIds])]);
@@ -286,13 +349,18 @@ const selectedAdvisor = useMemo(
 
   const pricePreview = useMemo(() => {
     const catalog = parsePreviewNumber(catalogPrice);
-    const installation = parsePreviewNumber(installationPrice);
+    const perimeter = parsePreviewNumber(windowPerimeter);
+    const ratePerMeter = parsePreviewNumber(installationRatePerMeter);
+    const computedInstallation =
+      perimeter > 0 && ratePerMeter > 0 ? perimeter * ratePerMeter : 0;
+    const overrideInstallation = parsePreviewNumber(installationTotalOverride);
+    const installationApplied = overrideInstallation > 0 ? overrideInstallation : computedInstallation;
     const discountRateRaw = parsePreviewNumber(discountPercent);
     const marginRate = parsePreviewNumber(marginPercent);
     const vatRaw = vatPreset === 'custom' ? vatCustom : vatPreset;
     const vatRateValue = Math.max(parsePreviewNumber(vatRaw), 0);
 
-    const baseSum = catalog + installation;
+    const baseSum = catalog + installationApplied;
     if (baseSum <= 0) {
       return null;
     }
@@ -300,8 +368,8 @@ const selectedAdvisor = useMemo(
     const discountRate = Math.min(Math.max(discountRateRaw, 0), 100);
     const discountAmount = catalog * (discountRate / 100);
     const discountedWindowsPrice = Math.max(catalog - discountAmount, 0);
-    const netAfterDiscount = discountedWindowsPrice + installation;
-    const marginAmount = netAfterDiscount * (marginRate / 100);
+    const netAfterDiscount = discountedWindowsPrice + installationApplied;
+    const marginAmount = netAfterDiscount * (Math.max(marginRate, 0) / 100);
     const netWithMargin = netAfterDiscount + marginAmount;
     const vatAmount = netWithMargin * (vatRateValue / 100);
     const grossTotal = netWithMargin + vatAmount;
@@ -311,6 +379,10 @@ const selectedAdvisor = useMemo(
       discountRate,
       discountAmount,
       discountedWindowsPrice,
+      installationRate: ratePerMeter,
+      installationComputed: computedInstallation,
+      installationOverride: overrideInstallation > 0 ? overrideInstallation : null,
+      installationApplied,
       marginAmount,
       netAfterDiscount,
       netWithMargin,
@@ -318,7 +390,16 @@ const selectedAdvisor = useMemo(
       grossTotal,
       vatRateValue,
     };
-  }, [catalogPrice, installationPrice, discountPercent, marginPercent, vatPreset, vatCustom]);
+  }, [
+    catalogPrice,
+    installationRatePerMeter,
+    installationTotalOverride,
+    windowPerimeter,
+    discountPercent,
+    marginPercent,
+    vatPreset,
+    vatCustom,
+  ]);
 
   const handleGeneratePDF = async (event) => {
     event.preventDefault();
@@ -328,66 +409,111 @@ const selectedAdvisor = useMemo(
       return;
     }
 
-    if (!investmentAddress.trim()) {
-      alert('Podaj adres inwestycji.');
+    const townValue = normalizeString(investmentTown);
+    const streetValue = normalizeString(investmentStreet);
+    const postalValue = normalizeString(investmentPostalCode);
+    const cityValue = normalizeString(investmentCity);
+
+    if (!townValue || !streetValue || !postalValue || !cityValue) {
+      alert('Podaj miejscowosc, ulice, kod pocztowy i miasto dla inwestycji.');
       return;
     }
 
-  if (!windowArea || !windowPerimeter) {
-    alert('Podaj obwod oraz laczna powierzchnie okien.');
-    return;
-  }
+    if (!windowArea || !windowPerimeter) {
+      alert('Podaj obwod oraz laczna powierzchnie okien.');
+      return;
+    }
 
-  if (vatPreset === 'custom' && !vatCustom) {
-    alert('Podaj wartosc podatku VAT.');
-    return;
-  }
+    if (vatPreset === 'custom' && !vatCustom) {
+      alert('Podaj wartosc podatku VAT.');
+      return;
+    }
 
-  setIsProcessing(true);
+    const profileTypeValue = profileType.trim();
+    const glassTypeValue = glassType.trim();
 
-  try {
+    if (!profileTypeValue) {
+      alert('Wybierz lub wpisz rodzaj profilu.');
+      return;
+    }
+
+    if (!glassTypeValue) {
+      alert('Wybierz lub wpisz rodzaj szyby.');
+      return;
+    }
+
+    const perimeterValue = parsePreviewNumber(windowPerimeter);
+    const rateValue = parsePreviewNumber(installationRatePerMeter);
+    const overrideValue = parsePreviewNumber(installationTotalOverride);
+    const computedInstallation = perimeterValue > 0 && rateValue > 0 ? perimeterValue * rateValue : 0;
+    const effectiveInstallation = overrideValue > 0 ? overrideValue : computedInstallation;
+
+    if (effectiveInstallation <= 0) {
+      alert('Podaj stawke montazu za 1 mb obwodu lub laczna kwote montazu.');
+      return;
+    }
+
+    const investmentAddressText = composeInvestmentAddressDisplay(
+      townValue,
+      streetValue,
+      postalValue,
+      cityValue,
+    );
     const hingeLabel = hingeOptions.find((option) => option.value === hingeType)?.label || hingeType;
     const resolvedVatRate = vatPreset === 'custom' ? vatCustom : vatPreset;
     const advisor = selectedAdvisor || defaultAdvisor || {};
-    const pdfBlob = await generateOknaNestPDF({
-      userName: userName.trim(),
-      investmentAddress: investmentAddress.trim(),
-      clientAdvisor: {
-        name: advisor.label || '',
-        phone: advisor.phone || '',
-        email: advisor.email || '',
-      },
-      preparedBy: advisor.value || '',
-      preparedByLabel: advisor.label || '',
-      catalogPrice,
-      discountPercent,
-      marginPercent,
-      installationPrice,
-      windowPerimeter,
-      windowArea,
-      profileType: profileType.trim(),
-      hardwareThickness,
-      assemblyType,
-      profileColor: profileColor.trim(),
-      hingeType,
-      hingeLabel,
-      glassProducer,
-      gasketPackage,
-      warmSpacer,
-      glazingPackage,
-      rcPackage,
-      lazikIncluded,
-      demolitionMode,
-      demolitionType,
-      demolitionDirection,
-      selectedOptionIds,
-      additionalNotes,
-      featureSelections,
-      installationExtras: installationExtrasState,
-      optionPrices: optionPriceState,
-      vatRate: resolvedVatRate,
-      attachmentFile,
-    });
+
+    setIsProcessing(true);
+
+    try {
+      const pdfBlob = await generateOknaNestPDF({
+        userName: userName.trim(),
+        investmentAddress: investmentAddressText,
+        investmentAddressDetails: {
+          town: townValue,
+          street: streetValue,
+          postalCode: postalValue,
+          city: cityValue,
+        },
+        clientAdvisor: {
+          name: advisor.label || '',
+          phone: advisor.phone || '',
+          email: advisor.email || '',
+        },
+        preparedBy: advisor.value || '',
+        preparedByLabel: advisor.label || '',
+        catalogPrice,
+        discountPercent,
+        marginPercent,
+        installationPrice: String(effectiveInstallation),
+        installationRatePerMeter,
+        installationPriceComputed: String(computedInstallation),
+        installationPriceOverride: installationTotalOverride,
+        windowPerimeter,
+        windowArea,
+        profileType: profileTypeValue,
+        hardwareThickness,
+        assemblyType,
+        profileColor: profileColor.trim(),
+        hingeType,
+        hingeLabel,
+        glassProducer,
+        glassType: glassTypeValue,
+        gasketPackage,
+        warmSpacer,
+        rcPackage,
+        lazikIncluded,
+        demolitionMode,
+        demolitionType,
+        demolitionDirection,
+        selectedOptionIds,
+        additionalNotes,
+        featureSelections,
+        installationExtras: installationExtrasState,
+        optionPrices: optionPriceState,
+        vatRate: resolvedVatRate,
+        attachmentFile,
+      });
 
       if (pdfBlob) {
         const url = URL.createObjectURL(pdfBlob);
@@ -400,26 +526,34 @@ const selectedAdvisor = useMemo(
         URL.revokeObjectURL(url);
 
         setUserName('');
-        setInvestmentAddress('');
+        setInvestmentTown('');
+        setInvestmentStreet('');
+        setInvestmentPostalCode('');
+        setInvestmentCity('');
         setSelectedAdvisorKey(defaultAdvisor?.value || '');
         setCatalogPrice('');
         setDiscountPercent('');
         setMarginPercent('');
-        setInstallationPrice('');
+        setInstallationRatePerMeter('');
+        setInstallationTotalOverride('');
         setWindowPerimeter('');
         setWindowArea('');
-        setProfileType('');
-        setHardwareThickness(hardwareThicknessOptions[1]?.value || '');
+        setProfileTypeSelection(firstProfileOption);
+        setProfileType(firstProfileOption === 'custom' ? '' : firstProfileLabel);
+        setHardwareThickness(hardwareThicknessOptions[1]?.value || hardwareThicknessOptions[0]?.value || '');
         setAssemblyType(assemblyTypeOptions[0]?.value || '');
         setProfileColor('');
         setHingeType(hingeOptions[0]?.value || '');
-        setGlassProducer('Shift Glass');
-        setGasketPackage(gasketOptions[0]?.value);
+        setGlassProducer('Shift - producent szyb');
+        setGlassTypeSelection(firstGlassOption);
+        setGlassType(firstGlassOption === 'custom' ? '' : firstGlassLabel);
+        setGasketPackage(defaultGasketValue);
         setWarmSpacer('yes');
-        setGlazingPackage(glazingPackageOptions[1]?.value || 'triple');
         setRcPackage(rcPackageOptions[0]?.value || 'no');
         setLazikIncluded('na');
         setDemolitionMode('na');
+        setDemolitionType('na');
+        setDemolitionDirection('na');
         setVatPreset('8');
         setVatCustom('');
         setAttachmentFile(null);
@@ -429,6 +563,8 @@ const selectedAdvisor = useMemo(
         setFeatureSelections(buildDefaultFeatureState());
         setInstallationExtrasState(buildDefaultInstallationExtrasState());
         setOptionPriceState(buildDefaultWindowOptionPriceState());
+      } else {
+        alert('Nie udalo sie wygenerowac pliku PDF.');
       }
     } catch (error) {
       console.error('Blad podczas generowania PDF dla Okien Nest:', error);
@@ -460,17 +596,58 @@ const selectedAdvisor = useMemo(
             required
       />
     </div>
-    <div className="input-group">
-      <label htmlFor="okna_address">Adres inwestycji</label>
-      <input
-        id="okna_address"
-        type="text"
-        value={investmentAddress}
-        onChange={(event) => setInvestmentAddress(event.target.value)}
-        placeholder="np. ul. Wiosenna 12, Krakow"
-        required
-      />
-    </div>
+        <div className="input-group">
+          <label>Adres inwestycji</label>
+          <div
+            className="input-grid"
+            style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}
+          >
+            <div className="input-group">
+              <label htmlFor="okna_town">Miejscowosc</label>
+              <input
+                id="okna_town"
+                type="text"
+                value={investmentTown}
+                onChange={(event) => setInvestmentTown(event.target.value)}
+                placeholder="np. Wieliczka"
+                required
+              />
+            </div>
+            <div className="input-group">
+              <label htmlFor="okna_street">Ulica i numer</label>
+              <input
+                id="okna_street"
+                type="text"
+                value={investmentStreet}
+                onChange={(event) => setInvestmentStreet(event.target.value)}
+                placeholder="np. ul. Wiosenna 12"
+                required
+              />
+            </div>
+            <div className="input-group">
+              <label htmlFor="okna_postalCode">Kod pocztowy</label>
+              <input
+                id="okna_postalCode"
+                type="text"
+                value={investmentPostalCode}
+                onChange={(event) => setInvestmentPostalCode(event.target.value)}
+                placeholder="np. 30-001"
+                required
+              />
+            </div>
+            <div className="input-group">
+              <label htmlFor="okna_city">Miasto</label>
+              <input
+                id="okna_city"
+                type="text"
+                value={investmentCity}
+                onChange={(event) => setInvestmentCity(event.target.value)}
+                placeholder="np. Krakow"
+                required
+              />
+            </div>
+          </div>
+        </div>
     <div className="input-grid" style={gridStyle}>
       <div className="input-group">
         <label htmlFor="okna_advisorSelect">Opiekun klienta</label>
@@ -534,17 +711,41 @@ const selectedAdvisor = useMemo(
             />
           </div>
           <div className="input-group">
-            <label htmlFor="okna_installationPrice">Cena montazu (PLN)</label>
+            <label htmlFor="okna_installationRate">Cena montazu - stawka za 1 mb obwodu (PLN)</label>
             <input
-              id="okna_installationPrice"
+              id="okna_installationRate"
               type="number"
               step="0.01"
               min="0"
-              value={installationPrice}
-              onChange={(event) => setInstallationPrice(event.target.value)}
-              placeholder="np. 7200"
-              required
+              value={installationRatePerMeter}
+              onChange={(event) => setInstallationRatePerMeter(event.target.value)}
+              placeholder="np. 65"
             />
+          </div>
+          <div className="input-group">
+            <label htmlFor="okna_installationOverride">Cena montazu - kwota ryczaltowa</label>
+            <input
+              id="okna_installationOverride"
+              type="number"
+              step="0.01"
+              min="0"
+              value={installationTotalOverride}
+              onChange={(event) => setInstallationTotalOverride(event.target.value)}
+              placeholder="np. 8500"
+            />
+            <small style={{ display: 'block', marginTop: '8px', color: '#555' }}>
+              Pozostaw pole puste, aby wykorzystac kwote obliczona na podstawie stawki i obwodu.
+            </small>
+            {pricePreview && pricePreview.installationComputed > 0 && (
+              <small style={{ display: 'block', marginTop: '6px', color: '#2c3e50' }}>
+                Obliczona kwota montazu: {pricePreview.installationComputed.toFixed(2)} PLN
+              </small>
+            )}
+            {pricePreview && (
+              <small style={{ display: 'block', marginTop: '4px', color: '#2c3e50' }}>
+                W kalkulacji uzyto: {pricePreview.installationApplied.toFixed(2)} PLN
+              </small>
+            )}
           </div>
           <div className="input-group">
             <label htmlFor="okna_vatPreset">Podatek VAT</label>
@@ -578,6 +779,13 @@ const selectedAdvisor = useMemo(
             <label>Podglad wyliczenia</label>
             <div>
               <div>Suma bazowa netto: {pricePreview.baseSum.toFixed(2)} PLN</div>
+              {pricePreview.installationRate > 0 && (
+                <div>Stawka montazu (1 mb): {pricePreview.installationRate.toFixed(2)} PLN</div>
+              )}
+              {pricePreview.installationComputed > 0 && (
+                <div>Montaz wg obwodu: {pricePreview.installationComputed.toFixed(2)} PLN</div>
+              )}
+              <div>Montaz w kalkulacji: {pricePreview.installationApplied.toFixed(2)} PLN</div>
               {pricePreview.discountAmount > 0 && (
                 <>
                   <div>
@@ -632,15 +840,41 @@ const selectedAdvisor = useMemo(
             />
           </div>
           <div className="input-group">
-            <label htmlFor="okna_profileType">Rodzaj profili</label>
-            <input
-              id="okna_profileType"
-              type="text"
-              value={profileType}
-              onChange={(event) => setProfileType(event.target.value)}
-              placeholder="np. Nest 82 (7-komorowy, 82 mm)"
-            />
+            <label htmlFor="okna_profileTypeSelect">Rodzaj profili</label>
+            <select
+              id="okna_profileTypeSelect"
+              value={profileTypeSelection}
+              onChange={(event) => {
+                const value = event.target.value;
+                setProfileTypeSelection(value);
+                if (value === 'custom') {
+                  setProfileType('');
+                } else {
+                  const option = profileTypeOptions.find((item) => item.value === value);
+                  setProfileType(option?.label || '');
+                }
+              }}
+            >
+              {profileTypeOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </div>
+          {profileTypeSelection === 'custom' && (
+            <div className="input-group">
+              <label htmlFor="okna_profileTypeCustom">Rodzaj profilu (wpisz recznie)</label>
+              <input
+                id="okna_profileTypeCustom"
+                type="text"
+                value={profileType}
+                onChange={(event) => setProfileType(event.target.value)}
+                placeholder="np. VEKA Softline 82"
+                required
+              />
+            </div>
+          )}
           <div className="input-group">
             <label htmlFor="okna_hardware">Grubosc okuc</label>
             <select
@@ -692,19 +926,41 @@ const selectedAdvisor = useMemo(
         </div>
         <div className="input-grid" style={gridStyle}>
           <div className="input-group">
-            <label htmlFor="okna_glazing">Pakiet szklenia</label>
+            <label htmlFor="okna_glassTypeSelect">Rodzaj szyby</label>
             <select
-              id="okna_glazing"
-              value={glazingPackage}
-              onChange={(event) => setGlazingPackage(event.target.value)}
+              id="okna_glassTypeSelect"
+              value={glassTypeSelection}
+              onChange={(event) => {
+                const value = event.target.value;
+                setGlassTypeSelection(value);
+                if (value === 'custom') {
+                  setGlassType('');
+                } else {
+                  const option = glassTypeOptions.find((item) => item.value === value);
+                  setGlassType(option?.label || '');
+                }
+              }}
             >
-              {glazingPackageOptions.map((option) => (
+              {glassTypeOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
               ))}
             </select>
           </div>
+          {glassTypeSelection === 'custom' && (
+            <div className="input-group">
+              <label htmlFor="okna_glassTypeCustom">Rodzaj szyby (wpisz recznie)</label>
+              <input
+                id="okna_glassTypeCustom"
+                type="text"
+                value={glassType}
+                onChange={(event) => setGlassType(event.target.value)}
+                placeholder="np. Hartowana szyba 6 mm"
+                required
+              />
+            </div>
+          )}
           <div className="input-group">
             <label htmlFor="okna_warmSpacer">Ciepla ramka</label>
             <select
