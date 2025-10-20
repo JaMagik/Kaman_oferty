@@ -567,9 +567,9 @@ export async function generateOknaNestPDF(formData) {
     hardwareThickness,
     assemblyType,
     profileColor,
-    glassProducer = 'Shift - producent szyb',
-    glassType = 'Standardowa grubosc 4-6 mm',
-    gasketPackage = 'premium-3',
+    glassProducer = 'Glass Shift',
+    glassType = 'Pakiet standard (2 uszczelki)',
+    gasketPackage = 'standard-2',
     hingeType = '',
     hingeLabel,
     warmSpacer = 'yes',
@@ -680,13 +680,15 @@ export async function generateOknaNestPDF(formData) {
         : hardwareLabel;
   const warmSpacerLabel = warmSpacer === 'yes' ? 'Tak' : 'Nie';
   const glazingLabel = 'Pakiet 3-szybowy (standard)';
-  const glassTypeLabel = resolveTextValue(glassType || 'Standardowa grubosc 4-6 mm');
+  const glassTypeLabel = resolveTextValue(glassType || 'Pakiet standard (2 uszczelki)');
   const rcLabel = rcPackage === 'yes' ? 'Tak' : 'Nie';
-  const glassProducerLabel = resolveTextValue(glassProducer || 'Shift - producent szyb');
+  const glassProducerLabel = resolveTextValue(glassProducer || 'Glass Shift');
   const gasketLabel =
     gasketPackage === 'premium-3'
-      ? 'W standardzie: pakiet 3 uszczelek'
-      : 'Pakiet 2 uszczelek (na zamowienie)';
+      ? 'Pakiet premium (3 uszczelki)'
+      : gasketPackage === 'standard-2'
+        ? 'Pakiet standard (2 uszczelki)'
+        : resolveTextValue(gasketPackage);
   const microventEnabled = Boolean(featureSelections['feature-microvent']?.enabled);
   const microventLabel = microventEnabled
     ? 'W zestawie: klamka z funkcja mikrowentylacji'
@@ -762,14 +764,14 @@ export async function generateOknaNestPDF(formData) {
     const addressCity = resolveTextValue(investmentAddressDetails.city);
     const addressSegments = [];
     if (addressTown && addressTown !== '---') {
-      addressSegments.push(`Miejscowosc: ${addressTown}`);
+      addressSegments.push(addressTown);
     }
     if (addressStreet && addressStreet !== '---') {
-      addressSegments.push(`Ulica: ${addressStreet}`);
+      addressSegments.push(addressStreet);
     }
     const postalCityLine = [addressPostalCode, addressCity].filter((part) => part && part !== '---').join(' ');
     if (postalCityLine) {
-      addressSegments.push(`Kod pocztowy i miasto: ${postalCityLine}`);
+      addressSegments.push(postalCityLine);
     }
     const investmentAddressDisplay =
       addressSegments.length > 0 ? addressSegments.join('\n') : resolveTextValue(investmentAddress);
@@ -927,15 +929,6 @@ export async function generateOknaNestPDF(formData) {
       { parameter: 'Rodzaj demontazu', value: demolitionTypeLabel },
       { parameter: 'Kierunek demontazu', value: demolitionDirectionLabel },
       { parameter: 'Rodzaj montazu', value: assemblyLabel },
-      {
-        parameter: 'Cena montazu (1 mb obwodu)',
-        value: installationRateNumber > 0 ? `${formatNumber(installationRateNumber, 2)} PLN/mb` : '---',
-      },
-      {
-        parameter: 'Cena montazu (wg obwodu)',
-        value: derivedComputedInstallation > 0 ? formatCurrency(derivedComputedInstallation) : '---',
-      },
-      { parameter: 'Cena montazu (wariant uzyty)', value: formatCurrency(installationPriceNumber) },
       { parameter: 'Lazik', value: lazikLabel },
     ];
 
@@ -1076,7 +1069,7 @@ export async function generateOknaNestPDF(formData) {
       { id: 'install-sealed-tape', label: 'Szczelny montaz (tasmy)' },
       { id: 'install-titan-wings', label: 'Szczelny montaz (Titan Wings)' },
       { id: 'install-threshold-seal', label: 'Szczelny montaz progow (EPDM)' },
-      { id: 'install-reveal-prep-combined', label: 'Przygotowanie glifow - zagruntowanie i wyrownanie klejem' },
+      { id: 'install-reveal-prep-combined', label: 'Przygotowanie glifow pod szczelny montaz - zagruntowanie i wyrownanie klejem' },
       { id: 'install-warm-parapets', label: 'Cieple parapety XPS 700 KPA' },
       { id: 'install-purenit-extensions', label: 'Poszerzenia pod okna Purenit' },
       { id: 'install-system-extensions', label: 'Poszerzenia systemowe / podwaliny systemowe' },
@@ -1262,7 +1255,49 @@ export async function generateOknaNestPDF(formData) {
           }),
       );
       tablePage = mountingTableResult.page;
-      currentY = mountingTableResult.y - 16;
+      currentY = mountingTableResult.y - 12;
+
+      const complianceTitle = 'Wazna informacja';
+      const complianceNote =
+        'Klient zobowiazany jest do sprawdzenia oferty pod katem zgodnosci z zapytaniem.';
+      const complianceLines = wrapText(regularFont, complianceNote, 9.5, tablePage.getSize().width - 120);
+
+      const drawComplianceBlock = () => {
+        tablePage.drawText(complianceTitle, {
+          x: 60,
+          y: currentY,
+          size: 11,
+          font: boldFont,
+          color: themeBlue,
+        });
+        currentY -= 14;
+        complianceLines.forEach((line) => {
+          tablePage.drawText(line, {
+            x: 60,
+            y: currentY,
+            size: 9.5,
+            font: regularFont,
+            color: themeText,
+          });
+          currentY -= 12;
+        });
+        currentY -= 8;
+      };
+
+      if (currentY < 120) {
+        tablePage = pdfDoc.addPage();
+        currentY = drawPageBranding(tablePage, fonts, logos, {
+          title: headerTitle,
+          subtitle: `Data oferty: ${offerDate}`,
+          titleSize: 22,
+          subtitleSize: 11,
+          extraSpacing: 10,
+        });
+        currentY -= 12;
+        drawComplianceBlock();
+      } else {
+        drawComplianceBlock();
+      }
     }
 
     if (additionalNotes) {
@@ -1310,66 +1345,143 @@ export async function generateOknaNestPDF(formData) {
     const optionLookup = new Map(windowOptionDefinitions.map((item) => [item.id, item]));
     const complementaryCandidates = [];
 
-    const pushOptionCandidate = (id, priority, labelOverride, detailOverride) => {
+    const isOptionSelected = (id) => Boolean(selectedOptionIds?.includes(id));
+    const getOptionDetail = (id, fallback) => {
       const option = optionLookup.get(id);
-      if (!option) {
-        return;
+      return option?.summaryBullet || option?.description || option?.label || fallback || '';
+    };
+    const getOptionPriceNumber = (id) => parseInputNumber(normalizeOptionPrice(optionPricesState?.[id]));
+    const formatPriceDisplay = (priceNumber, selected) => {
+      if (priceNumber > 0) {
+        return formatCurrency(priceNumber);
       }
-      const selected = selectedOptionIds?.includes(id);
-      const priceEntry = normalizeOptionPrice(optionPricesState?.[id]);
-      complementaryCandidates.push({
-        priority,
-        label: labelOverride || option.label,
-        status: selected ? 'TAK' : 'Opcja',
-        price: formatOptionalPrice(priceEntry),
-        detail: detailOverride || option.summaryBullet || option.description || option.label,
-      });
+      return selected ? 'w cenie' : 'na indywidualna wycene';
     };
 
-    pushOptionCandidate('insect-screens', 4, 'Moskitiera ramkowa');
-    pushOptionCandidate('insect-screens-plisse', 5, 'Moskitiera plisowana');
-    pushOptionCandidate('smart-control', 6, 'Sterowanie inteligentne');
-
-    const thresholdDetail =
-      'Dostawa i montaz poszerzen progowych dopasowanych do drzwi balkonowych oraz tarasowych.';
-    complementaryCandidates.push({
-      priority: 7,
-      label: 'Poszerzenia progowe',
-      status: 'Opcja',
-      price: 'na indywidualna wycene',
-      detail: thresholdDetail,
-    });
-
-    const innerSillsExtra = getExtraState('install-inner-sills');
     const outerSillsExtra = getExtraState('install-outer-sills');
-    const internalSillsOptionSelected = selectedOptionIds?.includes('internal-sills');
-    const externalSillsOptionSelected = selectedOptionIds?.includes('external-sills');
-    const externalBlindsOptionSelected = selectedOptionIds?.includes('external-blinds');
-    const aggregatedSelected =
-      innerSillsExtra.selected ||
-      outerSillsExtra.selected ||
-      internalSillsOptionSelected ||
-      externalSillsOptionSelected ||
-      externalBlindsOptionSelected;
+    const innerSillsExtra = getExtraState('install-inner-sills');
 
-    const aggregatedPriceNumber =
-      parseInputNumber(innerSillsExtra.price) +
-      parseInputNumber(outerSillsExtra.price) +
-      parseInputNumber(normalizeOptionPrice(optionPricesState?.['internal-sills'])) +
-      parseInputNumber(normalizeOptionPrice(optionPricesState?.['external-sills'])) +
-      parseInputNumber(normalizeOptionPrice(optionPricesState?.['external-blinds']));
+    const outerSillsPriceNumber = parseInputNumber(outerSillsExtra.price) + getOptionPriceNumber('external-sills');
+    const outerSillsQuantity = String(outerSillsExtra.quantity ?? '').trim();
+    const outerSillsDetailBase = getOptionDetail(
+      'external-sills',
+      'Parapety zewnetrzne dopasowane do koloru stolarki i elewacji.',
+    );
+    const outerSillsDetail = outerSillsQuantity
+      ? `${outerSillsDetailBase}${outerSillsDetailBase.endsWith('.') ? '' : '.'} Ilosc: ${outerSillsQuantity}.`
+      : outerSillsDetailBase;
 
-    const parapetQuantityInfo =
-      innerSillsExtra.quantity || outerSillsExtra.quantity
-        ? ` (ilosc: ${innerSillsExtra.quantity || outerSillsExtra.quantity})`
-        : '';
+    if (!outerSillsExtra.selected) {
+      complementaryCandidates.push({
+        priority: 1.0,
+        label: 'Parapety zewnetrzne',
+        status: 'Opcja',
+        price: formatPriceDisplay(outerSillsPriceNumber, false),
+        detail: outerSillsDetail,
+      });
+    }
+
+    const internalSillsPriceNumber =
+      parseInputNumber(innerSillsExtra.price) + getOptionPriceNumber('internal-sills');
+    const internalSillsQuantity = String(innerSillsExtra.quantity ?? '').trim();
+    const internalSillsDetailBase = getOptionDetail(
+      'internal-sills',
+      'Parapety wewnetrzne docinane na wymiar i osadzane po montazu stolarki.',
+    );
+    const internalSillsDetail = internalSillsQuantity
+      ? `${internalSillsDetailBase}${internalSillsDetailBase.endsWith('.') ? '' : '.'} Ilosc: ${internalSillsQuantity}.`
+      : internalSillsDetailBase;
+
+    if (!innerSillsExtra.selected) {
+      complementaryCandidates.push({
+        priority: 1.1,
+        label: 'Parapety wewnetrzne',
+        status: 'Opcja',
+        price: formatPriceDisplay(internalSillsPriceNumber, false),
+        detail: internalSillsDetail,
+      });
+    }
+
+    const internalBlindsExtra = getExtraState('install-internal-blinds');
+    const internalBlindsSelected = internalBlindsExtra.selected || isOptionSelected('internal-blinds');
+    const internalBlindsPriceNumber =
+      parseInputNumber(internalBlindsExtra.price) + getOptionPriceNumber('internal-blinds');
+    const internalBlindsDetail = getOptionDetail(
+      'internal-blinds',
+      'Rolety wewnetrzne, plisy lub zaluzje dopasowane do profilu okna.',
+    );
 
     complementaryCandidates.push({
       priority: 1.2,
-      label: 'Parapety wewnetrzne i rolety zewnetrzne (automatyka, kolor elewacji)',
-      status: aggregatedSelected ? 'TAK' : 'Opcja',
-      price: formatOptionalPrice(aggregatedPriceNumber),
-      detail: `Montaz parapetow wewnetrznych oraz rolety zewnetrzne z automatyka dopasowana do koloru elewacji${parapetQuantityInfo}.`,
+      label: 'Rolety wewnetrzne',
+      status: internalBlindsSelected ? 'TAK' : 'Opcja',
+      price: formatPriceDisplay(internalBlindsPriceNumber, internalBlindsSelected),
+      detail: internalBlindsDetail,
+    });
+
+    const externalBlindsSelected = isOptionSelected('external-blinds');
+    const externalBlindsPriceNumber = getOptionPriceNumber('external-blinds');
+    const externalBlindsDetail = getOptionDetail(
+      'external-blinds',
+      'Rolety zewnetrzne, screeny lub zaluzje fasadowe z integracja sterowania.',
+    );
+
+    complementaryCandidates.push({
+      priority: 1.3,
+      label: 'Rolety zewnetrzne / screeny / zaluzje zewnetrzne',
+      status: externalBlindsSelected ? 'TAK' : 'Opcja',
+      price: formatPriceDisplay(externalBlindsPriceNumber, externalBlindsSelected),
+      detail: externalBlindsDetail,
+    });
+
+    const mosquitoSelected = isOptionSelected('insect-screens') || isOptionSelected('insect-screens-plisse');
+    const mosquitoPriceNumber =
+      getOptionPriceNumber('insect-screens') + getOptionPriceNumber('insect-screens-plisse');
+    const mosquitoDetail =
+      'Moskitiery ramkowe oraz plisowane dopasowane do okien i drzwi tarasowych.';
+
+    complementaryCandidates.push({
+      priority: 1.4,
+      label: 'Moskitiery',
+      status: mosquitoSelected ? 'TAK' : 'Opcja',
+      price: formatPriceDisplay(mosquitoPriceNumber, mosquitoSelected),
+      detail: mosquitoDetail,
+    });
+
+    const smartControlSelected = isOptionSelected('smart-control');
+    const smartControlPriceNumber = getOptionPriceNumber('smart-control');
+    const smartControlDetail = getOptionDetail(
+      'smart-control',
+      'Sterowanie napedami okien i oslon za pomoca aplikacji mobilnej.',
+    );
+
+    complementaryCandidates.push({
+      priority: 1.5,
+      label: 'Sterowanie inteligentne',
+      status: smartControlSelected ? 'TAK' : 'Opcja',
+      price: formatPriceDisplay(smartControlPriceNumber, smartControlSelected),
+      detail: smartControlDetail,
+    });
+
+    const purenitExtra = getExtraState('install-purenit-extensions');
+    const systemExtensionsExtra = getExtraState('install-system-extensions');
+    const poszerzeniaSelected =
+      purenitExtra.selected || systemExtensionsExtra.selected || isOptionSelected('system-extensions');
+    const poszerzeniaPriceNumber =
+      parseInputNumber(purenitExtra.price) +
+      parseInputNumber(systemExtensionsExtra.price) +
+      getOptionPriceNumber('system-extensions');
+    const poszerzeniaDetail = getOptionDetail(
+      'system-extensions',
+      'Poszerzenia progowe i podwaliny stabilizujace montaz stolarki.',
+    );
+
+    complementaryCandidates.push({
+      priority: 1.6,
+      label: 'Poszerzenia progowe',
+      status: poszerzeniaSelected ? 'TAK' : 'Opcja',
+      price: formatPriceDisplay(poszerzeniaPriceNumber, poszerzeniaSelected),
+      detail: poszerzeniaDetail,
     });
 
     complementaryCandidates.sort((a, b) => a.priority - b.priority);

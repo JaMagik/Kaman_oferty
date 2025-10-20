@@ -9,7 +9,8 @@ export const profileTypeOptions = [
 ];
 
 export const glassTypeOptions = [
-  { value: 'standard', label: 'Standardowa grubosc 4-6 mm' },
+  { value: 'standard-2', label: 'Pakiet standard (2 uszczelki)' },
+  { value: 'premium-3', label: 'Pakiet premium (3 uszczelki)' },
   { value: 'tempered', label: 'Hartowana szyba' },
   { value: 'laminated', label: 'Laminowana szyba' },
   { value: 'custom', label: 'Dopisz recznie' },
@@ -233,7 +234,7 @@ export const installationExtras = [
   { id: 'install-sealed-tape', label: 'Szczelny montaz (tasmy)', summaryLabel: 'Szczelny montaz (tasmy)' },
   { id: 'install-titan-wings', label: 'Szczelny montaz (Titan Wings)', summaryLabel: 'Szczelny montaz (Titan Wings)' },
   { id: 'install-threshold-seal', label: 'Szczelny montaz progow (EPDM)', summaryLabel: 'Szczelny montaz progow' },
-  { id: 'install-reveal-prep', label: 'Przygotowanie glifow pod szczelny montaz', summaryLabel: 'Przygotowanie glifow' },
+  { id: 'install-reveal-prep', label: 'Przygotowanie glifow pod szczelny montaz - zagruntowanie i wyrownanie klejem', summaryLabel: 'Przygotowanie glifow' },
   { id: 'install-prime-level', label: 'Zagruntowanie i wyrownanie klejem', summaryLabel: 'Gruntowanie i wyrownanie' },
   { id: 'install-warm-parapets', label: 'Cieple parapety XPS 700 KPA', summaryLabel: 'Cieple parapety XPS' },
   { id: 'install-purenit-extensions', label: 'Poszerzenia pod okna Purenit', summaryLabel: 'Poszerzenia Purenit' },

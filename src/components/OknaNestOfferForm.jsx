@@ -1,5 +1,5 @@
 // src/components/OknaNestOfferForm.jsx
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { generateOknaNestPDF } from '../utils/oknaNestPdfGenerator';
 import {
   profileTypeOptions,
@@ -84,8 +84,8 @@ const lazikOptions = [
 ];
 
 const gasketOptions = [
-  { value: 'premium-3', label: 'Pakiet standardowy (3 uszczelki)' },
-  { value: 'reinforced-2', label: 'Pakiet 2 uszczelki (na zamowienie)' },
+  { value: 'standard-2', label: 'Pakiet standard (2 uszczelki)' },
+  { value: 'premium-3', label: 'Pakiet premium (3 uszczelki)' },
 ];
 
 const normalizeString = (value) => (value ? value.trim() : '');
@@ -98,15 +98,15 @@ const composeInvestmentAddressDisplay = (town, street, postalCode, city) => {
   const normalizedCity = normalizeString(city);
 
   if (normalizedTown) {
-    segments.push(`Miejscowosc: ${normalizedTown}`);
+    segments.push(normalizedTown);
   }
   if (normalizedStreet) {
-    segments.push(`Ulica: ${normalizedStreet}`);
+    segments.push(normalizedStreet);
   }
 
   const postalCityLine = [normalizedPostalCode, normalizedCity].filter(Boolean).join(' ');
   if (postalCityLine) {
-    segments.push(`Kod pocztowy i miasto: ${postalCityLine}`);
+    segments.push(postalCityLine);
   }
 
   return segments.join('\n');
@@ -177,7 +177,9 @@ export default function OknaNestOfferForm() {
   const [discountPercent, setDiscountPercent] = useState('');
   const [marginPercent, setMarginPercent] = useState('');
   const [installationRatePerMeter, setInstallationRatePerMeter] = useState('');
+  const [isInstallationRateAuto, setIsInstallationRateAuto] = useState(true);
   const [installationTotalOverride, setInstallationTotalOverride] = useState('');
+  const [isInstallationTotalManual, setIsInstallationTotalManual] = useState(false);
   const [windowPerimeter, setWindowPerimeter] = useState('');
   const [windowArea, setWindowArea] = useState('');
   const [profileTypeSelection, setProfileTypeSelection] = useState(firstProfileOption);
@@ -196,9 +198,9 @@ export default function OknaNestOfferForm() {
   const [demolitionMode, setDemolitionMode] = useState('na');
   const [demolitionType, setDemolitionType] = useState('na');
   const [demolitionDirection, setDemolitionDirection] = useState('na');
-  const [glassProducer, setGlassProducer] = useState('Shift - producent szyb');
+  const [glassProducer, setGlassProducer] = useState('Glass Shift');
   const defaultGasketValue =
-    gasketOptions.find((option) => option.value === 'premium-3')?.value || gasketOptions[0]?.value;
+    gasketOptions.find((option) => option.value === 'standard-2')?.value || gasketOptions[0]?.value;
   const [gasketPackage, setGasketPackage] = useState(defaultGasketValue);
   const [vatPreset, setVatPreset] = useState('8');
   const [vatCustom, setVatCustom] = useState('');
@@ -223,7 +225,7 @@ export default function OknaNestOfferForm() {
     const defaultAssembly = assemblyTypeOptions[0]?.value || '';
     const defaultHinge = hingeOptions[1]?.value || hingeOptions[0]?.value || '';
     const defaultGlassSelection =
-      glassTypeOptions.find((option) => option.value === 'standard')?.value ||
+      glassTypeOptions.find((option) => option.value === 'standard-2')?.value ||
       glassTypeOptions.find((option) => option.value !== 'custom')?.value ||
       glassTypeOptions[0]?.value ||
       'custom';
@@ -263,7 +265,9 @@ export default function OknaNestOfferForm() {
     setDiscountPercent('15');
     setMarginPercent('10');
     setInstallationRatePerMeter('64.39');
+    setIsInstallationRateAuto(false);
     setInstallationTotalOverride('8500');
+    setIsInstallationTotalManual(true);
     setWindowPerimeter('132');
     setWindowArea('48');
     setProfileTypeSelection('veka');
@@ -280,7 +284,7 @@ export default function OknaNestOfferForm() {
     setDemolitionMode('yes');
     setDemolitionType('full');
     setDemolitionDirection('inside');
-    setGlassProducer('Shift - producent szyb');
+    setGlassProducer('Glass Shift');
     setGasketPackage(defaultGasketValue);
     setVatPreset('8');
     setVatCustom('');
@@ -346,6 +350,71 @@ export default function OknaNestOfferForm() {
     const file = event.target.files && event.target.files[0] ? event.target.files[0] : null;
     setAttachmentFile(file);
   };
+
+  useEffect(() => {
+    if (!isInstallationRateAuto) {
+      return;
+    }
+    const perimeterNumber = parsePreviewNumber(windowPerimeter);
+    const overrideNumber = parsePreviewNumber(installationTotalOverride);
+    if (perimeterNumber > 0 && overrideNumber > 0) {
+      const computedRate = overrideNumber / perimeterNumber;
+      const currentRate = parsePreviewNumber(installationRatePerMeter);
+      if (Math.abs(computedRate - currentRate) > 0.005) {
+        setInstallationRatePerMeter(computedRate.toFixed(2));
+      }
+    } else if (installationRatePerMeter !== '') {
+      setInstallationRatePerMeter('');
+    }
+  }, [
+    isInstallationRateAuto,
+    windowPerimeter,
+    installationTotalOverride,
+    installationRatePerMeter,
+  ]);
+
+  const autoInstallationTotal = useMemo(() => {
+    const perimeterNumber = parsePreviewNumber(windowPerimeter);
+    const rateNumber = parsePreviewNumber(installationRatePerMeter);
+    if (perimeterNumber > 0 && rateNumber > 0) {
+      return perimeterNumber * rateNumber;
+    }
+    return 0;
+  }, [windowPerimeter, installationRatePerMeter]);
+
+  useEffect(() => {
+    const rateNumber = parsePreviewNumber(installationRatePerMeter);
+    const perimeterNumber = parsePreviewNumber(windowPerimeter);
+
+    if (rateNumber <= 0) {
+      if (!isInstallationTotalManual && installationTotalOverride !== '') {
+        setInstallationTotalOverride('');
+      }
+      if (isInstallationTotalManual) {
+        setIsInstallationTotalManual(false);
+      }
+      return;
+    }
+
+    if (isInstallationTotalManual) {
+      return;
+    }
+
+    const nextTotal =
+      perimeterNumber > 0 ? perimeterNumber * rateNumber : rateNumber;
+    const nextValue = nextTotal > 0 ? nextTotal.toFixed(2) : '';
+    if (installationTotalOverride !== nextValue) {
+      setInstallationTotalOverride(nextValue);
+    }
+  }, [
+    installationRatePerMeter,
+    windowPerimeter,
+    installationTotalOverride,
+    isInstallationTotalManual,
+  ]);
+
+  const installationOverridePlaceholder =
+    autoInstallationTotal > 0 ? `np. ${autoInstallationTotal.toFixed(2)}` : 'np. 8500';
 
   const pricePreview = useMemo(() => {
     const catalog = parsePreviewNumber(catalogPrice);
@@ -535,7 +604,9 @@ export default function OknaNestOfferForm() {
         setDiscountPercent('');
         setMarginPercent('');
         setInstallationRatePerMeter('');
+        setIsInstallationRateAuto(true);
         setInstallationTotalOverride('');
+        setIsInstallationTotalManual(false);
         setWindowPerimeter('');
         setWindowArea('');
         setProfileTypeSelection(firstProfileOption);
@@ -544,7 +615,7 @@ export default function OknaNestOfferForm() {
         setAssemblyType(assemblyTypeOptions[0]?.value || '');
         setProfileColor('');
         setHingeType(hingeOptions[0]?.value || '');
-        setGlassProducer('Shift - producent szyb');
+        setGlassProducer('Glass Shift');
         setGlassTypeSelection(firstGlassOption);
         setGlassType(firstGlassOption === 'custom' ? '' : firstGlassLabel);
         setGasketPackage(defaultGasketValue);
@@ -718,7 +789,11 @@ export default function OknaNestOfferForm() {
               step="0.01"
               min="0"
               value={installationRatePerMeter}
-              onChange={(event) => setInstallationRatePerMeter(event.target.value)}
+              onChange={(event) => {
+                const nextValue = event.target.value;
+                setInstallationRatePerMeter(nextValue);
+                setIsInstallationRateAuto(nextValue === '');
+              }}
               placeholder="np. 65"
             />
           </div>
@@ -730,11 +805,15 @@ export default function OknaNestOfferForm() {
               step="0.01"
               min="0"
               value={installationTotalOverride}
-              onChange={(event) => setInstallationTotalOverride(event.target.value)}
-              placeholder="np. 8500"
+              onChange={(event) => {
+                const nextValue = event.target.value;
+                setInstallationTotalOverride(nextValue);
+                setIsInstallationTotalManual(nextValue !== '');
+              }}
+              placeholder={installationOverridePlaceholder}
             />
             <small style={{ display: 'block', marginTop: '8px', color: '#555' }}>
-              Pozostaw pole puste, aby wykorzystac kwote obliczona na podstawie stawki i obwodu.
+              Pozostaw pole puste, aby wykorzystac kwote obliczona na podstawie stawki i obwodu{autoInstallationTotal > 0 ? ` (${autoInstallationTotal.toFixed(2)} PLN).` : '.'}
             </small>
             {pricePreview && pricePreview.installationComputed > 0 && (
               <small style={{ display: 'block', marginTop: '6px', color: '#2c3e50' }}>
@@ -920,7 +999,7 @@ export default function OknaNestOfferForm() {
               type="text"
               value={glassProducer}
               onChange={(event) => setGlassProducer(event.target.value)}
-              placeholder="np. Shift - producent szyb"
+              placeholder="np. Glass Shift"
             />
           </div>
         </div>
