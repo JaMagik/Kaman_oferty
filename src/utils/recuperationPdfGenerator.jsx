@@ -30,6 +30,15 @@ const buildRowsForIds = (ids, selectedDevice) =>
     })
     .filter(Boolean);
 
+const isPdfBuffer = (buffer) => {
+  if (!(buffer instanceof ArrayBuffer) || buffer.byteLength < 5) {
+    return false;
+  }
+  const headerView = new Uint8Array(buffer.slice(0, 5));
+  const headerString = String.fromCharCode(...headerView);
+  return headerString === '%PDF-';
+};
+
 export async function generateRecuperationOfferPDF(formData) {
   const {
     userName,
@@ -68,19 +77,32 @@ export async function generateRecuperationOfferPDF(formData) {
     }
 
     const templatePaths = getTemplatePathsForDevice(deviceKey) || [];
-    const templatePromises = templatePaths.map((path) =>
-      fetch(path)
-        .then((res) => (res.ok ? res.arrayBuffer() : null))
-        .catch(() => null)
+    const templateFetchResults = await Promise.all(
+      templatePaths.map(async (path) => {
+        try {
+          const response = await fetch(path);
+          if (!response.ok) {
+            console.warn(`[recuperationPDF] Nie znaleziono szablonu: ${path} (status ${response.status})`);
+            return null;
+          }
+          const buffer = await response.arrayBuffer();
+          if (!isPdfBuffer(buffer)) {
+            console.warn(`[recuperationPDF] Pominieto plik, poniewaz nie jest PDF: ${path}`);
+            return null;
+          }
+          return { path, buffer };
+        } catch (error) {
+          console.warn(`[recuperationPDF] Blad podczas pobierania szablonu ${path}:`, error);
+          return null;
+        }
+      })
     );
-    const templatePdfBytesArray = (
-      await Promise.all(templatePromises)
-    ).filter(Boolean);
+    const templatePdfEntries = templateFetchResults.filter(Boolean);
 
-    if (templatePdfBytesArray.length > 0) {
-      const coverPdfBytes = templatePdfBytesArray.shift();
-      if (coverPdfBytes) {
-        const coverDoc = await PDFDocument.load(coverPdfBytes);
+    if (templatePdfEntries.length > 0) {
+      const coverEntry = templatePdfEntries.shift();
+      if (coverEntry) {
+        const coverDoc = await PDFDocument.load(coverEntry.buffer);
         const [copiedCoverPage] = await pdfDoc.copyPages(coverDoc, [0]);
         pdfDoc.addPage(copiedCoverPage);
       }
@@ -210,8 +232,8 @@ export async function generateRecuperationOfferPDF(formData) {
       lastContentPage = pricePage;
     }
 
-    for (const pdfBytes of templatePdfBytesArray) {
-      const templateDoc = await PDFDocument.load(pdfBytes);
+    for (const entry of templatePdfEntries) {
+      const templateDoc = await PDFDocument.load(entry.buffer);
       const copiedPages = await pdfDoc.copyPages(
         templateDoc,
         templateDoc.getPageIndices()
