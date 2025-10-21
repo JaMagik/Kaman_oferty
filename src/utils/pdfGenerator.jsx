@@ -424,7 +424,8 @@ function drawExtrasPage(page, fonts, data, title) {
 function prepareTableData(deviceType, model, tankCapacity, bufferCapacity, systemType, offerOptions, isKotel, quantityOptions, isAc) {
     let mainTableData = getTableData(deviceType, model, tankCapacity, bufferCapacity, systemType, isAc);
     let extrasTableData = isKotel ? [...opcjeDlaKotlow] : [...opcjeDlaPompCiepla];
-    
+    quantityOptions = quantityOptions || {};
+
     const kotlospawDeviceTypes = ["Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid", "Kotlospaw duoko"];
     let producerOptions = null;
     if (kotlospawDeviceTypes.includes(deviceType)) {
@@ -434,50 +435,115 @@ function prepareTableData(deviceType, model, tankCapacity, bufferCapacity, syste
     }
 
     if (producerOptions) {
-        extrasTableData.push({ type: 'separator', title: 'WYPOSAŻENIE UZUPEŁNIAJĄCE (OPCJONALNIE) OD PRODUCENTA' });
+        extrasTableData.push({ type: 'separator', title: 'WYPOSAZENIE UZUPELNIAJACE (OPCJONALNIE) OD PRODUCENTA' });
         extrasTableData.push(...producerOptions);
     }
-    
-    if (!isKotel && !isAc && quantityOptions.isCustom) {
-        const normalizeQty = (value, fallback = 1) => {
-            const parsed = parseInt(value, 10);
-            if (Number.isNaN(parsed) || parsed < 1) return fallback;
-            return parsed;
-        };
 
+    const normalizeQty = (value, fallback = 1) => {
+        const parsed = parseInt(value, 10);
+        if (Number.isNaN(parsed) || parsed < 1) return fallback;
+        return parsed;
+    };
+
+    const normalizeName = (value) => {
+        if (!value) return '';
+        return value
+            .toString()
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
+    };
+
+    if (!isKotel && !isAc && quantityOptions.isCustom) {
         const outdoorQty = normalizeQty(quantityOptions.outdoor, 1);
         const indoorQty = normalizeQty(quantityOptions.indoor, 1);
         const circuitsQty = normalizeQty(quantityOptions.heatingCircuits, 1);
 
-        const outdoorUnitIndex = mainTableData.findIndex(row => row[1] && row[1].toLowerCase().includes('jednostka zew'));
-        if (outdoorUnitIndex !== -1) { mainTableData[outdoorUnitIndex][3] = String(outdoorQty); }
-        const indoorUnitIndex = mainTableData.findIndex(row => row[1] && (row[1].toLowerCase().includes('hydrobox') || row[1].toLowerCase().includes('cylinder')));
-        if (indoorUnitIndex !== -1) { mainTableData[indoorUnitIndex][3] = String(indoorQty); }
-        const heatingCircuitsIndex = mainTableData.findIndex(row => row[1] && row[1].toLowerCase().includes('pompa obiegowa co'));
-        if (heatingCircuitsIndex !== -1) { mainTableData[heatingCircuitsIndex][3] = String(circuitsQty); }
+        const outdoorUnitIndex = mainTableData.findIndex(row => {
+            const name = normalizeName(row[1]);
+            return name.includes('jednostka zewn');
+        });
+        if (outdoorUnitIndex !== -1) {
+            mainTableData[outdoorUnitIndex][3] = String(outdoorQty);
+        }
+
+        const indoorUnitIndex = mainTableData.findIndex(row => {
+            const name = normalizeName(row[1]);
+            return name.includes('hydrobox') || name.includes('cylinder');
+        });
+        if (indoorUnitIndex !== -1) {
+            mainTableData[indoorUnitIndex][3] = String(indoorQty);
+        }
+
+        const heatingCircuitsIndex = mainTableData.findIndex(row => normalizeName(row[1]).includes('pompa obiegowa co'));
+        if (heatingCircuitsIndex !== -1) {
+            mainTableData[heatingCircuitsIndex][3] = String(circuitsQty);
+        }
+    }
+
+    if (isKotel) {
+        const pumpQty = normalizeQty(quantityOptions.boilerCirculationPumps, 1);
+        const controllerQty = normalizeQty(quantityOptions.boilerControllers, 1);
+        const heatingCircuitsQty = normalizeQty(quantityOptions.boilerHeatingCircuits, 1);
+
+        const updateQuantity = (predicate, qty) => {
+            const index = mainTableData.findIndex(row => predicate(normalizeName(row[1])));
+            if (index !== -1) {
+                mainTableData[index][3] = String(qty);
+            }
+        };
+
+        updateQuantity(name => name.includes('pompa obiegowa') && !name.includes('cwu'), pumpQty);
+        updateQuantity(name => name.includes('regulator') || name.includes('sterownik'), controllerQty);
+
+        const circuitsIndex = mainTableData.findIndex(row => {
+            const name = normalizeName(row[1]);
+            return name.includes('obieg') && name.includes('grzew');
+        });
+        if (circuitsIndex !== -1) {
+            mainTableData[circuitsIndex][3] = String(heatingCircuitsQty);
+        } else {
+            const newRow = [
+                '',
+                'Konfiguracja obiegow grzewczych',
+                'kpl.',
+                String(heatingCircuitsQty),
+                'Przygotowanie i uruchomienie wskazanej liczby obiegow grzewczych wraz z niezbedna armatura i regulacja.'
+            ];
+            const afterMontazIndex = mainTableData.findIndex(row => {
+                const name = normalizeName(row[1]);
+                return name.includes('monta') && name.includes('systemu grzewczego');
+            });
+            const targetIndex = afterMontazIndex !== -1 ? afterMontazIndex + 1 : mainTableData.length;
+            mainTableData.splice(targetIndex, 0, newRow);
+        }
     }
 
     const movableItems = [
-        { key: 'demontaz', name: 'Demontaż starego źródła ciepła', applicable: () => !isAc },
-        { key: 'podbudowa', name: 'Wykonanie podbudowy pod jednostkę zewnętrzną', applicable: () => !isAc && !isKotel },
-        { key: 'exhaustFan', name: 'Wentylator wyciągowy', applicable: () => isKotel },
-        { key: 'returnProtection', name: 'Zastosowanie termostatycznej ochrony powrotu', applicable: () => isKotel },
+        { key: 'demontaz', name: 'Demontaz starego zrodla ciepla', applicable: () => !isAc },
+        { key: 'podbudowa', name: 'Wykonanie podbudowy pod jednostke zewnetrzna', applicable: () => !isAc && !isKotel },
+        { key: 'exhaustFan', name: 'Wentylator wyciagowy', applicable: () => isKotel },
+        { key: 'returnProtection', name: 'Zastosowanie termostatycznej ochrony powrotu', applicable: () => isKotel && deviceType !== 'LAZAR' },
     ];
     
     movableItems.forEach(item => {
         if (offerOptions[item.key] && item.applicable()) {
-            let itemIndexInExtras = extrasTableData.findIndex(row => row[1] && row[1].includes(item.name));
+            const itemNameNormalized = normalizeName(item.name);
+            const itemIndexInExtras = extrasTableData.findIndex(row => Array.isArray(row) && normalizeName(row[1]) === itemNameNormalized);
             
             if (itemIndexInExtras > -1) {
                 const [itemRow] = extrasTableData.splice(itemIndexInExtras, 1);
-                // Struktura opcji dodatkowych: [lp, nazwa, opis, j.m, cena]
-                // Struktura tabeli głównej: [lp, nazwa, j.m, ilość, opis]
+                // Struktura opcji dodatkowych: [lp, nazwa, opis, j.m., cena]
+                // Struktura tabeli glownej: [lp, nazwa, j.m., ilosc, opis]
                 const itemRowForMainTable = ['', itemRow[1], itemRow[3], '1', itemRow[2]];
                 
-                const insertionKeywords = ["Podłączenie kominowe", "Montaż systemu grzewczego"];
-                let insertAtIndex = mainTableData.findIndex(row => insertionKeywords.some(keyword => row[1] && row[1].includes(keyword)));
+                const insertionKeywords = ['podlaczenie kominowe', 'montaz systemu grzewczego'];
+                let insertAtIndex = mainTableData.findIndex(row => {
+                    const normalized = normalizeName(row[1]);
+                    return insertionKeywords.some(keyword => normalized.includes(keyword));
+                });
                 if (insertAtIndex === -1) {
-                    insertAtIndex = mainTableData.findIndex(row => row[1].includes("Kocioł"));
+                    insertAtIndex = mainTableData.findIndex(row => normalizeName(row[1]).includes('koci'));
                     insertAtIndex = insertAtIndex > -1 ? insertAtIndex + 1 : 1;
                 } else {
                     insertAtIndex += 1;
@@ -486,7 +552,7 @@ function prepareTableData(deviceType, model, tankCapacity, bufferCapacity, syste
             }
         }
     });
-    
+
     if (offerOptions.dotacja === false) {
         mainTableData = mainTableData.filter(row => !row[1] || !row[1].includes('Pomoc w uzyskaniu dotacji'));
     }
@@ -636,3 +702,4 @@ export async function generateOfferPDF(
         return null;
     }
 }
+

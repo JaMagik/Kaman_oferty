@@ -113,6 +113,9 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
   const [outdoorUnitQty, setOutdoorUnitQty] = useState(1);
   const [indoorUnitQty, setIndoorUnitQty] = useState(1);
   const [heatingCircuitQty, setHeatingCircuitQty] = useState(1);
+  const [boilerCirculationPumpQty, setBoilerCirculationPumpQty] = useState(1);
+  const [boilerControllerQty, setBoilerControllerQty] = useState(1);
+  const [boilerHeatingCircuitQty, setBoilerHeatingCircuitQty] = useState(1);
   const [generatedPdfData, setGeneratedPdfData] = useState(null);
   const [systemType, setSystemType] = useState('zamkniety');
   
@@ -157,6 +160,14 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
     if (Number.isNaN(parsed) || parsed < 1) return fallback;
     return parsed;
   };
+
+  useEffect(() => {
+    if (!isBoiler) {
+      setBoilerCirculationPumpQty(1);
+      setBoilerControllerQty(1);
+      setBoilerHeatingCircuitQty(1);
+    }
+  }, [isBoiler]);
 
   useEffect(() => {
     if (deviceCategory === DEVICE_CATEGORY.BOILER && !boilerDeviceTypes.includes(deviceType)) {
@@ -247,6 +258,9 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
           outdoor: outdoorUnitQty,
           indoor: indoorUnitQty,
           heatingCircuits: heatingCircuitQty,
+          boilerCirculationPumps: boilerCirculationPumpQty,
+          boilerControllers: boilerControllerQty,
+          boilerHeatingCircuits: boilerHeatingCircuitQty,
         },
         showPrice
     );
@@ -425,6 +439,40 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
                   />
                 </div>
               )}
+            </div>
+          )}
+
+
+          {isBoiler && (
+            <div className="custom-quantity-box">
+              <div className="quantity-grid">
+                <label htmlFor="boilerCirculationPumpQty">Ilosc pomp obiegowych</label>
+                <input
+                  id="boilerCirculationPumpQty"
+                  type="number"
+                  min="1"
+                  value={boilerCirculationPumpQty}
+                  onChange={(e) => setBoilerCirculationPumpQty(getPositiveInt(e.target.value, 1))}
+                />
+
+                <label htmlFor="boilerControllerQty">Ilosc sterownikow/regulatorow</label>
+                <input
+                  id="boilerControllerQty"
+                  type="number"
+                  min="1"
+                  value={boilerControllerQty}
+                  onChange={(e) => setBoilerControllerQty(getPositiveInt(e.target.value, 1))}
+                />
+
+                <label htmlFor="boilerHeatingCircuitQty">Ilosc obiegow grzewczych</label>
+                <input
+                  id="boilerHeatingCircuitQty"
+                  type="number"
+                  min="1"
+                  value={boilerHeatingCircuitQty}
+                  onChange={(e) => setBoilerHeatingCircuitQty(getPositiveInt(e.target.value, 1))}
+                />
+              </div>
             </div>
           )}
 

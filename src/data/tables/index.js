@@ -97,11 +97,15 @@ export function getTableData(deviceType, model, tankCapacity, bufferCapacity, sy
     return [];
   }
   let baseTableData = JSON.parse(JSON.stringify(allDeviceTables[deviceType][model]));
+  const normalizeName = (value) => {
+    if (!value) return '';
+    return value.toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  };
   
   if (isBoiler) {
     const showReturnPump = returnPumpBoilers.includes(deviceType) && bufferCapacity !== 'none' && bufferCapacity !== 'zawor-4d';            
     if (!showReturnPump) {
-      baseTableData = baseTableData.filter(row => !row[1].includes('Pompa ochrony powrotu'));
+      baseTableData = baseTableData.filter(row => !normalizeName(row[1]).includes('pompa ochrony powrotu'));
     }
   }
   
@@ -113,14 +117,17 @@ let workingTable = isBoiler
   const bufferRow = getBufferRowData(bufferCapacity);
   let insertIndex = 1;
   if (isBoiler) {
-    const boilerIndex = workingTable.findIndex(row => row[1].includes("Kocioł"));
+    const boilerIndex = workingTable.findIndex(row => normalizeName(row[1]).includes('kociol'));
     if (boilerIndex !== -1) insertIndex = boilerIndex + 1;
   } else { 
-    const indoorUnitKeywords = ["Moduł wewnętrzny", "Hydrobox", "Jednostka wewnętrzna"];
-    const indoorUnitIndex = workingTable.findIndex(row => indoorUnitKeywords.some(keyword => row[1] && row[1].includes(keyword)));
+    const indoorUnitKeywords = ['modul wewnetrzny', 'hydrobox', 'jednostka wewnetrzna'];
+    const indoorUnitIndex = workingTable.findIndex(row => {
+      const name = normalizeName(row[1]);
+      return indoorUnitKeywords.some(keyword => name.includes(keyword));
+    });
     if (indoorUnitIndex !== -1) insertIndex = indoorUnitIndex + 1;
     else {
-      const outdoorUnitIndex = workingTable.findIndex(row => row[1].includes("Pompa ciepła"));
+      const outdoorUnitIndex = workingTable.findIndex(row => normalizeName(row[1]).includes('pompa ciepla'));
       if (outdoorUnitIndex !== -1) insertIndex = outdoorUnitIndex + 1;
     }
   }
