@@ -558,7 +558,9 @@ export async function generateOknaNestPDF(formData) {
     discountPercent,
     marginPercent,
     installationPrice,
+    installationPricingMode = 'flat',
     installationRatePerMeter,
+    installationPerMeterExtra = '',
     installationPriceComputed,
     installationPriceOverride,
     windowPerimeter,
@@ -599,21 +601,25 @@ export async function generateOknaNestPDF(formData) {
   const windowPerimeterNumber = parseInputNumber(windowPerimeter);
   const windowAreaNumber = parseInputNumber(windowArea);
   const installationRateNumber = parseInputNumber(installationRatePerMeter);
+  const installationPerMeterExtraNumber = parseInputNumber(installationPerMeterExtra);
   const explicitComputedInstallation = parseInputNumber(installationPriceComputed);
   const installationOverrideNumber = parseInputNumber(installationPriceOverride);
-  const derivedComputedInstallation =
+  const baseComputedInstallation =
     explicitComputedInstallation > 0
       ? explicitComputedInstallation
       : windowPerimeterNumber > 0 && installationRateNumber > 0
         ? windowPerimeterNumber * installationRateNumber
         : 0;
   const installationPriceNumberRaw = parseInputNumber(installationPrice);
-  const installationPriceNumber =
-    installationPriceNumberRaw > 0
-      ? installationPriceNumberRaw
+  const normalizedPricingMode = (installationPricingMode || '').toLowerCase();
+  const fallbackInstallationPrice =
+    normalizedPricingMode === 'per-meter'
+      ? baseComputedInstallation + installationPerMeterExtraNumber
       : installationOverrideNumber > 0
         ? installationOverrideNumber
-        : derivedComputedInstallation;
+        : baseComputedInstallation;
+  const installationPriceNumber =
+    installationPriceNumberRaw > 0 ? installationPriceNumberRaw : fallbackInstallationPrice;
   const vatRateNumber = Math.max(parseInputNumber(vatRate), 0);
 
   if (windowPerimeterNumber <= 0 || windowAreaNumber <= 0) {

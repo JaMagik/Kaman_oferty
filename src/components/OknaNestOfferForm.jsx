@@ -176,10 +176,10 @@ export default function OknaNestOfferForm() {
   const [catalogPrice, setCatalogPrice] = useState('');
   const [discountPercent, setDiscountPercent] = useState('');
   const [marginPercent, setMarginPercent] = useState('');
+  const [installationPricingMode, setInstallationPricingMode] = useState('flat');
   const [installationRatePerMeter, setInstallationRatePerMeter] = useState('');
-  const [isInstallationRateAuto, setIsInstallationRateAuto] = useState(true);
+  const [installationPerMeterExtra, setInstallationPerMeterExtra] = useState('');
   const [installationTotalOverride, setInstallationTotalOverride] = useState('');
-  const [isInstallationTotalManual, setIsInstallationTotalManual] = useState(false);
   const [windowPerimeter, setWindowPerimeter] = useState('');
   const [windowArea, setWindowArea] = useState('');
   const [profileTypeSelection, setProfileTypeSelection] = useState(firstProfileOption);
@@ -225,7 +225,6 @@ export default function OknaNestOfferForm() {
     const defaultAssembly = assemblyTypeOptions[0]?.value || '';
     const defaultHinge = hingeOptions[1]?.value || hingeOptions[0]?.value || '';
     const defaultGlassSelection =
-      glassTypeOptions.find((option) => option.value === 'standard-2')?.value ||
       glassTypeOptions.find((option) => option.value !== 'custom')?.value ||
       glassTypeOptions[0]?.value ||
       'custom';
@@ -264,10 +263,10 @@ export default function OknaNestOfferForm() {
     setCatalogPrice('55000');
     setDiscountPercent('15');
     setMarginPercent('10');
-    setInstallationRatePerMeter('64.39');
-    setIsInstallationRateAuto(false);
+    setInstallationPricingMode('flat');
+    setInstallationRatePerMeter('');
+    setInstallationPerMeterExtra('');
     setInstallationTotalOverride('8500');
-    setIsInstallationTotalManual(true);
     setWindowPerimeter('132');
     setWindowArea('48');
     setProfileTypeSelection('veka');
@@ -351,79 +350,48 @@ export default function OknaNestOfferForm() {
     setAttachmentFile(file);
   };
 
-  useEffect(() => {
-    if (!isInstallationRateAuto) {
-      return;
+  const perMeterBaseTotal = useMemo(() => {
+    if (installationPricingMode !== 'per-meter') {
+      return 0;
     }
-    const perimeterNumber = parsePreviewNumber(windowPerimeter);
-    const overrideNumber = parsePreviewNumber(installationTotalOverride);
-    if (perimeterNumber > 0 && overrideNumber > 0) {
-      const computedRate = overrideNumber / perimeterNumber;
-      const currentRate = parsePreviewNumber(installationRatePerMeter);
-      if (Math.abs(computedRate - currentRate) > 0.005) {
-        setInstallationRatePerMeter(computedRate.toFixed(2));
-      }
-    } else if (installationRatePerMeter !== '') {
-      setInstallationRatePerMeter('');
-    }
-  }, [
-    isInstallationRateAuto,
-    windowPerimeter,
-    installationTotalOverride,
-    installationRatePerMeter,
-  ]);
-
-  const autoInstallationTotal = useMemo(() => {
     const perimeterNumber = parsePreviewNumber(windowPerimeter);
     const rateNumber = parsePreviewNumber(installationRatePerMeter);
     if (perimeterNumber > 0 && rateNumber > 0) {
       return perimeterNumber * rateNumber;
     }
     return 0;
-  }, [windowPerimeter, installationRatePerMeter]);
+  }, [installationPricingMode, windowPerimeter, installationRatePerMeter]);
 
-  useEffect(() => {
-    const rateNumber = parsePreviewNumber(installationRatePerMeter);
-    const perimeterNumber = parsePreviewNumber(windowPerimeter);
-
-    if (rateNumber <= 0) {
-      if (!isInstallationTotalManual && installationTotalOverride !== '') {
-        setInstallationTotalOverride('');
-      }
-      if (isInstallationTotalManual) {
-        setIsInstallationTotalManual(false);
-      }
-      return;
+  const perMeterTotalWithExtra = useMemo(() => {
+    if (installationPricingMode !== 'per-meter') {
+      return 0;
     }
-
-    if (isInstallationTotalManual) {
-      return;
-    }
-
-    const nextTotal =
-      perimeterNumber > 0 ? perimeterNumber * rateNumber : rateNumber;
-    const nextValue = nextTotal > 0 ? nextTotal.toFixed(2) : '';
-    if (installationTotalOverride !== nextValue) {
-      setInstallationTotalOverride(nextValue);
-    }
-  }, [
-    installationRatePerMeter,
-    windowPerimeter,
-    installationTotalOverride,
-    isInstallationTotalManual,
-  ]);
-
-  const installationOverridePlaceholder =
-    autoInstallationTotal > 0 ? `np. ${autoInstallationTotal.toFixed(2)}` : 'np. 8500';
+    const extraNumber = parsePreviewNumber(installationPerMeterExtra);
+    return perMeterBaseTotal + extraNumber;
+  }, [installationPricingMode, perMeterBaseTotal, installationPerMeterExtra]);
 
   const pricePreview = useMemo(() => {
     const catalog = parsePreviewNumber(catalogPrice);
     const perimeter = parsePreviewNumber(windowPerimeter);
     const ratePerMeter = parsePreviewNumber(installationRatePerMeter);
-    const computedInstallation =
-      perimeter > 0 && ratePerMeter > 0 ? perimeter * ratePerMeter : 0;
-    const overrideInstallation = parsePreviewNumber(installationTotalOverride);
-    const installationApplied = overrideInstallation > 0 ? overrideInstallation : computedInstallation;
+    const extraPerMeter = parsePreviewNumber(installationPerMeterExtra);
+    const flatOverride = parsePreviewNumber(installationTotalOverride);
+
+    let installationComputed = 0;
+    let installationApplied = 0;
+    let installationOverride = null;
+    let installationRateValue = 0;
+
+    if (installationPricingMode === 'per-meter') {
+      installationRateValue = ratePerMeter;
+      installationComputed = perimeter > 0 && ratePerMeter > 0 ? perimeter * ratePerMeter : 0;
+      installationApplied = installationComputed + extraPerMeter;
+    } else {
+      installationComputed = flatOverride;
+      installationApplied = flatOverride;
+      installationOverride = flatOverride > 0 ? flatOverride : null;
+    }
+
     const discountRateRaw = parsePreviewNumber(discountPercent);
     const marginRate = parsePreviewNumber(marginPercent);
     const vatRaw = vatPreset === 'custom' ? vatCustom : vatPreset;
@@ -448,10 +416,12 @@ export default function OknaNestOfferForm() {
       discountRate,
       discountAmount,
       discountedWindowsPrice,
-      installationRate: ratePerMeter,
-      installationComputed: computedInstallation,
-      installationOverride: overrideInstallation > 0 ? overrideInstallation : null,
+      installationRate: installationRateValue,
+      installationComputed,
+      installationOverride,
       installationApplied,
+      installationPerMeterExtra: extraPerMeter,
+      installationPricingMode,
       marginAmount,
       netAfterDiscount,
       netWithMargin,
@@ -461,7 +431,9 @@ export default function OknaNestOfferForm() {
     };
   }, [
     catalogPrice,
+    installationPricingMode,
     installationRatePerMeter,
+    installationPerMeterExtra,
     installationTotalOverride,
     windowPerimeter,
     discountPercent,
@@ -513,12 +485,26 @@ export default function OknaNestOfferForm() {
 
     const perimeterValue = parsePreviewNumber(windowPerimeter);
     const rateValue = parsePreviewNumber(installationRatePerMeter);
+    const extraValue = parsePreviewNumber(installationPerMeterExtra);
     const overrideValue = parsePreviewNumber(installationTotalOverride);
-    const computedInstallation = perimeterValue > 0 && rateValue > 0 ? perimeterValue * rateValue : 0;
-    const effectiveInstallation = overrideValue > 0 ? overrideValue : computedInstallation;
+
+    let computedInstallation = 0;
+    let effectiveInstallation = 0;
+
+    if (installationPricingMode === 'per-meter') {
+      computedInstallation = perimeterValue > 0 && rateValue > 0 ? perimeterValue * rateValue : 0;
+      if (computedInstallation <= 0) {
+        alert('Podaj stawke montazu za 1 mb obwodu oraz obwod okien.');
+        return;
+      }
+      effectiveInstallation = computedInstallation + extraValue;
+    } else {
+      computedInstallation = overrideValue;
+      effectiveInstallation = overrideValue;
+    }
 
     if (effectiveInstallation <= 0) {
-      alert('Podaj stawke montazu za 1 mb obwodu lub laczna kwote montazu.');
+      alert('Podaj poprawne dane do wyliczenia ceny montazu.');
       return;
     }
 
@@ -555,9 +541,11 @@ export default function OknaNestOfferForm() {
         discountPercent,
         marginPercent,
         installationPrice: String(effectiveInstallation),
-        installationRatePerMeter,
+        installationPricingMode,
+        installationRatePerMeter: installationPricingMode === 'per-meter' ? installationRatePerMeter : '',
+        installationPerMeterExtra: installationPricingMode === 'per-meter' ? String(extraValue) : '',
         installationPriceComputed: String(computedInstallation),
-        installationPriceOverride: installationTotalOverride,
+        installationPriceOverride: installationPricingMode === 'flat' ? installationTotalOverride : '',
         windowPerimeter,
         windowArea,
         profileType: profileTypeValue,
@@ -593,47 +581,6 @@ export default function OknaNestOfferForm() {
         anchor.click();
         document.body.removeChild(anchor);
         URL.revokeObjectURL(url);
-
-        setUserName('');
-        setInvestmentTown('');
-        setInvestmentStreet('');
-        setInvestmentPostalCode('');
-        setInvestmentCity('');
-        setSelectedAdvisorKey(defaultAdvisor?.value || '');
-        setCatalogPrice('');
-        setDiscountPercent('');
-        setMarginPercent('');
-        setInstallationRatePerMeter('');
-        setIsInstallationRateAuto(true);
-        setInstallationTotalOverride('');
-        setIsInstallationTotalManual(false);
-        setWindowPerimeter('');
-        setWindowArea('');
-        setProfileTypeSelection(firstProfileOption);
-        setProfileType(firstProfileOption === 'custom' ? '' : firstProfileLabel);
-        setHardwareThickness(hardwareThicknessOptions[1]?.value || hardwareThicknessOptions[0]?.value || '');
-        setAssemblyType(assemblyTypeOptions[0]?.value || '');
-        setProfileColor('');
-        setHingeType(hingeOptions[0]?.value || '');
-        setGlassProducer('Glass Shift');
-        setGlassTypeSelection(firstGlassOption);
-        setGlassType(firstGlassOption === 'custom' ? '' : firstGlassLabel);
-        setGasketPackage(defaultGasketValue);
-        setWarmSpacer('yes');
-        setRcPackage(rcPackageOptions[0]?.value || 'no');
-        setLazikIncluded('na');
-        setDemolitionMode('na');
-        setDemolitionType('na');
-        setDemolitionDirection('na');
-        setVatPreset('8');
-        setVatCustom('');
-        setAttachmentFile(null);
-        setAttachmentInputKey((value) => value + 1);
-        setSelectedOptionIds(defaultSelectedWindowOptionIds);
-        setAdditionalNotes('');
-        setFeatureSelections(buildDefaultFeatureState());
-        setInstallationExtrasState(buildDefaultInstallationExtrasState());
-        setOptionPriceState(buildDefaultWindowOptionPriceState());
       } else {
         alert('Nie udalo sie wygenerowac pliku PDF.');
       }
@@ -782,50 +729,76 @@ export default function OknaNestOfferForm() {
             />
           </div>
           <div className="input-group">
-            <label htmlFor="okna_installationRate">Cena montazu - stawka za 1 mb obwodu (PLN)</label>
-            <input
-              id="okna_installationRate"
-              type="number"
-              step="0.01"
-              min="0"
-              value={installationRatePerMeter}
-              onChange={(event) => {
-                const nextValue = event.target.value;
-                setInstallationRatePerMeter(nextValue);
-                setIsInstallationRateAuto(nextValue === '');
-              }}
-              placeholder="np. 65"
-            />
+            <label htmlFor="okna_installationMode">Sposób rozliczenia montażu</label>
+            <select
+              id="okna_installationMode"
+              value={installationPricingMode}
+              onChange={(event) => setInstallationPricingMode(event.target.value)}
+            >
+              <option value="flat">Cena ryczałtowa</option>
+              <option value="per-meter">Cena za 1 mb obwodu</option>
+            </select>
           </div>
-          <div className="input-group">
-            <label htmlFor="okna_installationOverride">Cena montazu - kwota ryczaltowa</label>
-            <input
-              id="okna_installationOverride"
-              type="number"
-              step="0.01"
-              min="0"
-              value={installationTotalOverride}
-              onChange={(event) => {
-                const nextValue = event.target.value;
-                setInstallationTotalOverride(nextValue);
-                setIsInstallationTotalManual(nextValue !== '');
-              }}
-              placeholder={installationOverridePlaceholder}
-            />
-            <small style={{ display: 'block', marginTop: '8px', color: '#555' }}>
-              Pozostaw pole puste, aby wykorzystac kwote obliczona na podstawie stawki i obwodu{autoInstallationTotal > 0 ? ` (${autoInstallationTotal.toFixed(2)} PLN).` : '.'}
-            </small>
-            {pricePreview && pricePreview.installationComputed > 0 && (
-              <small style={{ display: 'block', marginTop: '6px', color: '#2c3e50' }}>
-                Obliczona kwota montazu: {pricePreview.installationComputed.toFixed(2)} PLN
+
+          {installationPricingMode === 'per-meter' && (
+            <>
+              <div className="input-group">
+                <label htmlFor="okna_installationRate">Cena montażu - stawka za 1 mb obwodu (PLN)</label>
+                <input
+                  id="okna_installationRate"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={installationRatePerMeter}
+                  onChange={(event) => setInstallationRatePerMeter(event.target.value)}
+                  placeholder="np. 65"
+                />
+              </div>
+              <div className="input-group">
+                <label htmlFor="okna_installationExtra">Dodatkowa kwota do montażu (PLN)</label>
+                <input
+                  id="okna_installationExtra"
+                  type="number"
+                  step="0.01"
+                  value={installationPerMeterExtra}
+                  onChange={(event) => setInstallationPerMeterExtra(event.target.value)}
+                  placeholder="np. 850"
+                />
+                <small style={{ display: 'block', marginTop: '8px', color: '#555' }}>
+                  Kwota ta zostanie dodana do obliczenia montażu na podstawie stawki i obwodu.
+                </small>
+                {perMeterBaseTotal > 0 && (
+                  <small style={{ display: 'block', marginTop: '6px', color: '#2c3e50' }}>
+                    Obliczenie wg obwodu: {perMeterBaseTotal.toFixed(2)} PLN
+                  </small>
+                )}
+                {installationPricingMode === 'per-meter' && perMeterTotalWithExtra !== 0 && (
+                  <small style={{ display: 'block', marginTop: '4px', color: '#2c3e50' }}>
+                    Łącznie z dodatkiem: {perMeterTotalWithExtra.toFixed(2)} PLN
+                  </small>
+                )}
+              </div>
+            </>
+          )}
+
+          {installationPricingMode === 'flat' && (
+            <div className="input-group">
+              <label htmlFor="okna_installationOverride">Cena montażu - kwota ryczałtowa</label>
+              <input
+                id="okna_installationOverride"
+                type="number"
+                step="0.01"
+                min="0"
+                value={installationTotalOverride}
+                onChange={(event) => setInstallationTotalOverride(event.target.value)}
+                placeholder="np. 8500"
+              />
+              <small style={{ display: 'block', marginTop: '8px', color: '#555' }}>
+                Wpisz pełną kwotę montażu. Pole pozostaw puste, jeśli montaż nie jest uwzględniany.
               </small>
-            )}
-            {pricePreview && (
-              <small style={{ display: 'block', marginTop: '4px', color: '#2c3e50' }}>
-                W kalkulacji uzyto: {pricePreview.installationApplied.toFixed(2)} PLN
-              </small>
-            )}
-          </div>
+            </div>
+          )}
+
           <div className="input-group">
             <label htmlFor="okna_vatPreset">Podatek VAT</label>
             <select
@@ -858,11 +831,14 @@ export default function OknaNestOfferForm() {
             <label>Podglad wyliczenia</label>
             <div>
               <div>Suma bazowa netto: {pricePreview.baseSum.toFixed(2)} PLN</div>
-              {pricePreview.installationRate > 0 && (
+              {pricePreview.installationPricingMode === 'per-meter' && pricePreview.installationRate > 0 && (
                 <div>Stawka montazu (1 mb): {pricePreview.installationRate.toFixed(2)} PLN</div>
               )}
-              {pricePreview.installationComputed > 0 && (
+              {pricePreview.installationPricingMode === 'per-meter' && pricePreview.installationComputed > 0 && (
                 <div>Montaz wg obwodu: {pricePreview.installationComputed.toFixed(2)} PLN</div>
+              )}
+              {pricePreview.installationPricingMode === 'per-meter' && pricePreview.installationPerMeterExtra !== 0 && (
+                <div>Dodatkowa kwota: {pricePreview.installationPerMeterExtra.toFixed(2)} PLN</div>
               )}
               <div>Montaz w kalkulacji: {pricePreview.installationApplied.toFixed(2)} PLN</div>
               {pricePreview.discountAmount > 0 && (
@@ -1248,4 +1224,3 @@ export default function OknaNestOfferForm() {
     </form>
   );
 }
-

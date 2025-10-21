@@ -9,8 +9,6 @@ export const profileTypeOptions = [
 ];
 
 export const glassTypeOptions = [
-  { value: 'standard-2', label: 'Pakiet standard (2 uszczelki)' },
-  { value: 'premium-3', label: 'Pakiet premium (3 uszczelki)' },
   { value: 'tempered', label: 'Hartowana szyba' },
   { value: 'laminated', label: 'Laminowana szyba' },
   { value: 'custom', label: 'Dopisz recznie' },
