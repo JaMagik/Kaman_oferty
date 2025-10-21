@@ -9,6 +9,7 @@ export const profileTypeOptions = [
 ];
 
 export const glassTypeOptions = [
+  { value: 'standard-4-6', label: 'Szyba standardowa 4-6 mm' },
   { value: 'tempered', label: 'Hartowana szyba' },
   { value: 'laminated', label: 'Laminowana szyba' },
   { value: 'custom', label: 'Dopisz recznie' },

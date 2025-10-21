@@ -116,9 +116,9 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
   const [boilerCirculationPumpQty, setBoilerCirculationPumpQty] = useState(1);
   const [boilerControllerQty, setBoilerControllerQty] = useState(1);
   const [boilerHeatingCircuitQty, setBoilerHeatingCircuitQty] = useState(1);
+  const [heatPumpControllerQty, setHeatPumpControllerQty] = useState(1);
   const [generatedPdfData, setGeneratedPdfData] = useState(null);
   const [systemType, setSystemType] = useState('zamkniety');
-  
   const [includeExhaustFan, setIncludeExhaustFan] = useState(false);
   const [includeReturnProtection, setIncludeReturnProtection] = useState(true);
 
@@ -225,6 +225,7 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
       setOutdoorUnitQty(1);
       setIndoorUnitQty(1);
       setHeatingCircuitQty(1);
+      setHeatPumpControllerQty(1);
     }
 
     prevDeviceTypeRef.current = deviceType;
@@ -261,6 +262,7 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
           boilerCirculationPumps: boilerCirculationPumpQty,
           boilerControllers: boilerControllerQty,
           boilerHeatingCircuits: boilerHeatingCircuitQty,
+          heatPumpControllers: heatPumpControllerQty,
         },
         showPrice
     );
@@ -404,6 +406,7 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
                       setOutdoorUnitQty(1);
                       setIndoorUnitQty(1);
                       setHeatingCircuitQty(1);
+                      setHeatPumpControllerQty(1);
                     }
                   }}
                 />
@@ -436,6 +439,14 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
                     min="1"
                     value={heatingCircuitQty}
                     onChange={(e) => setHeatingCircuitQty(getPositiveInt(e.target.value, 1))}
+                  />
+                  <label htmlFor="heatPumpControllerQty">Sterowniki/regulatory</label>
+                  <input
+                    id="heatPumpControllerQty"
+                    type="number"
+                    min="1"
+                    value={heatPumpControllerQty}
+                    onChange={(e) => setHeatPumpControllerQty(getPositiveInt(e.target.value, 1))}
                   />
                 </div>
               )}

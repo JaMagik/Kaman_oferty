@@ -210,6 +210,14 @@ export const recuperationMainItems = [
     unit: 'usł.',
     quantity: '1',
   },
+  {
+    id: '21',
+    name: 'Filtr Aqua Clear',
+    description:
+      'Wysokowydajny filtr Aqua Clear poprawiajacy jakosc powietrza oraz chroni centrale przed zanieczyszczeniami.',
+    unit: 'szt.',
+    quantity: '1',
+  },
 ];
 
 export const recuperationItemsById = recuperationMainItems.reduce((acc, item) => {

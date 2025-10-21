@@ -28,6 +28,7 @@ export default function RecuperationOfferForm() {
 
   const [variantKey, setVariantKey] = useState('installationOnly');
   const [drillingMode, setDrillingMode] = useState('main');
+  const [includeAquaClear, setIncludeAquaClear] = useState(false);
 
   const variantOptions = useMemo(
     () => Object.values(recuperationVariants),
@@ -70,6 +71,14 @@ export default function RecuperationOfferForm() {
       }
     }
 
+    if (includeAquaClear) {
+      if (!mainItemIds.includes('21')) {
+        mainItemIds = [...mainItemIds, '21'];
+      }
+    } else {
+      mainItemIds = mainItemIds.filter((id) => id !== '21');
+    }
+
     setIsProcessing(true);
     setGeneratedPdfData(null);
 
@@ -87,6 +96,7 @@ export default function RecuperationOfferForm() {
         mainItemIds,
         addonItemIds,
         drillingMode,
+        includeAquaClear,
       };
 
       const pdfBlob = await generateRecuperationOfferPDF(formData);
@@ -229,6 +239,16 @@ export default function RecuperationOfferForm() {
           </div>
         </div>
       </fieldset>
+
+      <div className="input-group-inline">
+        <input
+          type="checkbox"
+          id="includeAquaClear"
+          checked={includeAquaClear}
+          onChange={(event) => setIncludeAquaClear(event.target.checked)}
+        />
+        <label htmlFor="includeAquaClear">Filtr Aqua Clear (dodaj do zakresu)</label>
+      </div>
 
       <hr />
 

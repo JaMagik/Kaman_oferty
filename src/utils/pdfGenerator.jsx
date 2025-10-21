@@ -480,6 +480,17 @@ function prepareTableData(deviceType, model, tankCapacity, bufferCapacity, syste
             mainTableData[heatingCircuitsIndex][3] = String(circuitsQty);
         }
     }
+    if (!isKotel && !isAc) {
+        const controllersQty = normalizeQty(quantityOptions.heatPumpControllers, 1);
+        const controllerIndex = mainTableData.findIndex(row => {
+            const name = normalizeName(row[1]);
+            return name.includes('sterownik') || name.includes('regulator');
+        });
+        if (controllerIndex !== -1) {
+            mainTableData[controllerIndex][3] = String(controllersQty);
+        }
+    }
+
 
     if (isKotel) {
         const pumpQty = normalizeQty(quantityOptions.boilerCirculationPumps, 1);
