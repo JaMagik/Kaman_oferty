@@ -243,6 +243,12 @@ export const installationExtras = [
     summaryLabel: 'Poszerzenia systemowe',
   },
   {
+    id: 'install-full-window-demolition',
+    label: 'Demontaz okien w calosci',
+    summaryLabel: 'Demontaz okien w calosci',
+    supportsQuantity: true,
+  },
+  {
     id: 'install-inner-sills',
     label: 'Montaz parapetow wewnetrznych (kamien)',
     summaryLabel: 'Parapety wewnetrzne',

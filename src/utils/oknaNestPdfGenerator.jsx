@@ -1079,6 +1079,7 @@ export async function generateOknaNestPDF(formData) {
       { id: 'install-warm-parapets', label: 'Cieple parapety XPS 700 KPA' },
       { id: 'install-purenit-extensions', label: 'Poszerzenia pod okna Purenit' },
       { id: 'install-system-extensions', label: 'Poszerzenia systemowe / podwaliny systemowe' },
+      { id: 'install-full-window-demolition', label: 'Demontaz okien w calosci', type: 'demolition' },
       { id: 'install-outer-sills', label: 'Montaz parapetow zewnetrznych (stal powlekana)', type: 'parapet' },
       { id: 'install-inner-sills', label: 'Montaz parapetow wewnetrznych (kamien)', type: 'parapet' },
     ];
@@ -1102,21 +1103,38 @@ export async function generateOknaNestPDF(formData) {
       }
 
       const extraState = getExtraState(config.id);
+      const isParapetExtra = config.type === 'parapet';
+      const isDemolitionExtra = config.type === 'demolition';
+
+      if (isDemolitionExtra && demolitionType !== 'na') {
+        return;
+      }
+
+      if (isDemolitionExtra && !extraState.selected) {
+        return;
+      }
+
       const quantityValue =
-        config.type === 'parapet'
+        isParapetExtra || isDemolitionExtra
           ? extraState.quantity?.toString().trim() || 'wg projektu'
           : '---';
+      const priceValue = isDemolitionExtra
+        ? (() => {
+            const priceNumber = parseInputNumber(extraState.price);
+            return priceNumber > 0 ? formatCurrency(priceNumber) : 'wedlug projektu';
+          })()
+        : formatOptionalPrice(extraState.price);
       const row = {
         label: config.label,
         status: extraState.selected ? 'TAK' : 'Opcja',
         quantity: quantityValue,
-        price: formatOptionalPrice(extraState.price),
-        isParapet: config.type === 'parapet',
+        price: priceValue,
+        isParapet: isParapetExtra,
         selected: extraState.selected,
         detailId: config.id,
       };
 
-      if (config.type === 'parapet' && !extraState.selected) {
+      if (isParapetExtra && !extraState.selected) {
         deferredParapetRows.push(row);
         return;
       }

@@ -213,6 +213,22 @@ export default function OknaNestOfferForm() {
   const [optionPriceState, setOptionPriceState] = useState(() => buildDefaultWindowOptionPriceState());
   const [isProcessing, setIsProcessing] = useState(false);
 
+  useEffect(() => {
+    if (demolitionType === 'na') {
+      return;
+    }
+    setInstallationExtrasState((current) => {
+      const currentEntry = current['install-full-window-demolition'];
+      if (!currentEntry || !currentEntry.selected) {
+        return current;
+      }
+      return {
+        ...current,
+        'install-full-window-demolition': { selected: false, price: '', quantity: '' },
+      };
+    });
+  }, [demolitionType]);
+
   const gridStyle = {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
@@ -1146,13 +1162,21 @@ export default function OknaNestOfferForm() {
           <div className="options-box">
             {installationExtras.map((item) => {
             const extraState = getInstallationExtraState(item.id);
+            const isFullDemolitionExtra = item.id === 'install-full-window-demolition';
+            const fullDemolitionDisabled = isFullDemolitionExtra && demolitionType !== 'na';
             return (
               <div key={item.id} style={{ marginBottom: '12px' }}>
                 <label className="option-row" style={{ alignItems: 'flex-start' }}>
                   <input
                     type="checkbox"
                     checked={extraState.selected}
-                    onChange={() => toggleInstallationExtra(item.id)}
+                    onChange={() => {
+                      if (fullDemolitionDisabled) {
+                        return;
+                      }
+                      toggleInstallationExtra(item.id);
+                    }}
+                    disabled={fullDemolitionDisabled}
                   />
                   <span>{item.label}</span>
                 </label>
@@ -1165,7 +1189,7 @@ export default function OknaNestOfferForm() {
                     value={extraState.price}
                     onChange={(event) => updateInstallationExtraPrice(item.id, event.target.value)}
                     placeholder="np. 1500"
-                    disabled={!extraState.selected}
+                    disabled={!extraState.selected || fullDemolitionDisabled}
                   />
                 </div>
                 {item.supportsQuantity && (
@@ -1177,8 +1201,13 @@ export default function OknaNestOfferForm() {
                       value={extraState.quantity}
                       onChange={(event) => updateInstallationExtraQuantity(item.id, event.target.value)}
                       placeholder="np. 6"
-                      disabled={!extraState.selected}
+                      disabled={!extraState.selected || fullDemolitionDisabled}
                     />
+                  </div>
+                )}
+                {isFullDemolitionExtra && fullDemolitionDisabled && (
+                  <div style={{ marginLeft: '28px', marginTop: '4px', fontSize: '0.75rem', color: '#666' }}>
+                    Opcja dostepna tylko gdy w polu "Rodzaj demontazu" wybrano "Nie dotyczy".
                   </div>
                 )}
               </div>
