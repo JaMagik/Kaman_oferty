@@ -155,6 +155,39 @@ export default function DoorsOfferForm() {
     return true;
   };
 
+  const handleFillWithSampleData = () => {
+    const advisorValue = clientAdvisorOptions[0]?.value || '';
+    const nextExtrasState = buildDefaultExtrasState();
+
+    nextExtrasState['seal-tape'] = { selected: true, price: '1500' };
+    nextExtrasState['threshold-epdm'] = { selected: true, price: '600' };
+
+    setUserName('Jan Testowy');
+    setInvestmentStreet('ul. Krolewska 10');
+    setInvestmentTown('Warszawa');
+    setInvestmentPostalCode('00-001');
+    setInvestmentCity('Warszawa');
+    setAdvisorId(advisorValue);
+    setDoorType('wejsciowe');
+    setDoorMaterial('aluminium');
+    setDoorColor('Antracyt struktura');
+    setCatalogPrice('18500');
+    setDiscountPercent('7');
+    setMarginPercent('12');
+    setInstallationPricingMode('flat');
+    setInstallationRatePerMeter('');
+    setInstallationLength('');
+    setInstallationPerMeterExtra('');
+    setInstallationTotalOverride('2800');
+    setVatPreset('8');
+    setVatCustom('');
+    setNotes('Oferta testowa dla klienta pokazowego.');
+    setExtrasState(nextExtrasState);
+    setAttachmentFile(null);
+    setIsGenerating(false);
+    resetGeneratedPdf();
+  };
+
   const calculateFinancialSummary = () => {
     const catalogPriceNumber = toNumber(catalogPrice);
     const discountPercentNumber = toNumber(discountPercent);
@@ -327,6 +360,11 @@ export default function DoorsOfferForm() {
   return (
     <form className="form-container" onSubmit={handleGenerateOffer}>
       <h2>Oferta - Drzwi</h2>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
+        <button type="button" onClick={handleFillWithSampleData}>
+          Wypelnij danymi testowymi
+        </button>
+      </div>
 
       <div className="input-group">
         <label htmlFor="doors_userName">Imie i nazwisko klienta</label>

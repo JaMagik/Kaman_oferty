@@ -169,6 +169,42 @@ export default function GarageDoorsOfferForm() {
     return true;
   };
 
+  const handleFillWithSampleData = () => {
+    const advisorValue = clientAdvisorOptions[0]?.value || '';
+    const nextExtrasState = buildDefaultExtrasState();
+
+    nextExtrasState['seal-tape'] = { selected: true, price: '1200' };
+    nextExtrasState['threshold-epdm'] = { selected: true, price: '450' };
+
+    setUserName('Anna Testowa');
+    setInvestmentStreet('ul. Jesienna 8');
+    setInvestmentTown('Krakow');
+    setInvestmentPostalCode('30-001');
+    setInvestmentCity('Krakow');
+    setAdvisorId(advisorValue);
+    setDoorType('segmentowa');
+    setDriveType('automatyczna');
+    setInsulation('60mm');
+    setFinish('Antracyt RAL 7016, przetloczenia poziome');
+    setGlazing('pakiet');
+    setLeadTime('6 tygodni od akceptacji zamowienia');
+    setCatalogPrice('26200');
+    setDiscountPercent('6');
+    setMarginPercent('12');
+    setInstallationPricingMode('flat');
+    setInstallationRatePerMeter('');
+    setInstallationLength('');
+    setInstallationPerMeterExtra('');
+    setInstallationTotalOverride('3200');
+    setVatPreset('8');
+    setVatCustom('');
+    setNotes('Oferta testowa dla klienta pokazowego - brama garazowa.');
+    setExtrasState(nextExtrasState);
+    setAttachmentFile(null);
+    setIsGenerating(false);
+    resetGeneratedPdf();
+  };
+
   const calculateFinancialSummary = () => {
     const catalogPriceNumber = toNumber(catalogPrice);
     const discountPercentNumber = toNumber(discountPercent);
@@ -348,6 +384,11 @@ export default function GarageDoorsOfferForm() {
   return (
     <form className="form-container" onSubmit={handleGenerateOffer}>
       <h2>Oferta - Bramy garazowe</h2>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
+        <button type="button" onClick={handleFillWithSampleData}>
+          Wypelnij danymi testowymi
+        </button>
+      </div>
 
       <div className="input-group">
         <label htmlFor="garageDoors_userName">Imie i nazwisko klienta</label>
@@ -790,4 +831,3 @@ export default function GarageDoorsOfferForm() {
     </form>
   );
 }
-
