@@ -7,6 +7,8 @@ import RadiatorsOfferForm from "./components/RadiatorsOfferForm";
 import InsulationOfferForm from "./components/InsulationOfferForm";
 import RecuperationOfferForm from "./components/RecuperationOfferForm";
 import ACOfferForm from "./components/ACOfferForm";
+import DoorsOfferForm from "./components/DoorsOfferForm";
+import GarageDoorsOfferForm from "./components/GarageDoorsOfferForm";
 
 import "./assets/style.css";
 import "./App.css";
@@ -24,6 +26,9 @@ function App() {
       case "pv":
         return "bg-pv";
       case "okna":
+        return "bg-okna";
+      case "doors":
+      case "garage-doors":
         return "bg-okna";
       case "radiators":
         return "bg-radiators";
@@ -48,6 +53,10 @@ function App() {
         return <InsulationOfferForm />;
       case "okna":
         return <OknaNestOfferForm />;
+      case "doors":
+        return <DoorsOfferForm />;
+      case "garage-doors":
+        return <GarageDoorsOfferForm />;
       case "ac":
         return <ACOfferForm />;
       default:
@@ -77,6 +86,8 @@ function App() {
           {tabButton("radiators", "Grzejniki")}
           {tabButton("insulation", "Elewacje")}
           {tabButton("okna", "Okna Nest")}
+          {tabButton("doors", "Drzwi")}
+          {tabButton("garage-doors", "Bramy garażowe")}
         </nav>
       </header>
 

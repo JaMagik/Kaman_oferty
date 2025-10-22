@@ -530,9 +530,15 @@ function prepareTableData(deviceType, model, tankCapacity, bufferCapacity, syste
         }
     }
 
+    const magneticSeparatorLabel = (() => {
+        const entry = opcjeDlaPompCiepla.find(row => normalizeName(row[1]).includes('separator zanieczyszczen magnetyczny'));
+        return entry ? entry[1] : 'Separator zanieczyszczen magnetyczny (odmulnik)';
+    })();
+
     const movableItems = [
         { key: 'demontaz', name: 'Demontaz starego zrodla ciepla', applicable: () => !isAc },
         { key: 'podbudowa', name: 'Wykonanie podbudowy pod jednostke zewnetrzna', applicable: () => !isAc && !isKotel },
+        { key: 'magneticSeparator', name: magneticSeparatorLabel, applicable: () => !isKotel && !isAc },
         { key: 'exhaustFan', name: 'Wentylator wyciagowy', applicable: () => isKotel },
         { key: 'returnProtection', name: 'Zastosowanie termostatycznej ochrony powrotu', applicable: () => isKotel && deviceType !== 'LAZAR' },
     ];

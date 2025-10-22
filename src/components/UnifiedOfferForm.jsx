@@ -106,6 +106,7 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
   const [currentBufferOptions, setCurrentBufferOptions] = useState(initialBufferOptions);
   const [includeDemontaz, setIncludeDemontaz] = useState(true);
   const [includePodbudowa, setIncludePodbudowa] = useState(true);
+  const [includeMagneticSeparator, setIncludeMagneticSeparator] = useState(false);
   const [isNettoPrice, setIsNettoPrice] = useState(false);
   const [includeDotacja, setIncludeDotacja] = useState(true);
   const [showPrice, setShowPrice] = useState(true);
@@ -245,6 +246,7 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
     const offerOptions = {
       demontaz: !isAcDevice && includeDemontaz,
       podbudowa: !isAcDevice && includePodbudowa,
+      magneticSeparator: !isBoiler && !isAcDevice && includeMagneticSeparator,
       dotacja: includeDotacja,
       exhaustFan: isKotlospaw && includeExhaustFan,
       returnProtection: isBoiler && includeReturnProtection,
@@ -498,10 +500,28 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
               <label htmlFor="includeDemontaz">Uwzględnij demontaż starego źródła ciepła w ofercie</label>
             </div>
             {!isBoiler && (
-              <div className="option-row">
-                <input type="checkbox" id="includePodbudowa" checked={includePodbudowa} onChange={(e) => setIncludePodbudowa(e.target.checked)} />
-                <label htmlFor="includePodbudowa">Uwzględnij podbudowę pod pompę ciepła w ofercie</label>
-              </div>
+              <>
+                <div className="option-row">
+                  <input
+                    type="checkbox"
+                    id="includePodbudowa"
+                    checked={includePodbudowa}
+                    onChange={(e) => setIncludePodbudowa(e.target.checked)}
+                  />
+                  <label htmlFor="includePodbudowa">Uwzglednij podbudowe pod pompe ciepla w ofercie</label>
+                </div>
+                {!isAcDevice && (
+                  <div className="option-row">
+                    <input
+                      type="checkbox"
+                      id="includeMagneticSeparator"
+                      checked={includeMagneticSeparator}
+                      onChange={(e) => setIncludeMagneticSeparator(e.target.checked)}
+                    />
+                    <label htmlFor="includeMagneticSeparator">Uwzglednij separator magnetyczny w glownej tabeli</label>
+                  </div>
+                )}
+              </>
             )}
             {isBoiler && (
               <div className="option-row">
@@ -552,3 +572,4 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
     </form>
   );
 }
+
