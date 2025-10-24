@@ -1,6 +1,6 @@
 // Pełna, zaktualizowana zawartość pliku: src/components/UnifiedOfferForm.jsx
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { generateOfferPDF } from "../utils/pdfGenerator";
 import TrelloActions from './TrelloActions';
 
@@ -20,6 +20,7 @@ import { kaisaiHydroboxBaseTables } from '../data/tables/kaisaiTable';
 import { panasonicBaseTables } from '../data/tables/panasonicTables';
 import { kotlospawduOKOBaseTables } from '../data/tables/kotlospawDuoko';
 import { viessmannEasypellBaseTables } from '../data/tables/viessmannEasypellTables';
+import { clientAdvisorOptions } from '../data/clientAdvisorOptions';
 
 const DEVICE_CATEGORY = {
   HEAT_PUMP: "heat-pump",
@@ -98,6 +99,15 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
 
   const [userName, setUserName] = useState("");
   const [price, setPrice] = useState("");
+  const [investmentStreet, setInvestmentStreet] = useState('');
+  const [investmentTown, setInvestmentTown] = useState('');
+  const [investmentPostalCode, setInvestmentPostalCode] = useState('');
+  const [investmentCity, setInvestmentCity] = useState('');
+  const [advisorId, setAdvisorId] = useState(clientAdvisorOptions[0]?.value || '');
+  const selectedAdvisor = useMemo(
+    () => clientAdvisorOptions.find((item) => item.value === advisorId) || clientAdvisorOptions[0] || {},
+    [advisorId],
+  );
   const [deviceType, setDeviceType] = useState(initialDeviceType);
   const [model, setModel] = useState("12 kW");
   const [availableModels, setAvailableModels] = useState([]);
@@ -252,21 +262,42 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
       returnProtection: isBoiler && includeReturnProtection,
     };
 
+    const investmentAddress = {
+      street: investmentStreet,
+      town: investmentTown,
+      postalCode: investmentPostalCode,
+      city: investmentCity,
+    };
+
+    const advisorSummary = {
+      label: selectedAdvisor?.label || '',
+      phone: selectedAdvisor?.phone || '',
+      email: selectedAdvisor?.email || '',
+    };
+
     const pdfData = await generateOfferPDF(
-        price, userName, deviceType, model, tank, buffer, systemType, 
-        offerOptions,
-        isNettoPrice,
-        {
-          isCustom: isCustomQuantity,
-          outdoor: outdoorUnitQty,
-          indoor: indoorUnitQty,
-          heatingCircuits: heatingCircuitQty,
-          boilerCirculationPumps: boilerCirculationPumpQty,
-          boilerControllers: boilerControllerQty,
-          boilerHeatingCircuits: boilerHeatingCircuitQty,
-          heatPumpControllers: heatPumpControllerQty,
-        },
-        showPrice
+      price,
+      userName,
+      deviceType,
+      model,
+      tank,
+      buffer,
+      systemType,
+      offerOptions,
+      isNettoPrice,
+      {
+        isCustom: isCustomQuantity,
+        outdoor: outdoorUnitQty,
+        indoor: indoorUnitQty,
+        heatingCircuits: heatingCircuitQty,
+        boilerCirculationPumps: boilerCirculationPumpQty,
+        boilerControllers: boilerControllerQty,
+        boilerHeatingCircuits: boilerHeatingCircuitQty,
+        heatPumpControllers: heatPumpControllerQty,
+      },
+      showPrice,
+      investmentAddress,
+      advisorSummary
     );
     if (pdfData) {
       setGeneratedPdfData(pdfData);
@@ -294,6 +325,66 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
       
       <label htmlFor="userName">Imię i Nazwisko Klienta:</label>
       <input id="userName" type="text" value={userName} onChange={(e) => setUserName(e.target.value)} placeholder="Podaj imię i nazwisko" required />
+
+      <fieldset className="component-fieldset" style={{ marginTop: '20px' }}>
+        <legend>Dane inwestycji i doradcy</legend>
+        <div className="input-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
+          <div className="input-group">
+            <label htmlFor="investment_town">Miejscowość</label>
+            <input
+              id="investment_town"
+              type="text"
+              value={investmentTown}
+              onChange={(event) => setInvestmentTown(event.target.value)}
+              placeholder="np. Kraków"
+            />
+          </div>
+          <div className="input-group">
+            <label htmlFor="investment_street">Ulica i numer</label>
+            <input
+              id="investment_street"
+              type="text"
+              value={investmentStreet}
+              onChange={(event) => setInvestmentStreet(event.target.value)}
+              placeholder="np. ul. Przykładowa 12"
+            />
+          </div>
+          <div className="input-group">
+            <label htmlFor="investment_postal">Kod pocztowy</label>
+            <input
+              id="investment_postal"
+              type="text"
+              value={investmentPostalCode}
+              onChange={(event) => setInvestmentPostalCode(event.target.value)}
+              placeholder="np. 30-001"
+            />
+          </div>
+          <div className="input-group">
+            <label htmlFor="investment_city">Miasto</label>
+            <input
+              id="investment_city"
+              type="text"
+              value={investmentCity}
+              onChange={(event) => setInvestmentCity(event.target.value)}
+              placeholder="np. Kraków"
+            />
+          </div>
+          <div className="input-group">
+            <label htmlFor="offer_advisor">Oferte sporządził</label>
+            <select
+              id="offer_advisor"
+              value={advisorId}
+              onChange={(event) => setAdvisorId(event.target.value)}
+            >
+              {clientAdvisorOptions.map((advisor) => (
+                <option key={advisor.value} value={advisor.value}>
+                  {advisor.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </fieldset>
 
       <label htmlFor="price">Cena Końcowa (PLN):</label>
       <input id="price" type="text" inputMode="decimal" value={formatPriceForDisplay(price)} onChange={handlePriceChange} placeholder="Podaj cenę" />

@@ -28,6 +28,101 @@ const wrapText = (text, textFont, textSize, maxWidth) => {
     return lines;
 };
 
+const INFO_SEPARATOR_COLOR = rgb(0.82, 0.82, 0.82);
+const INFO_LABEL_COLOR = rgb(0.15, 0.15, 0.15);
+
+const formatAddressLines = (address = {}) => {
+    const street = String(address.street ?? '').trim();
+    const town = String(address.town ?? '').trim();
+    const postalCode = String(address.postalCode ?? '').trim();
+    const city = String(address.city ?? '').trim();
+
+    const lines = [];
+    if (town) {
+        lines.push(town);
+    }
+    if (street) {
+        lines.push(street);
+    }
+    const postalCity = [postalCode, city].filter(Boolean).join(' ');
+    if (postalCity) {
+        lines.push(postalCity);
+    }
+
+    return lines.length ? lines : ['---'];
+};
+
+const drawInfoColumn = (page, fonts, entries, startX, startY, columnWidth) => {
+    let cursorY = startY;
+    const labelFontSize = 10;
+    const valueFontSize = 8.6;
+    const labelSpacing = 10.5;
+    const valueLineHeight = 10.8;
+    entries.forEach((entry, index) => {
+        const label = entry.label || '';
+        const lines = Array.isArray(entry.lines) && entry.lines.length > 0 ? entry.lines : ['---'];
+
+        page.drawText(label, {
+            x: startX,
+            y: cursorY,
+            font: fonts.bold,
+            size: labelFontSize,
+            color: INFO_LABEL_COLOR,
+        });
+        cursorY -= labelSpacing;
+
+        lines.forEach((line) => {
+            const sanitized = String(line ?? '').trim() || '---';
+            const wrappedLines = wrapText(sanitized, fonts.regular, valueFontSize, columnWidth - 4);
+            wrappedLines.forEach((wrapped) => {
+                page.drawText(wrapped, {
+                    x: startX,
+                    y: cursorY,
+                    font: fonts.regular,
+                    size: valueFontSize,
+                    color: rgb(0.22, 0.22, 0.22),
+                });
+                cursorY -= valueLineHeight;
+            });
+        });
+
+        if (index < entries.length - 1) {
+            cursorY -= 3;
+            page.drawLine({
+                start: { x: startX, y: cursorY + 6 },
+                end: { x: startX + columnWidth, y: cursorY + 6 },
+                thickness: 0.6,
+                color: INFO_SEPARATOR_COLOR,
+            });
+            cursorY -= 6;
+        }
+    });
+    return cursorY;
+};
+
+const drawOfferInfoBlock = (page, fonts, { leftEntries, rightEntries, startY, marginX = 42, columnGap = 14 }) => {
+    const { width } = page.getSize();
+    const columnWidth = (width - marginX * 2 - columnGap) / 2;
+    const leftStartX = marginX;
+    const rightStartX = marginX + columnWidth + columnGap;
+
+    const leftBottom = drawInfoColumn(page, fonts, leftEntries, leftStartX, startY, columnWidth);
+    const rightBottom = drawInfoColumn(page, fonts, rightEntries, rightStartX, startY, columnWidth);
+
+    const separatorTop = startY + 8;
+    const separatorBottom = Math.min(leftBottom, rightBottom) - 6;
+    const separatorX = marginX + columnWidth + columnGap / 2;
+
+    page.drawLine({
+        start: { x: separatorX, y: separatorTop },
+        end: { x: separatorX, y: separatorBottom },
+        thickness: 0.6,
+        color: INFO_SEPARATOR_COLOR,
+    });
+
+    return Math.min(leftBottom, rightBottom);
+};
+
 function drawTable(pdfDoc, initialPage, fonts, tableData, startY, customConfig = {}) {
     let currentPage = initialPage;
     let currentY = startY;
@@ -593,7 +688,9 @@ export async function generateOfferPDF(
   offerOptions,
   isNettoPrice,
   quantityOptions,
-  showPrice
+  showPrice,
+  investmentAddress = {},
+  advisorInfo = {}
 ) {
     if (!userName?.trim()) {
         alert('Uzupełnij pole Imię i Nazwisko!');
@@ -637,28 +734,59 @@ export async function generateOfferPDF(
             deviceType, model, tankCapacity, bufferCapacity, systemType, offerOptions, isKotel, quantityOptions, isAc
         );
         
-        let currentY = pageHeight - 35;
-        
+        let currentY = pageHeight - 26;
+
         if (kamanLogoImage) {
-            const logoDims = kamanLogoImage.scale(0.03); 
+            const logoDims = kamanLogoImage.scale(0.03);
             dynamicPage.drawImage(kamanLogoImage, { x: (pageWidth - logoDims.width) / 2, y: currentY - logoDims.height, width: logoDims.width, height: logoDims.height });
-            currentY -= (logoDims.height + 25);
+            currentY -= (logoDims.height + 18);
         }
-        
-        const userNameText = `Oferta dla: ${userName}`;
-        const userNameFontSize = 22;
-        const userNameTextWidth = boldFont.widthOfTextAtSize(userNameText, userNameFontSize);
-        dynamicPage.drawText(userNameText, { x: (pageWidth - userNameTextWidth) / 2, y: currentY, size: userNameFontSize, font: boldFont, color: rgb(0.7, 0, 0.16) });
-        currentY -= (userNameFontSize + 20);
-        
-        let tableConfigOverrides = {};
-        if (mainTableData.length > 16) {
-            tableConfigOverrides = {
-                contentFontSize: 7.5,
-                descriptionFontSize: 7,
-                lineHeight: 1.25,
-            };
-        }
+
+        const leftEntries = [
+            { label: 'Oferta dla', lines: [userName || '---'] },
+            { label: 'Adres inwestycji', lines: formatAddressLines(investmentAddress) },
+            { label: 'Waznosc oferty', lines: ['14 dni'] },
+        ];
+
+        const advisorName = advisorInfo?.label || advisorInfo?.name || '---';
+        const advisorPhone = advisorInfo?.phone || '---';
+        const advisorEmail = advisorInfo?.email || '---';
+
+        const rightEntries = [
+            { label: 'Oferte sporzadzil', lines: [advisorName || '---'] },
+            { label: 'Telefon', lines: [advisorPhone || '---'] },
+            { label: 'Email', lines: [advisorEmail || '---'] },
+        ];
+
+        const infoBlockBottom = drawOfferInfoBlock(dynamicPage, { regular: regularFont, bold: boldFont }, {
+            leftEntries,
+            rightEntries,
+            startY: currentY,
+        });
+        currentY = infoBlockBottom - 4;
+
+        const tableConfigOverrides = (() => {
+    const rowCount = mainTableData.length;
+    if (rowCount > 24) {
+        return {
+            contentFontSize: 6.8,
+            descriptionFontSize: 6.4,
+            lineHeight: 1.08,
+            pageMargins: { top: 14, bottom: 18 },
+        };
+    }
+    if (rowCount > 18) {
+        return {
+            contentFontSize: 7.1,
+            descriptionFontSize: 6.6,
+            lineHeight: 1.12,
+            pageMargins: { top: 16, bottom: 20 },
+        };
+    }
+    return {
+        pageMargins: { top: 18, bottom: 22 },
+    };
+})();
 
         const tableResult = drawTable(finalPdfDoc, dynamicPage, { regular: regularFont, bold: boldFont }, mainTableData, currentY, tableConfigOverrides);
         let lastContentPage = tableResult.finalPage;
@@ -670,13 +798,24 @@ export async function generateOfferPDF(
             const priceFontSize = 15;
             const priceTextWidth = boldFont.widthOfTextAtSize(priceString, priceFontSize);
 
-            if (lastYPosAfterTable < 80) {
-                 lastContentPage = finalPdfDoc.addPage();
-                 lastYPosAfterTable = lastContentPage.getHeight() - 60;
-            } else {
-                 lastYPosAfterTable -= 40;
+            let pricePage = lastContentPage;
+            let priceY = lastYPosAfterTable - 24;
+
+            if (priceY < 110) {
+                pricePage = finalPdfDoc.addPage();
+                priceY = pricePage.getHeight() - 115;
             }
-            lastContentPage.drawText(priceString, { x: (lastContentPage.getWidth() - priceTextWidth) / 2, y: lastYPosAfterTable, size: priceFontSize, font: boldFont, color: rgb(0.7, 0, 0.16) });
+
+            pricePage.drawText(priceString, {
+                x: (pricePage.getWidth() - priceTextWidth) / 2,
+                y: priceY,
+                size: priceFontSize,
+                font: boldFont,
+                color: rgb(0.7, 0, 0.16),
+            });
+
+            lastContentPage = pricePage;
+            lastYPosAfterTable = priceY;
         }
         
         if (!isAc) {
@@ -719,4 +858,16 @@ export async function generateOfferPDF(
         return null;
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
 

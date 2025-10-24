@@ -60,6 +60,8 @@ const wrapText = (font, text, size, maxWidth) => {
   return lines;
 };
 
+const OPTIONS_ACCENT_COLOR = rgb(0.62, 0.0, 0.18);
+
 const drawOptionsPricingSection = ({
   pdfDoc,
   startPage,
@@ -72,20 +74,20 @@ const drawOptionsPricingSection = ({
   footer,
 }) => {
   const config = {
-    marginX: 60,
+    marginX: 40,
     marginTop: 60,
     marginBottom: 60,
     headerHeight: 22,
-    paddingX: 10,
-    paddingY: 6,
+    paddingX: 14,
+    paddingY: 10,
     fontSize: 9,
     lineHeight: 14,
-    headerBgColor: rgb(0.04, 0.33, 0.58),
+    headerBgColor: OPTIONS_ACCENT_COLOR,
     headerFontColor: rgb(1, 1, 1),
     rowOddColor: rgb(1, 1, 1),
     rowEvenColor: rgb(0.94, 0.97, 1),
     borderColor: rgb(0.78, 0.86, 0.94),
-    titleColor: rgb(0.04, 0.33, 0.58),
+    titleColor: OPTIONS_ACCENT_COLOR,
   };
 
   let page = startPage;
@@ -439,41 +441,99 @@ export async function generateRecuperationOfferPDF(formData) {
     let finalY = tableResult.finalY;
 
     const isDrafton =
-      typeof deviceKey === 'string' && deviceKey.startsWith('DRAFTON_PRO');
+      typeof deviceKey === 'string' &&
+      deviceKey.toLowerCase().includes('drafton');
+
+    if (addonItemIds && addonItemIds.length > 0) {
+      const optionalRows = buildRowsForIds(addonItemIds, selectedDevice).map(
+        (row, index) => {
+          const newRow = [...row];
+          newRow[0] = String(index + 1);
+          return newRow;
+        }
+      );
+
+      let optionalPage = lastContentPage;
+      let optionalStartY = finalY - 40;
+
+      if (optionalStartY < 120) {
+        optionalPage = pdfDoc.addPage();
+        optionalStartY = optionalPage.getSize().height - 80;
+      }
+
+      const optionalResult = await drawTable(
+        pdfDoc,
+        optionalPage,
+        { regular: regularFont, bold: boldFont },
+        optionalRows,
+        optionalStartY,
+        'Opcje dodatkowe'
+      );
+
+      lastContentPage = optionalResult.finalPage;
+      finalY = optionalResult.finalY;
+    }
+
+    if (showPrice) {
+      let pricePage = lastContentPage;
+      let priceY = finalY - 30;
+
+      if (priceY < 120) {
+        pricePage = pdfDoc.addPage();
+        priceY = pricePage.getSize().height - 140;
+      }
+
+      const pageSize = pricePage.getSize();
+      const priceSuffix = isNetto ? 'PLN netto' : 'PLN brutto';
+      const priceText = `CENA KOŃCOWA: ${price} ${priceSuffix}`;
+      const priceTextWidth = boldFont.widthOfTextAtSize(priceText, 16);
+      pricePage.drawText(priceText, {
+        x: (pageSize.width - priceTextWidth) / 2,
+        y: priceY,
+        font: boldFont,
+        size: 16,
+        color: rgb(0.6, 0, 0.15),
+      });
+      lastContentPage = pricePage;
+      finalY = priceY - 40;
+    }
+
+    const generalOptionsRows = [
+      {
+        name: 'System antysmogowy ALPHAclear',
+        quantity: '1',
+        price: '6 337 PLN',
+      },
+      {
+        name: 'Wkład węglowy dla ALPHAclear do redukcji zapachów (opcja)',
+        quantity: '1',
+        price: '357 PLN',
+      },
+      {
+        name: 'Podstawa dla central AERISnext/DRAFTON Professional (*)',
+        quantity: '1',
+        price: '730 PLN',
+      },
+    ];
+
+    const generalOptionsPage = pdfDoc.addPage();
+    const generalOptionsResult = drawOptionsPricingSection({
+      pdfDoc,
+      startPage: generalOptionsPage,
+      fonts: { regular: regularFont, bold: boldFont },
+      startY: generalOptionsPage.getSize().height - 80,
+      title: 'Opcje dodatkowe',
+      rows: generalOptionsRows,
+      note:
+        'W przypadku montażu centrali na uchwytach ściennych cena za podstawę pomiń.',
+      footer: 'Wszystkie podane ceny są cenami katalogowymi netto.',
+    });
+
+    lastContentPage = generalOptionsResult.finalPage;
+    finalY = generalOptionsResult.finalY;
 
     if (isDrafton) {
-      const optionsResult = drawOptionsPricingSection({
-        pdfDoc,
-        startPage: lastContentPage,
-        fonts: { regular: regularFont, bold: boldFont },
-        startY: finalY - 30,
-        title: 'Opcje dodatkowe',
-        rows: [
-          {
-            name: 'System antysmogowy ALPHAclear',
-            quantity: '1',
-            price: '6 337 PLN',
-          },
-          {
-            name: 'Wkład węglowy dla ALPHAclear do redukcji zapachów (opcja)',
-            quantity: '1',
-            price: '357 PLN',
-          },
-          {
-            name: 'Podstawa dla central AERISnext/DRAFTON Professional (*)',
-            quantity: '1',
-            price: '730 PLN',
-          },
-        ],
-        note:
-          'W przypadku montażu centrali na uchwytach ściennych cena za podstawę pomiń.',
-        footer: 'Wszystkie podane ceny są cenami katalogowymi netto.',
-      });
-
-      lastContentPage = optionsResult.finalPage;
-      finalY = optionsResult.finalY;
-
-      const wirelessResult = drawOptionsPricingSection({
+      const draftOptionsResult = drawOptionsPricingSection({
         pdfDoc,
         startPage: lastContentPage,
         fonts: { regular: regularFont, bold: boldFont },
@@ -516,61 +576,8 @@ export async function generateRecuperationOfferPDF(formData) {
         ],
       });
 
-      lastContentPage = wirelessResult.finalPage;
-      finalY = wirelessResult.finalY;
-    }
-
-    if (addonItemIds && addonItemIds.length > 0) {
-      const optionalRows = buildRowsForIds(addonItemIds, selectedDevice).map(
-        (row, index) => {
-          const newRow = [...row];
-          newRow[0] = String(index + 1);
-          return newRow;
-        }
-      );
-
-      let optionalPage = lastContentPage;
-      let optionalStartY = finalY - 40;
-
-      if (optionalStartY < 120) {
-        optionalPage = pdfDoc.addPage();
-        optionalStartY = optionalPage.getSize().height - 80;
-      }
-
-      const optionalResult = await drawTable(
-        pdfDoc,
-        optionalPage,
-        { regular: regularFont, bold: boldFont },
-        optionalRows,
-        optionalStartY,
-        'Opcje dodatkowe'
-      );
-
-      lastContentPage = optionalResult.finalPage;
-      finalY = optionalResult.finalY;
-    }
-
-    if (showPrice) {
-      let pricePage = lastContentPage;
-      let priceY = finalY - 40;
-
-      if (priceY < 80) {
-        pricePage = pdfDoc.addPage();
-        priceY = pricePage.getSize().height - 100;
-      }
-
-      const pageSize = pricePage.getSize();
-      const priceSuffix = isNetto ? 'PLN netto' : 'PLN brutto';
-      const priceText = `CENA KOŃCOWA: ${price} ${priceSuffix}`;
-      const priceTextWidth = boldFont.widthOfTextAtSize(priceText, 16);
-      pricePage.drawText(priceText, {
-        x: (pageSize.width - priceTextWidth) / 2,
-        y: priceY,
-        font: boldFont,
-        size: 16,
-        color: rgb(0.6, 0, 0.15),
-      });
-      lastContentPage = pricePage;
+      lastContentPage = draftOptionsResult.finalPage;
+      finalY = draftOptionsResult.finalY;
     }
 
     for (const entry of templatePdfEntries) {
@@ -590,3 +597,4 @@ export async function generateRecuperationOfferPDF(formData) {
     return null;
   }
 }
+
