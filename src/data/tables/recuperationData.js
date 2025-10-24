@@ -145,14 +145,7 @@ export const recuperationMainItems = [
     unit: 'usł.',
     quantity: '1',
   },
-  {
-    id: '13',
-    name: 'Montaż kanałów (Flex + Spiro)',
-    description:
-      'Rozprowadzenie przewodów; dobór długości i średnic dla minimalnych oporów',
-    unit: 'usł.',
-    quantity: '1',
-  },
+
   {
     id: '14',
     name:

@@ -54,10 +54,10 @@ const formatAddressLines = (address = {}) => {
 
 const drawInfoColumn = (page, fonts, entries, startX, startY, columnWidth) => {
     let cursorY = startY;
-    const labelFontSize = 10;
-    const valueFontSize = 8.6;
-    const labelSpacing = 10.5;
-    const valueLineHeight = 10.8;
+    const labelFontSize = 9;
+    const valueFontSize = 7.8;
+    const labelSpacing = 8.6;
+    const valueLineHeight = 9;
     entries.forEach((entry, index) => {
         const label = entry.label || '';
         const lines = Array.isArray(entry.lines) && entry.lines.length > 0 ? entry.lines : ['---'];
@@ -100,7 +100,7 @@ const drawInfoColumn = (page, fonts, entries, startX, startY, columnWidth) => {
     return cursorY;
 };
 
-const drawOfferInfoBlock = (page, fonts, { leftEntries, rightEntries, startY, marginX = 42, columnGap = 14 }) => {
+const drawOfferInfoBlock = (page, fonts, { leftEntries, rightEntries, startY, marginX = 40, columnGap = 14 }) => {
     const { width } = page.getSize();
     const columnWidth = (width - marginX * 2 - columnGap) / 2;
     const leftStartX = marginX;
@@ -734,12 +734,12 @@ export async function generateOfferPDF(
             deviceType, model, tankCapacity, bufferCapacity, systemType, offerOptions, isKotel, quantityOptions, isAc
         );
         
-        let currentY = pageHeight - 26;
+        let currentY = pageHeight - 22;
 
         if (kamanLogoImage) {
             const logoDims = kamanLogoImage.scale(0.03);
             dynamicPage.drawImage(kamanLogoImage, { x: (pageWidth - logoDims.width) / 2, y: currentY - logoDims.height, width: logoDims.width, height: logoDims.height });
-            currentY -= (logoDims.height + 18);
+            currentY -= (logoDims.height + 16);
         }
 
         const leftEntries = [
@@ -763,16 +763,16 @@ export async function generateOfferPDF(
             rightEntries,
             startY: currentY,
         });
-        currentY = infoBlockBottom - 4;
+        currentY = infoBlockBottom - 1;
 
-        const tableConfigOverrides = (() => {
+    const tableConfigOverrides = (() => {
     const rowCount = mainTableData.length;
     if (rowCount > 24) {
         return {
             contentFontSize: 6.8,
             descriptionFontSize: 6.4,
             lineHeight: 1.08,
-            pageMargins: { top: 14, bottom: 18 },
+            pageMargins: { top: 12, bottom: 16 },
         };
     }
     if (rowCount > 18) {
@@ -780,11 +780,11 @@ export async function generateOfferPDF(
             contentFontSize: 7.1,
             descriptionFontSize: 6.6,
             lineHeight: 1.12,
-            pageMargins: { top: 16, bottom: 20 },
+            pageMargins: { top: 14, bottom: 18 },
         };
     }
     return {
-        pageMargins: { top: 18, bottom: 22 },
+        pageMargins: { top: 16, bottom: 20 },
     };
 })();
 
@@ -792,18 +792,18 @@ export async function generateOfferPDF(
         let lastContentPage = tableResult.finalPage;
         let lastYPosAfterTable = tableResult.finalY;
 
-        if (showPrice) {
+                if (showPrice) {
             const priceSuffix = isNettoPrice ? 'PLN netto' : 'PLN brutto';
-            const priceString = `Cena końcowa: ${cena} ${priceSuffix}`;
+            const priceString = `Cena koncowa: ${cena} ${priceSuffix}`;
             const priceFontSize = 15;
             const priceTextWidth = boldFont.widthOfTextAtSize(priceString, priceFontSize);
 
             let pricePage = lastContentPage;
-            let priceY = lastYPosAfterTable - 24;
+            let priceY = lastYPosAfterTable - 16;
 
-            if (priceY < 110) {
+            if (priceY < 80) {
                 pricePage = finalPdfDoc.addPage();
-                priceY = pricePage.getHeight() - 115;
+                priceY = pricePage.getHeight() - 110;
             }
 
             pricePage.drawText(priceString, {
@@ -858,6 +858,14 @@ export async function generateOfferPDF(
         return null;
     }
 }
+
+
+
+
+
+
+
+
 
 
 
