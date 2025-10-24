@@ -9,6 +9,7 @@ import {
 } from '../data/tables/recuperationData';
 import { generateRecuperationOfferPDF } from '../utils/recuperationPdfGenerator';
 import TrelloActions from './TrelloActions';
+import { clientAdvisorOptions } from '../data/clientAdvisorOptions';
 
 const drillingOptions = [
   { key: 'main', label: 'W zakresie głównym' },
@@ -29,6 +30,16 @@ export default function RecuperationOfferForm() {
   const [variantKey, setVariantKey] = useState('installationOnly');
   const [drillingMode, setDrillingMode] = useState('main');
   const [includeAquaClear, setIncludeAquaClear] = useState(false);
+
+  const [investmentStreet, setInvestmentStreet] = useState('');
+  const [investmentTown, setInvestmentTown] = useState('');
+  const [investmentPostalCode, setInvestmentPostalCode] = useState('');
+  const [investmentCity, setInvestmentCity] = useState('');
+  const [advisorId, setAdvisorId] = useState(clientAdvisorOptions[0]?.value || '');
+  const selectedAdvisor = useMemo(
+    () => clientAdvisorOptions.find((option) => option.value === advisorId) || clientAdvisorOptions[0] || {},
+    [advisorId],
+  );
 
   const variantOptions = useMemo(
     () => Object.values(recuperationVariants),
@@ -83,21 +94,32 @@ export default function RecuperationOfferForm() {
     setGeneratedPdfData(null);
 
     try {
-      const formData = {
-        userName,
-        price,
-        isNetto,
-        showPrice,
-        offerMode,
-        surfaceArea,
-        deviceKey: selectedDeviceKey,
-        variantKey: variantConfig.key,
-        variantLabel: variantConfig.label,
-        mainItemIds,
-        addonItemIds,
-        drillingMode,
-        includeAquaClear,
-      };
+    const formData = {
+      userName,
+      price,
+      isNetto,
+      showPrice,
+      offerMode,
+      surfaceArea,
+      deviceKey: selectedDeviceKey,
+      variantKey: variantConfig.key,
+      variantLabel: variantConfig.label,
+      mainItemIds,
+      addonItemIds,
+      drillingMode,
+      includeAquaClear,
+      investmentAddress: {
+        street: investmentStreet,
+        town: investmentTown,
+        postalCode: investmentPostalCode,
+        city: investmentCity,
+      },
+      advisorInfo: {
+        label: selectedAdvisor?.label || '',
+        phone: selectedAdvisor?.phone || '',
+        email: selectedAdvisor?.email || '',
+      },
+    };
 
       const pdfBlob = await generateRecuperationOfferPDF(formData);
       if (pdfBlob) {
@@ -145,6 +167,66 @@ export default function RecuperationOfferForm() {
           placeholder="Podaj cenę"
         />
       </div>
+
+      <fieldset className="component-fieldset">
+        <legend>Dane inwestycji i doradcy</legend>
+        <div className="input-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
+          <div className="input-group">
+            <label htmlFor="recuperation_town">Miejscowość</label>
+            <input
+              id="recuperation_town"
+              type="text"
+              value={investmentTown}
+              onChange={(event) => setInvestmentTown(event.target.value)}
+              placeholder="np. Kraków"
+            />
+          </div>
+          <div className="input-group">
+            <label htmlFor="recuperation_street">Ulica i numer</label>
+            <input
+              id="recuperation_street"
+              type="text"
+              value={investmentStreet}
+              onChange={(event) => setInvestmentStreet(event.target.value)}
+              placeholder="np. ul. Przykładowa 12"
+            />
+          </div>
+          <div className="input-group">
+            <label htmlFor="recuperation_postal">Kod pocztowy</label>
+            <input
+              id="recuperation_postal"
+              type="text"
+              value={investmentPostalCode}
+              onChange={(event) => setInvestmentPostalCode(event.target.value)}
+              placeholder="np. 30-001"
+            />
+          </div>
+          <div className="input-group">
+            <label htmlFor="recuperation_city">Miasto</label>
+            <input
+              id="recuperation_city"
+              type="text"
+              value={investmentCity}
+              onChange={(event) => setInvestmentCity(event.target.value)}
+              placeholder="np. Kraków"
+            />
+          </div>
+          <div className="input-group">
+            <label htmlFor="recuperation_advisor">Ofertę sporządził</label>
+            <select
+              id="recuperation_advisor"
+              value={advisorId}
+              onChange={(event) => setAdvisorId(event.target.value)}
+            >
+              {clientAdvisorOptions.map((advisor) => (
+                <option key={advisor.value} value={advisor.value}>
+                  {advisor.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </fieldset>
 
       <div className="input-group">
         <label>Typ oferty:</label>

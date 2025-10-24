@@ -77,9 +77,9 @@ export const recuperationMainItems = [
   },
   {
     id: '3',
-    name: 'Przewody NEO Flex DN63 / DN75 + magistrale Spiro',
+    name: 'Przewody NEO Flex DN63 lub DN75 ',
     description:
-      'Elastyczne kanały z mikro-srebrem (właściwości przeciwgrzybiczne), gładkie wnętrze klasy L1 oraz magistrale nawiewne Spiro do rozdzielnicy',
+      'Elastyczne kanały z mikro-srebrem (właściwości przeciwgrzybiczne), gładkie wnętrze klasy L1 DN 125-160',
     unit: 'mb',
     quantity: 'wg projektu',
   },
@@ -87,7 +87,7 @@ export const recuperationMainItems = [
     id: '4',
     name: 'Skrzynki rozprężne',
     description:
-      'Skrzynki DN125 – obniżenie ciśnienia i hałasu, równomierny rozdział strumieni',
+      'Skrzynki spiro – obniżenie ciśnienia i hałasu, równomierny rozdział strumieni',
     unit: 'szt.',
     quantity: 'wg projektu',
   },
@@ -118,7 +118,7 @@ export const recuperationMainItems = [
     id: '9',
     name: 'Czerpnia / wyrzutnia + redukcje',
     description:
-      'Stal nierdzewna, redukcje w izolacji dla zmniejszenia hałasu',
+      'Stalowe redukcje w izolacji dla zmniejszenia hałasu',
     unit: 'szt.',
     quantity: '2',
   },

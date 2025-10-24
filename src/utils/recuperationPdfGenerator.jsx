@@ -61,6 +61,102 @@ const wrapText = (font, text, size, maxWidth) => {
 };
 
 const OPTIONS_ACCENT_COLOR = rgb(0.62, 0.0, 0.18);
+const INFO_SEPARATOR_COLOR = rgb(0.82, 0.82, 0.82);
+const INFO_LABEL_COLOR = rgb(0.15, 0.15, 0.15);
+
+const formatAddressLines = (address = {}) => {
+  const street = String(address.street ?? '').trim();
+  const town = String(address.town ?? '').trim();
+  const postalCode = String(address.postalCode ?? '').trim();
+  const city = String(address.city ?? '').trim();
+
+  const lines = [];
+  if (town) {
+    lines.push(town);
+  }
+  if (street) {
+    lines.push(street);
+  }
+  const postalCity = [postalCode, city].filter(Boolean).join(' ');
+  if (postalCity) {
+    lines.push(postalCity);
+  }
+
+  return lines.length ? lines : ['---'];
+};
+
+const drawInfoColumn = (page, fonts, entries, startX, startY, columnWidth) => {
+  let cursorY = startY;
+  const labelSize = 9.5;
+  const valueSize = 8.4;
+  const labelSpacing = 10;
+  const valueLineHeight = 10.6;
+
+  entries.forEach((entry, index) => {
+    const label = entry.label || '';
+    const lines = Array.isArray(entry.lines) && entry.lines.length > 0 ? entry.lines : ['---'];
+
+    page.drawText(label, {
+      x: startX,
+      y: cursorY,
+      font: fonts.bold,
+      size: labelSize,
+      color: INFO_LABEL_COLOR,
+    });
+    cursorY -= labelSpacing;
+
+    lines.forEach((line) => {
+      const sanitized = String(line ?? '').trim() || '---';
+      const wrappedLines = wrapText(fonts.regular, sanitized, valueSize, columnWidth - 4);
+      wrappedLines.forEach((wrapped) => {
+        page.drawText(wrapped, {
+          x: startX,
+          y: cursorY,
+          font: fonts.regular,
+          size: valueSize,
+          color: rgb(0.22, 0.22, 0.22),
+        });
+        cursorY -= valueLineHeight;
+      });
+    });
+
+    if (index < entries.length - 1) {
+      cursorY -= 3;
+      page.drawLine({
+        start: { x: startX, y: cursorY + 5.5 },
+        end: { x: startX + columnWidth, y: cursorY + 5.5 },
+        thickness: 0.55,
+        color: INFO_SEPARATOR_COLOR,
+      });
+      cursorY -= 5;
+    }
+  });
+
+  return cursorY;
+};
+
+const drawSummaryInfoBlock = (page, fonts, { leftEntries, rightEntries, startY, marginX = 48, columnGap = 16 }) => {
+  const { width } = page.getSize();
+  const columnWidth = (width - marginX * 2 - columnGap) / 2;
+  const leftStartX = marginX;
+  const rightStartX = marginX + columnWidth + columnGap;
+
+  const leftBottom = drawInfoColumn(page, fonts, leftEntries, leftStartX, startY, columnWidth);
+  const rightBottom = drawInfoColumn(page, fonts, rightEntries, rightStartX, startY, columnWidth);
+
+  const separatorTop = startY + 6;
+  const separatorBottom = Math.min(leftBottom, rightBottom) - 4;
+  const separatorX = marginX + columnWidth + columnGap / 2;
+
+  page.drawLine({
+    start: { x: separatorX, y: separatorTop },
+    end: { x: separatorX, y: separatorBottom },
+    thickness: 0.55,
+    color: INFO_SEPARATOR_COLOR,
+  });
+
+  return Math.min(leftBottom, rightBottom);
+};
 
 const drawOptionsPricingSection = ({
   pdfDoc,
@@ -74,12 +170,12 @@ const drawOptionsPricingSection = ({
   footer,
 }) => {
   const config = {
-    marginX: 40,
-    marginTop: 60,
-    marginBottom: 60,
+    marginX: 32,
+    marginTop: 54,
+    marginBottom: 54,
     headerHeight: 22,
-    paddingX: 14,
-    paddingY: 10,
+    paddingX: 12,
+    paddingY: 9,
     fontSize: 9,
     lineHeight: 14,
     headerBgColor: OPTIONS_ACCENT_COLOR,
@@ -310,11 +406,14 @@ export async function generateRecuperationOfferPDF(formData) {
     deviceKey,
     surfaceArea,
     variantKey,
-    variantLabel,
-    mainItemIds = [],
-    addonItemIds = [],
-    drillingMode,
-  } = formData;
+  variantLabel,
+  mainItemIds = [],
+  addonItemIds = [],
+  drillingMode,
+  includeAquaClear,
+  investmentAddress = {},
+  advisorInfo = {},
+} = formData;
 
   try {
     const pdfDoc = await PDFDocument.create();
@@ -410,13 +509,45 @@ export async function generateRecuperationOfferPDF(formData) {
       currentY
     );
 
+    currentY -= 14;
+
+    const leftEntries = [
+      { label: 'Oferta dla', lines: [userName || '---'] },
+      { label: 'Adres inwestycji', lines: formatAddressLines(investmentAddress) },
+      { label: 'Waznosc oferty', lines: ['14 dni'] },
+    ];
+
+    const advisorName = advisorInfo?.label || advisorInfo?.name || '---';
+    const advisorPhone = advisorInfo?.phone || '---';
+    const advisorEmail = advisorInfo?.email || '---';
+
+    const rightEntries = [
+      { label: 'Oferte sporzadzil', lines: [advisorName || '---'] },
+      { label: 'Telefon', lines: [advisorPhone || '---'] },
+      { label: 'Email', lines: [advisorEmail || '---'] },
+    ];
+
+    currentY = drawSummaryInfoBlock(offerPage, { regular: regularFont, bold: boldFont }, {
+      leftEntries,
+      rightEntries,
+      startY: currentY,
+    }) - 10;
+
     const selectedDevice = recuperationDevices[deviceKey];
     const variant = recuperationVariants[variantKey];
     const fallbackIds =
       variant?.itemIds || recuperationMainItems.map((item) => item.id);
 
-    const effectiveMainIds =
-      mainItemIds && mainItemIds.length > 0 ? mainItemIds : fallbackIds;
+    let effectiveMainIds =
+      mainItemIds && mainItemIds.length > 0 ? [...mainItemIds] : [...fallbackIds];
+
+    if (includeAquaClear) {
+      if (!effectiveMainIds.includes('21')) {
+        effectiveMainIds.push('21');
+      }
+    } else {
+      effectiveMainIds = effectiveMainIds.filter((id) => id !== '21');
+    }
 
     let mainTableData = buildRowsForIds(effectiveMainIds, selectedDevice).map(
       (row, index) => {
@@ -428,13 +559,47 @@ export async function generateRecuperationOfferPDF(formData) {
 
     currentY -= 15;
 
+    const mainTableConfig = (() => {
+      const rowCount = mainTableData.length;
+      const base = {
+        columnWidths: [30, 205, 230, 42, 48],
+        headerHeight: 24,
+        padding: { top: 6, bottom: 6, left: 6, right: 6 },
+        headerFontSize: 9.4,
+        contentFontSize: 8.2,
+        descriptionFontSize: 7.5,
+        lineHeightMultiplier: 1.16,
+        pageMargins: { top: 26, bottom: 32 },
+      };
+      if (rowCount > 22) {
+        return {
+          ...base,
+          contentFontSize: 7.8,
+          descriptionFontSize: 7.1,
+          lineHeightMultiplier: 1.12,
+          pageMargins: { top: 24, bottom: 30 },
+        };
+      }
+      if (rowCount > 18) {
+        return {
+          ...base,
+          contentFontSize: 8,
+          descriptionFontSize: 7.3,
+          lineHeightMultiplier: 1.14,
+          pageMargins: { top: 25, bottom: 30 },
+        };
+      }
+      return base;
+    })();
+
     const tableResult = await drawTable(
       pdfDoc,
       offerPage,
       { regular: regularFont, bold: boldFont },
       mainTableData,
       currentY,
-      'Zakres prac i komponenty systemu'
+      'Zakres prac i komponenty systemu',
+      mainTableConfig
     );
 
     lastContentPage = tableResult.finalPage;
@@ -461,13 +626,25 @@ export async function generateRecuperationOfferPDF(formData) {
         optionalStartY = optionalPage.getSize().height - 80;
       }
 
+      const optionalTableConfig = {
+        columnWidths: [30, 205, 230, 42, 48],
+        headerHeight: 22,
+        padding: { top: 5, bottom: 5, left: 6, right: 6 },
+        headerFontSize: 9,
+        contentFontSize: 7.8,
+        descriptionFontSize: 7.2,
+        lineHeightMultiplier: 1.12,
+        pageMargins: { top: 24, bottom: 28 },
+      };
+
       const optionalResult = await drawTable(
         pdfDoc,
         optionalPage,
         { regular: regularFont, bold: boldFont },
         optionalRows,
         optionalStartY,
-        'Opcje dodatkowe'
+        'Opcje dodatkowe',
+        optionalTableConfig
       );
 
       lastContentPage = optionalResult.finalPage;
@@ -597,4 +774,5 @@ export async function generateRecuperationOfferPDF(formData) {
     return null;
   }
 }
+
 
