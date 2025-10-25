@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import UnifiedOfferForm from "./components/UnifiedOfferForm";
 import PhotovoltaicsOfferForm from "./components/PhotovoltaicsOfferForm";
 import OknaNestOfferForm from "./components/OknaNestOfferForm";
@@ -17,6 +17,29 @@ import kamanLogo from "./assets/logo_kaman.png";
 
 function App() {
   const [activeForm, setActiveForm] = useState("heat-pumps");
+  const [isMobileNav, setIsMobileNav] = useState(false);
+  const [isNavOpen, setIsNavOpen] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const isMobile = window.innerWidth <= 900;
+      setIsMobileNav(isMobile);
+      if (!isMobile) {
+        setIsNavOpen(false);
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const handleTabSelect = (key) => {
+    setActiveForm(key);
+    if (isMobileNav) {
+      setIsNavOpen(false);
+    }
+  };
 
   const getBackgroundClass = () => {
     switch (activeForm) {
@@ -66,7 +89,7 @@ function App() {
 
   const tabButton = (key, label) => (
     <button
-      onClick={() => setActiveForm(key)}
+      onClick={() => handleTabSelect(key)}
       className={`switcher-button ${activeForm === key ? "active" : ""}`}
     >
       {label}
@@ -77,7 +100,19 @@ function App() {
     <div className={`app-container ${getBackgroundClass()}`}>
       <header className="app-header">
         <img src={kamanLogo} alt="KAMAN Logo" className="app-logo" />
-        <nav className="form-switcher">
+        <button
+          className={`menu-toggle ${isMobileNav ? "visible" : ""}`}
+          onClick={() => setIsNavOpen((prev) => !prev)}
+          aria-label="Przełącz menu formularzy"
+        >
+          <span className="menu-toggle-icon">{isNavOpen ? "✕" : "☰"}</span>
+          <span>{isNavOpen ? "Zamknij" : "Menu formularzy"}</span>
+        </button>
+        <nav
+          className={`form-switcher ${isMobileNav ? "mobile" : ""} ${
+            isMobileNav && isNavOpen ? "open" : ""
+          }`}
+        >
           {tabButton("heat-pumps", "Pompy ciepła")}
           {tabButton("boilers", "Piece")}
           {tabButton("ac", "Klimatyzacja")}

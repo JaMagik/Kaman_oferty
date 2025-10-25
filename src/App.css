@@ -1,153 +1,4 @@
-/* src/App.css */
-
-.app-container {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  width: 100%;
-  /* Domyślne tło, jeśli obraz nie zostanie załadowany lub jako fallback */
-  background-color: var(--light-gray-bg);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  transition: background-image 0.5s ease-in-out; /* Płynne przejście tła */
-}
-
-/* Style dla dynamicznych teł */
-.app-container.bg-heating {
-  background-image: url('./assets/backgrounds/heating-background.jpg');
-}
-
-.app-container.bg-pv {
-  background-image: url('./assets/backgrounds/pv-background.jpg');
-}
-
-.app-container.bg-okna {
-  background-image: url('./assets/backgrounds/okna-background.jpg');
-}
-
-.app-header {
-  /* Nowy, bardziej elegancki gradient dla nagłówka */
-  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); /* Ciemny grafitowo-niebieski */
-  padding: 15px 40px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Wyraźniejszy, ale nadal subtelny cień */
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  color: var(--text-color-light);
-}
-
-.app-logo {
-  height: 48px; /* Lekko dostosowana wysokość */
-  width: auto;
-  /* Można dodać filtr dla lepszego dopasowania do ciemnego tła, np. jeśli logo jest ciemne:
-     filter: brightness(0) invert(1); (zrobi białe logo z czarnego)
-     Lub jeśli logo ma już jasne elementy, to może być OK.
-  */
-}
-
-.form-switcher {
-  display: flex;
-  gap: 0; /* Usunięto odstęp, aby przyciski były bliżej siebie w grupie */
-  background-color: rgba(255, 255, 255, 0.08); /* Bardzo subtelne tło dla grupy */
-  border-radius: 8px; /* Zaokrąglenie dla całej grupy przycisków */
-  padding: 5px; /* Wewnętrzny padding grupy, aby przyciski nie dotykały krawędzi */
-  border: 1px solid rgba(255, 255, 255, 0.15); /* Delikatna ramka dla grupy */
-}
-
-.switcher-button {
-  padding: 10px 20px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  border: none; /* Usunięcie indywidualnych ramek przycisków */
-  border-radius: 6px; /* Zaokrąglenie dla poszczególnych przycisków */
-  background-color: transparent;
-  color: rgba(255, 255, 255, 0.75); /* Lekko przygaszony biały dla nieaktywnych */
-  cursor: pointer;
-  transition: all 0.25s ease;
-  outline: none;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-}
-
-.switcher-button:hover {
-  background-color: rgba(255, 255, 255, 0.12);
-  color: var(--text-color-light); /* Pełna biel przy najechaniu */
-}
-
-.switcher-button.active {
-  background-color: var(--kaman-red);
-  color: var(--text-color-light);
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2),
-              inset 0 1px 1px rgba(255,255,255,0.1);
-  /* Można przywrócić złoty akcent, jeśli zdefiniujesz --gold-accent w :root w index.css
-     border-bottom: 3px solid var(--gold-accent);
-  */
-}
-
-.form-content {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start; /* Zaczynamy od góry */
-  align-items: center;
-  padding: 40px 20px 50px 20px; /* Dodatkowy padding na dole */
-  width: 100%;
-  box-sizing: border-box;
-  overflow-y: auto; /* Umożliwia przewijanie, jeśli zawartość jest dłuższa niż ekran */
-}
-
-/*
-  Upewnij się, że formularz (.form-container) ma własne, nieprzezroczyste tło
-  (np. background: #ffffff; w src/assets/style.css),
-  aby tło aplikacji nie prześwitywało przez sam formularz,
-  a jedynie było widoczne wokół niego.
-*/
-
-
-@media (max-width: 768px) {
-  .app-header {
-    flex-direction: column;
-    gap: 15px;
-    padding: 15px;
-  }
-  .form-switcher {
-    width: 100%;
-    max-width: 400px; /* Ograniczenie szerokości na mobilnych */
-    margin: 0 auto;
-    justify-content: center;
-  }
-  .form-content {
-    padding: 25px 15px; /* Mniejszy padding na mniejszych ekranach */
-  }
-  .app-logo {
-    height: 40px;
-  }
-}
-
-@media (max-width: 480px) {
-  .switcher-button {
-    font-size: 0.8rem; /* Mniejsza czcionka na bardzo małych ekranach */
-    padding: 9px 10px; /* Mniejszy padding dla małych ekranów */
-    flex-basis: 0; /* Pozwól przyciskom się zmniejszać, jeśli jest mało miejsca */
-    flex-grow: 1; /* Pozwól przyciskom rosnąć, aby wypełnić dostępną przestrzeń */
-    text-align: center;
-  }
-  .form-switcher {
-    gap: 5px; /* Mały odstęp między przyciskami, jeśli są w jednej linii i się zawijają */
-  }
-  /* Style dla h2 w .form-container są w src/assets/style.css,
-     ale można by je tu dostosować dla mobilnych, np.:
-  .form-container h2 {
-    font-size: 1.5rem;
-  }
-  */
-}
-/* src/App.css */
-
+/* Global layout */
 .app-container {
   display: flex;
   flex-direction: column;
@@ -158,16 +9,6 @@
   background-position: center;
   background-repeat: no-repeat;
   transition: background-image 0.5s ease-in-out;
-}
-
-.app-container.bg-heating {
-  background-image: url('./assets/backgrounds/heating-background.jpg');
-}
-.app-container.bg-pv, .app-container.bg-custom { /* Tło PV dla standard i custom */
-  background-image: url('./assets/backgrounds/pv-background.jpg');
-}
-.app-container.bg-okna {
-  background-image: url('./assets/backgrounds/okna-background.jpg');
 }
 
 .app-header {
@@ -188,18 +29,54 @@
   width: auto;
 }
 
+.menu-toggle {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--text-color-light);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.menu-toggle .menu-toggle-icon {
+  font-size: 1.1rem;
+}
+
+.menu-toggle.visible {
+  display: none;
+}
+
 .form-switcher {
   display: flex;
-  gap: 0;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: space-between;
+  align-items: center;
   background-color: rgba(255, 255, 255, 0.08);
   border-radius: 8px;
-  padding: 5px;
+  padding: 6px 8px;
   border: 1px solid rgba(255, 255, 255, 0.15);
+  max-width: none;
+}
+
+.form-switcher.mobile {
+  display: none;
+  flex-direction: column;
+  width: 100%;
+  margin-top: 12px;
+}
+
+.form-switcher.mobile.open {
+  display: flex;
 }
 
 .switcher-button {
-  padding: 10px 20px;
-  font-size: 0.9rem;
+  padding: 9px 16px;
+  font-size: 0.85rem;
   font-weight: 600;
   border: none;
   border-radius: 6px;
@@ -220,8 +97,7 @@
 .switcher-button.active {
   background-color: var(--kaman-red);
   color: var(--text-color-light);
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2),
-              inset 0 1px 1px rgba(255,255,255,0.1);
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.1);
 }
 
 .form-content {
@@ -230,13 +106,69 @@
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  padding: 40px 20px 50px 20px;
+  padding: 40px 20px 50px;
   width: 100%;
   box-sizing: border-box;
   overflow-y: auto;
 }
 
-/* ZMIANA: Style dla nowego, mniejszego przełącznika w formularzu */
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  .menu-toggle.visible {
+    display: inline-flex;
+  }
+
+  .form-switcher:not(.mobile) {
+    display: none;
+  }
+
+  .form-switcher.mobile .switcher-button {
+    width: 100%;
+    font-size: 0.8rem;
+    padding: 10px 14px;
+    text-align: left;
+  }
+
+  .form-switcher.mobile .switcher-button {
+    width: 100%;
+    font-size: 0.8rem;
+    padding: 9px 12px;
+    text-align: left;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-header {
+    flex-direction: column;
+    gap: 15px;
+    padding: 15px;
+  }
+
+  .app-logo {
+    height: 40px;
+  }
+
+  .form-content {
+    padding: 25px 15px 40px;
+  }
+}
+
+/* Background variants */
+.app-container.bg-heating,
+.app-container.bg-radiators {
+  background-image: url('./assets/backgrounds/heating-background.jpg');
+}
+
+.app-container.bg-pv,
+.app-container.bg-custom {
+  background-image: url('./assets/backgrounds/pv-background.jpg');
+}
+
+.app-container.bg-okna {
+  background-image: url('./assets/backgrounds/okna-background.jpg');
+}
+
+/* Mini switcher inside forms */
 .form-mode-switcher {
   display: flex;
   margin-bottom: 25px;
@@ -249,7 +181,7 @@
 
 .form-mode-switcher button {
   flex: 1;
-  padding: 8px 10px; /* Mniejszy padding */
+  padding: 8px 10px;
   border: none;
   background-color: transparent;
   color: #ffffff;
@@ -257,74 +189,13 @@
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
-  font-size: 0.8rem; /* Mniejsza czcionka */
+  font-size: 0.8rem;
   text-transform: uppercase;
 }
 
 .form-mode-switcher button.active {
   background-color: rgb(3, 153, 50);
   color: rgb(255, 255, 255);
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
-
-@media (max-width: 768px) {
-  .app-header {
-    flex-direction: column;
-    gap: 15px;
-    padding: 15px;
-  }
-  .form-switcher {
-    width: 100%;
-    max-width: 400px;
-    margin: 0 auto;
-    justify-content: center;
-  }
-  .form-content {
-    padding: 25px 15px;
-  }
-  .app-logo {
-    height: 40px;
-  }
-}
-
-@media (max-width: 480px) {
-  .switcher-button {
-    font-size: 0.8rem;
-    padding: 9px 10px;
-    flex-basis: 0;
-    flex-grow: 1;
-    text-align: center;
-  }
-  .form-switcher {
-    gap: 5px;
-  }
-}
-/* src/App.css */
-
-.app-container {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  width: 100%;
-  background-color: var(--light-gray-bg);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  transition: background-image 0.5s ease-in-out;
-}
-
-.app-container.bg-heating, .app-container.bg-radiators { /* Połączono style tła */
-  background-image: url('./assets/backgrounds/heating-background.jpg');
-}
-
-.app-container.bg-pv, .app-container.bg-custom {
-  background-image: url('./assets/backgrounds/pv-background.jpg');
-}
-
-.app-container.bg-okna {
-  background-image: url('./assets/backgrounds/okna-background.jpg');
-}
-
-/* ... reszta pliku bez zmian ... */
