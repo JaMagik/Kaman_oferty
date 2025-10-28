@@ -27,7 +27,7 @@ export default function RecuperationOfferForm() {
   const [offerMode, setOfferMode] = useState('dobor');
   const [surfaceArea, setSurfaceArea] = useState('100');
 
-  const [variantKey, setVariantKey] = useState('installationOnly');
+  const [variantKey, setVariantKey] = useState('samRekuperator');
   const [drillingMode, setDrillingMode] = useState('main');
   const [includeAquaClear, setIncludeAquaClear] = useState(false);
 
@@ -47,7 +47,7 @@ export default function RecuperationOfferForm() {
   );
 
   const variantConfig =
-    recuperationVariants[variantKey] || recuperationVariants.installationOnly;
+    recuperationVariants[variantKey] || recuperationVariants.samRekuperator;
 
   const [selectedDeviceKey, setSelectedDeviceKey] = useState(
     getRecommendedRecuperator(surfaceArea)

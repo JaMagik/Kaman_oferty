@@ -29,6 +29,15 @@ const allDeviceTables = {
     ...viessmannEasypellBaseTables,
 };
 
+const replaceLegacyPumpNames = (value) => {
+  if (typeof value !== 'string') {
+    return value;
+  }
+  return value.replace(/\bIBO\s*PRO\b/gi, 'KAMAN PRO');
+};
+
+const sanitizeRow = (row = []) => row.map(replaceLegacyPumpNames);
+
 function getTankRowData(tankCapacity) {
     if (!tankCapacity || ['none', 'integrated', 'Brak zasobnika CWU', 'Brak zasobnika CWU / Zintegrowany'].includes(tankCapacity)) return null;
     const tankDescriptions = {
@@ -97,6 +106,7 @@ export function getTableData(deviceType, model, tankCapacity, bufferCapacity, sy
     return [];
   }
   let baseTableData = JSON.parse(JSON.stringify(allDeviceTables[deviceType][model]));
+  baseTableData = baseTableData.map(sanitizeRow);
   const normalizeName = (value) => {
     if (!value) return '';
     return value.toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -132,10 +142,10 @@ let workingTable = isBoiler
     }
   }
 
-  if (tankRow) workingTable.splice(insertIndex++, 0, tankRow);
-  if (bufferRow) workingTable.splice(insertIndex, 0, bufferRow);
+  if (tankRow) workingTable.splice(insertIndex++, 0, sanitizeRow(tankRow));
+  if (bufferRow) workingTable.splice(insertIndex, 0, sanitizeRow(bufferRow));
   
-  return workingTable.map((row, index) => {
+  return workingTable.map(row => sanitizeRow(row)).map((row, index) => {
     const newRow = [...row];
     if (newRow.length > 0) newRow[0] = String(index + 1);
     return newRow;

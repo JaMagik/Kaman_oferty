@@ -123,6 +123,25 @@ const drawOfferInfoBlock = (page, fonts, { leftEntries, rightEntries, startY, ma
     return Math.min(leftBottom, rightBottom);
 };
 
+const replaceLegacyPumpNames = (value) => {
+    if (typeof value !== 'string') {
+        return value;
+    }
+    return value.replace(/\bIBO\s*PRO\b/gi, 'KAMAN PRO');
+};
+
+const sanitizeRowEntry = (entry) => {
+    if (Array.isArray(entry)) {
+        return entry.map(replaceLegacyPumpNames);
+    }
+    if (entry && typeof entry === 'object') {
+        return Object.fromEntries(
+            Object.entries(entry).map(([key, val]) => [key, replaceLegacyPumpNames(val)])
+        );
+    }
+    return replaceLegacyPumpNames(entry);
+};
+
 function drawTable(pdfDoc, initialPage, fonts, tableData, startY, customConfig = {}) {
     let currentPage = initialPage;
     let currentY = startY;
@@ -517,20 +536,20 @@ function drawExtrasPage(page, fonts, data, title) {
     });
 }
 function prepareTableData(deviceType, model, tankCapacity, bufferCapacity, systemType, offerOptions, isKotel, quantityOptions, isAc) {
-    let mainTableData = getTableData(deviceType, model, tankCapacity, bufferCapacity, systemType, isAc);
-    let extrasTableData = isKotel ? [...opcjeDlaKotlow] : [...opcjeDlaPompCiepla];
+    let mainTableData = getTableData(deviceType, model, tankCapacity, bufferCapacity, systemType, isAc).map(sanitizeRowEntry);
+    let extrasTableData = (isKotel ? [...opcjeDlaKotlow] : [...opcjeDlaPompCiepla]).map(sanitizeRowEntry);
     quantityOptions = quantityOptions || {};
 
     const kotlospawDeviceTypes = ["Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid", "Kotlospaw duoko"];
     let producerOptions = null;
     if (kotlospawDeviceTypes.includes(deviceType)) {
-        producerOptions = [...opcjeKotlospawProducent];
+        producerOptions = [...opcjeKotlospawProducent].map(sanitizeRowEntry);
     } else if (deviceType === 'LAZAR') {
-        producerOptions = [...opcjeLazarProducent];
+        producerOptions = [...opcjeLazarProducent].map(sanitizeRowEntry);
     }
 
     if (producerOptions) {
-        extrasTableData.push({ type: 'separator', title: 'WYPOSAZENIE UZUPELNIAJACE (OPCJONALNIE) OD PRODUCENTA' });
+        extrasTableData.push(sanitizeRowEntry({ type: 'separator', title: 'WYPOSAZENIE UZUPELNIAJACE (OPCJONALNIE) OD PRODUCENTA' }));
         extrasTableData.push(...producerOptions);
     }
 
@@ -647,7 +666,7 @@ function prepareTableData(deviceType, model, tankCapacity, bufferCapacity, syste
                 const [itemRow] = extrasTableData.splice(itemIndexInExtras, 1);
                 // Struktura opcji dodatkowych: [lp, nazwa, opis, j.m., cena]
                 // Struktura tabeli glownej: [lp, nazwa, j.m., ilosc, opis]
-                const itemRowForMainTable = ['', itemRow[1], itemRow[3], '1', itemRow[2]];
+                const itemRowForMainTable = sanitizeRowEntry(['', itemRow[1], itemRow[3], '1', itemRow[2]]);
                 
                 const insertionKeywords = ['podlaczenie kominowe', 'montaz systemu grzewczego'];
                 let insertAtIndex = mainTableData.findIndex(row => {
@@ -673,7 +692,10 @@ function prepareTableData(deviceType, model, tankCapacity, bufferCapacity, syste
         row[0] = String(index + 1);
         return row;
     });
-
+    
+    mainTableData = mainTableData.map(sanitizeRowEntry);
+    extrasTableData = extrasTableData.map(sanitizeRowEntry);
+    
     return { mainTableData, extrasTableData };
 }
 

@@ -1,46 +1,44 @@
-// src/data/tables/recuperationData.js
-
 export const recuperationDevices = {
   AERIS_350: {
     name: 'Rekuperator AERIS next 350 VV',
     description:
-      'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła >= 90%.',
+      'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła ≥ 90%.',
     type: 'central',
   },
   AERIS_450: {
     name: 'Rekuperator AERIS next 450 VV',
     description:
-      'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła >= 90%.',
+      'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła ≥ 90%.',
     type: 'central',
   },
   AERIS_600: {
     name: 'Rekuperator AERIS next 600 VV',
     description:
-      'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła >= 90%.',
+      'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła ≥ 90%.',
     type: 'central',
   },
   DRAFTON_PRO_225: {
     name: 'Rekuperator DRAFTON Professional 225',
     description:
-      'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła >= 90%.',
+      'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła ≥ 90%.',
     type: 'central',
   },
   DRAFTON_PRO_325: {
     name: 'Rekuperator DRAFTON Professional 325',
     description:
-      'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła >= 90%.',
+      'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła ≥ 90%.',
     type: 'central',
   },
   DRAFTON_PRO_450: {
     name: 'Rekuperator DRAFTON Professional 450',
     description:
-      'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła >= 90%.',
+      'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła ≥ 90%.',
     type: 'central',
   },
   DRAFTON_PRO_600: {
     name: 'Rekuperator DRAFTON Professional 600',
     description:
-      'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła >= 90%.',
+      'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła ≥ 90%.',
     type: 'central',
   },
 };
@@ -57,157 +55,285 @@ export const getRecommendedRecuperator = (area) => {
   return 'AERIS_600';
 };
 
-export const DRILLING_ITEM_ID = '12';
+export const DRILLING_ITEM_ID = 'ETAP1-6';
 
 export const recuperationMainItems = [
+  // Sam rekuperator – montaż centrali
   {
-    id: '1',
-    name: 'Centrala wentylacyjna',
-    description:
-      'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła >= 90 %',
-    unit: 'szt.',
+    id: 'SAM-1',
+    name: 'Montaż i wypoziomowanie centrali',
+    description: 'Ustawienie centrali rekuperacyjnej na konsolach z wibroizolacją.',
+    unit: 'usł.',
     quantity: '1',
   },
   {
-    id: '2',
-    name: 'Uchwyt montażowy centrali',
-    description: 'Konsola ścienno-stropowa, kotwy, tłumiki drgań',
-    unit: 'kpl.',
+    id: 'SAM-2',
+    name: 'Odprowadzenie skroplin',
+    description: 'Syfon, odpowietrzenie oraz wpięcie do kanalizacji.',
+    unit: 'usł.',
     quantity: '1',
   },
   {
-    id: '3',
-    name: 'Przewody NEO Flex DN63 lub DN75 ',
-    description:
-      'Elastyczne kanały z mikro-srebrem (właściwości przeciwgrzybiczne), gładkie wnętrze klasy L1 DN 125-160',
-    unit: 'mb',
+    id: 'SAM-3',
+    name: 'Zasilanie i automatyka',
+    description: 'Podłączenie elektryczne, montaż sterownika i wstępna konfiguracja pracy.',
+    unit: 'usł.',
+    quantity: '1',
+  },
+  {
+    id: 'SAM-4',
+    name: 'Połączenie z rozdzielaczami',
+    description: 'Kanały stalowe Spiro – średnice i redukcje zgodnie z projektem.',
+    unit: 'usł.',
     quantity: 'wg projektu',
   },
   {
-    id: '4',
-    name: 'Skrzynki rozprężne',
-    description:
-      'Skrzynki spiro – obniżenie ciśnienia i hałasu, równomierny rozdział strumieni',
-    unit: 'szt.',
+    id: 'SAM-5',
+    name: 'Czerpnia i wyrzutnia – kanały',
+    description: 'Główne ciągi w systemie Spiro od/do centrali.',
+    unit: 'usł.',
     quantity: 'wg projektu',
   },
   {
-    id: '5',
-    name: 'Rozdzielacze powietrza',
-    description:
-      'DN63 lub DN75 (zależnie od projektu), liczba króćców wg projektu',
-    unit: 'szt.',
-    quantity: '2',
+    id: 'SAM-6',
+    name: 'Montaż elementów końcowych',
+    description: 'Czerpnia i wyrzutnia w przygotowanych otworach, pełne uszczelnienie przejść.',
+    unit: 'usł.',
+    quantity: 'wg projektu',
   },
   {
-    id: '6',
+    id: 'SAM-7',
+    name: 'Izolacja przewodów',
+    description: 'Wykonanie izolacji termicznej przewodów zgodnie z projektem lub wytycznymi.',
+    unit: 'usł.',
+    quantity: 'wg projektu',
+  },
+  {
+    id: 'SAM-8',
     name: 'Tłumiki akustyczne',
-    description: 'Tłumiki Ø125 – Ø200 mm, redukcja hałasu >= 10 dB',
-    unit: 'kpl.',
-    quantity: '2',
-  },
-  {
-    id: '7',
-    name: 'Przewody główne Spiro',
-    description:
-      'Kanały stalowe Ø125 – Ø200 mm (czerpnia, wyrzutnia, centrala)',
-    unit: 'mb',
+    description: 'Montaż tłumików przy centrali zgodnie z projektem lub wytycznymi.',
+    unit: 'usł.',
     quantity: 'wg projektu',
   },
   {
-    id: '9',
-    name: 'Czerpnia / wyrzutnia + redukcje',
-    description:
-      'Stalowe redukcje w izolacji dla zmniejszenia hałasu',
+    id: 'SAM-9',
+    name: 'Kratki zewnętrzne',
+    description: 'Montaż kratek czerpni i wyrzutni na elewacji wraz z uszczelnieniem.',
     unit: 'szt.',
-    quantity: '2',
+    quantity: 'wg projektu',
   },
   {
-    id: '10',
-    name: 'Sterownik rekuperatora',
-    description:
-      'Urządzenie do zarządzania pracą systemu (tryby, harmonogramy, serwis)',
-    unit: 'szt.',
+    id: 'SAM-10',
+    name: 'Dostępy serwisowe',
+    description: 'Zapewnienie dostępów serwisowych i króćców pomiarowych przy centrali.',
+    unit: 'usł.',
     quantity: '1',
   },
   {
-    id: '11',
-    name: 'Akcesoria montażowe',
-    description: 'Obejmy, taśmy, uszczelniacze, zawiesia, złączki',
-    unit: 'kpl.',
+    id: 'SAM-11',
+    name: 'Próby i uruchomienie',
+    description: 'Kontrola szczelności, kierunków przepływu oraz test trybów pracy i harmonogramów.',
+    unit: 'usł.',
     quantity: '1',
   },
   {
-    id: '12',
-    name: 'Wiercenie otworów koroną',
-    description:
-      'Otwory Ø125 – Ø350 mm w stropach/ścianach, zgodnie z projektem',
+    id: 'SAM-12',
+    name: 'Przekazanie i instruktaż',
+    description: 'Obsługa systemu, protokół uruchomienia oraz zalecenia eksploatacyjno-serwisowe.',
     unit: 'usł.',
     quantity: '1',
   },
 
+  // Etap 1 — projekt + rozprowadzenie instalacji
   {
-    id: '14',
-    name:
-      'Montaż skrzynek + kanałów czerpni/wyrzutni + izolacja',
+    id: 'ETAP1-1',
+    name: 'Inwentaryzacja założeń',
     description:
-      'Osadzenie skrzynek, prowadzenie kanałów do elewacji/dachu, pełne zaizolowanie',
+      'Zbieranie danych: kubatura, funkcje pomieszczeń, liczba użytkowników, źródła ciepła/kominek, lokalizacja centrali.',
     unit: 'usł.',
     quantity: '1',
   },
   {
-    id: '15',
-    name: 'Montaż rekuperatora',
+    id: 'ETAP1-2',
+    name: 'Bilans powietrza i koncepcja pracy',
     description:
-      'Poziomowanie, podłączenie kondensatu i obejść serwisowych',
+      'Wyznaczenie strumieni nawiewu/wywiewu, trybów pracy (komfort/noc/przewietrzanie) oraz średnic i liczby punktów.',
     unit: 'usł.',
     quantity: '1',
   },
   {
-    id: '16',
-    name: 'Podłączenie elektryczne / komunikacyjne',
+    id: 'ETAP1-3',
+    name: 'Projekt wykonawczy',
     description:
-      'Zasilanie centrali, podłączenie sterownika, integracja z automatyką (jeśli przewidziano)',
+      'Trasy przewodów, wysokości, lokalizacje skrzynek, rozdzielaczy, czerpni i wyrzutni oraz specyfikacja materiałowa.',
     unit: 'usł.',
     quantity: '1',
   },
   {
-    id: '17',
-    name: 'Uruchomienie i kalibracja',
+    id: 'ETAP1-4',
+    name: 'Trasowanie instalacji',
     description:
-      'Pomiary nawiew/wywiew, ustawienie bilansu, protokół rozruchu',
+      'Oznaczenie przebiegów przewodów, punktów anemostatów i przejść przez przegrody na obiekcie.',
     unit: 'usł.',
     quantity: '1',
   },
   {
-    id: '18',
-    name: 'Szkolenie użytkownika',
+    id: 'ETAP1-5',
+    name: 'Przepusty w przegrodach',
     description:
-      'Obsługa sterownika, wymiana filtrów, harmonogramy serwisowe',
+      'Wykonanie przepustów i otworów zgodnie z projektem, wraz z uszczelnieniem i zachowaniem odporności przegród.',
+    unit: 'usł.',
+    quantity: 'wg projektu',
+  },
+  {
+    id: 'ETAP1-6',
+    name: 'Wiercenie otworów koronami',
+    description:
+      'Przewierty rdzeniowe koronami diamentowymi przez ściany/stropy, zabezpieczenie krawędzi i odciąg pyłu.',
+    unit: 'usł.',
+    quantity: 'wg projektu',
+  },
+  {
+    id: 'ETAP1-7',
+    name: 'Przewody elastyczne Ø75',
+    description:
+      'Ułożenie przewodów elastycznych systemowych Ø75 mm między skrzynkami a rozdzielaczem, mocowanie w uchwytach.',
+    unit: 'mb',
+    quantity: 'wg projektu',
+  },
+  {
+    id: 'ETAP1-8',
+    name: 'Skrzynki rozprężne',
+    description:
+      'Montaż skrzynek nawiewnych i wywiewnych z wypoziomowaniem, uszczelnieniem i przygotowaniem pod anemostaty.',
+    unit: 'szt.',
+    quantity: 'wg projektu',
+  },
+  {
+    id: 'ETAP1-9',
+    name: 'Rozdzielacze Ø75',
+    description:
+      'Montaż rozdzielaczy nawiewu i wywiewu z opisem obwodów oraz przygotowaniem pod połączenie z centralą.',
+    unit: 'szt.',
+    quantity: 'wg projektu',
+  },
+  {
+    id: 'ETAP1-10',
+    name: 'Przejście do pomieszczenia centrali',
+    description:
+      'Prowadzenie przewodów od rozdzielaczy do pomieszczenia centrali, z przejściami przez stropy/ściany jeśli potrzeba.',
+    unit: 'usł.',
+    quantity: 'wg projektu',
+  },
+  {
+    id: 'ETAP1-11',
+    name: 'Przygotowanie pod czerpnię i wyrzutnię',
+    description:
+      'Wstępne przygotowanie przejść i lokalizacji pod czerpnię oraz wyrzutnię – montaż elementów końcowych w etapie 2.',
+    unit: 'usł.',
+    quantity: 'wg projektu',
+  },
+  {
+    id: 'ETAP1-12',
+    name: 'Zabezpieczenie instalacji',
+    description:
+      'Zaślepienie i zabezpieczenie końców przewodów oraz rozdzielaczy na czas dalszych prac.',
+    unit: 'usł.',
+    quantity: '1',
+  },
+
+  // Etap 2 — montaż centrali i uruchomienie
+  {
+    id: 'ETAP2-1',
+    name: 'Montaż centrali',
+    description: 'Ustawienie i wypoziomowanie centrali na konsolach z wibroizolacją.',
     unit: 'usł.',
     quantity: '1',
   },
   {
-    id: '19',
-    name: 'Dokumentacja powykonawcza',
-    description:
-      'Schemat instalacji, karta gwarancyjna, raport pomiarów',
-    unit: 'kpl.',
-    quantity: '1',
-  },
-  {
-    id: '20',
-    name: 'Gwarancja i serwis',
-    description:
-      '5 lat na centralę (po rejestracji), 2 lata na montaż, opcjonalne przeglądy roczne',
+    id: 'ETAP2-2',
+    name: 'Odprowadzenie skroplin',
+    description: 'Syfon, odpowietrzenie oraz wpięcie do kanalizacji zgodnie z wytycznymi producenta.',
     unit: 'usł.',
     quantity: '1',
   },
+  {
+    id: 'ETAP2-3',
+    name: 'Zasilanie i automatyka',
+    description: 'Podłączenie elektryczne, montaż sterownika oraz wstępna konfiguracja pracy.',
+    unit: 'usł.',
+    quantity: '1',
+  },
+  {
+    id: 'ETAP2-4',
+    name: 'Połączenie z rozdzielaczami',
+    description: 'Kanały stalowe Spiro od centrali do rozdzielaczy (średnice/redukcje zgodnie z projektem).',
+    unit: 'usł.',
+    quantity: 'wg projektu',
+  },
+  {
+    id: 'ETAP2-5',
+    name: 'Czerpnia i wyrzutnia — kanały',
+    description: 'Wykonanie głównych ciągów czerpni i wyrzutni w systemie Spiro od/do centrali.',
+    unit: 'usł.',
+    quantity: 'wg projektu',
+  },
+  {
+    id: 'ETAP2-6',
+    name: 'Czerpnia/wyrzutnia — elewacja lub dach',
+    description: 'Montaż elementów końcowych w przygotowanych otworach, z pełnym uszczelnieniem przejść.',
+    unit: 'usł.',
+    quantity: 'wg projektu',
+  },
+  {
+    id: 'ETAP2-7',
+    name: 'Izolacja przewodów',
+    description: 'Wykonanie izolacji termicznej przewodów zgodnie z projektem lub wytycznymi centrali.',
+    unit: 'usł.',
+    quantity: 'wg projektu',
+  },
+  {
+    id: 'ETAP2-8',
+    name: 'Tłumiki akustyczne',
+    description: 'Montaż tłumików przy centrali zgodnie z projektem lub wytycznymi.',
+    unit: 'usł.',
+    quantity: 'wg projektu',
+  },
+  {
+    id: 'ETAP2-9',
+    name: 'Kratki zewnętrzne',
+    description: 'Montaż kratek czerpni/wyrzutni na elewacji z uszczelnieniem.',
+    unit: 'szt.',
+    quantity: 'wg projektu',
+  },
+  {
+    id: 'ETAP2-10',
+    name: 'Dostępy serwisowe',
+    description: 'Zapewnienie dostępów serwisowych i króćców pomiarowych przy centrali.',
+    unit: 'usł.',
+    quantity: '1',
+  },
+  {
+    id: 'ETAP2-11',
+    name: 'Próby i uruchomienie',
+    description: 'Test szczelności, weryfikacja kierunków przepływu, trybów pracy i harmonogramów.',
+    unit: 'usł.',
+    quantity: '1',
+  },
+  {
+    id: 'ETAP2-12',
+    name: 'Przekazanie i instruktaż',
+    description: 'Obsługa systemu, protokół uruchomienia oraz zalecenia eksploatacyjno-serwisowe.',
+    unit: 'usł.',
+    quantity: '1',
+  },
+
+  // Opcja dodatkowa
   {
     id: '21',
     name: 'Filtr Aqua Clear',
     description:
-      'Wysokowydajny filtr Aqua Clear poprawiajacy jakosc powietrza oraz chroni centrale przed zanieczyszczeniami.',
+      'Wysokowydajny filtr Aqua Clear poprawiający jakość powietrza oraz chroniący centralę przed zanieczyszczeniami.',
     unit: 'szt.',
     quantity: '1',
   },
@@ -219,15 +345,59 @@ export const recuperationItemsById = recuperationMainItems.reduce((acc, item) =>
 }, {});
 
 export const recuperationVariants = {
-  installationOnly: {
-    key: 'installationOnly',
-    label: 'Montaż samej rekuperacji',
-    itemIds: ['2', '3', '5', '6', '9', '10', '12', '13', '14', '15'],
+  samRekuperator: {
+    key: 'samRekuperator',
+    label: 'Sam rekuperator',
+    itemIds: [
+      'SAM-1',
+      'SAM-2',
+      'SAM-3',
+      'SAM-4',
+      'SAM-5',
+      'SAM-6',
+      'SAM-7',
+      'SAM-8',
+      'SAM-9',
+      'SAM-10',
+      'SAM-11',
+      'SAM-12',
+    ],
   },
-  withInfrastructure: {
-    key: 'withInfrastructure',
-    label: 'Rekuperacja + przygotowanie infrastruktury',
-    itemIds: ['1', '3', '4', '7', '9', '10', '11', '12', '13', '16', '17', '18', '19', '20'],
+  etap1: {
+    key: 'etap1',
+    label: 'Etap 1 — projekt i rozprowadzenie instalacji',
+    itemIds: [
+      'ETAP1-1',
+      'ETAP1-2',
+      'ETAP1-3',
+      'ETAP1-4',
+      'ETAP1-5',
+      'ETAP1-6',
+      'ETAP1-7',
+      'ETAP1-8',
+      'ETAP1-9',
+      'ETAP1-10',
+      'ETAP1-11',
+      'ETAP1-12',
+    ],
+  },
+  etap2: {
+    key: 'etap2',
+    label: 'Etap 2 — montaż centrali i uruchomienie',
+    itemIds: [
+      'ETAP2-1',
+      'ETAP2-2',
+      'ETAP2-3',
+      'ETAP2-4',
+      'ETAP2-5',
+      'ETAP2-6',
+      'ETAP2-7',
+      'ETAP2-8',
+      'ETAP2-9',
+      'ETAP2-10',
+      'ETAP2-11',
+      'ETAP2-12',
+    ],
   },
 };
 
