@@ -21,7 +21,9 @@ const buildRowsForIds = (ids, selectedDevice) =>
       let name = item.name;
       let description = item.description;
 
-      if (id === '1' && selectedDevice) {
+      const isDeviceRow = ['1', 'SAM-1', 'ETAP2-1'].includes(id);
+
+      if (isDeviceRow && selectedDevice) {
         name = `${item.name} (${selectedDevice.name})`;
         description = selectedDevice.description || item.description;
       }
@@ -411,6 +413,7 @@ export async function generateRecuperationOfferPDF(formData) {
   addonItemIds = [],
   drillingMode,
   includeAquaClear,
+  isEnthalpyVariant = false,
   investmentAddress = {},
   advisorInfo = {},
 } = formData;
@@ -501,6 +504,13 @@ export async function generateRecuperationOfferPDF(formData) {
       });
     }
 
+    if (isEnthalpyVariant) {
+      offerDetails.push({
+        label: 'Wariant wymiennika:',
+        value: 'entalpiczny',
+      });
+    }
+
     currentY = drawHeaderBlock(
       offerPage,
       { regular: regularFont, bold: boldFont },
@@ -534,6 +544,12 @@ export async function generateRecuperationOfferPDF(formData) {
     }) - 10;
 
     const selectedDevice = recuperationDevices[deviceKey];
+    const deviceForOutput = selectedDevice
+      ? {
+          ...selectedDevice,
+          name: `${selectedDevice.name}${isEnthalpyVariant ? ' entalpiczny' : ''}`,
+        }
+      : undefined;
     const variant = recuperationVariants[variantKey];
     const fallbackIds =
       variant?.itemIds || recuperationMainItems.map((item) => item.id);
@@ -549,7 +565,7 @@ export async function generateRecuperationOfferPDF(formData) {
       effectiveMainIds = effectiveMainIds.filter((id) => id !== '21');
     }
 
-    let mainTableData = buildRowsForIds(effectiveMainIds, selectedDevice).map(
+    let mainTableData = buildRowsForIds(effectiveMainIds, deviceForOutput).map(
       (row, index) => {
         const newRow = [...row];
         newRow[0] = String(index + 1);
@@ -610,7 +626,7 @@ export async function generateRecuperationOfferPDF(formData) {
       deviceKey.toLowerCase().includes('drafton');
 
     if (addonItemIds && addonItemIds.length > 0) {
-      const optionalRows = buildRowsForIds(addonItemIds, selectedDevice).map(
+      const optionalRows = buildRowsForIds(addonItemIds, deviceForOutput).map(
         (row, index) => {
           const newRow = [...row];
           newRow[0] = String(index + 1);

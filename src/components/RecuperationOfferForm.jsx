@@ -28,6 +28,7 @@ export default function RecuperationOfferForm() {
   const [surfaceArea, setSurfaceArea] = useState('100');
 
   const [variantKey, setVariantKey] = useState('samRekuperator');
+  const [isEnthalpyVariant, setIsEnthalpyVariant] = useState(false);
   const [drillingMode, setDrillingMode] = useState('main');
   const [includeAquaClear, setIncludeAquaClear] = useState(false);
 
@@ -108,6 +109,7 @@ export default function RecuperationOfferForm() {
       addonItemIds,
       drillingMode,
       includeAquaClear,
+      isEnthalpyVariant,
       investmentAddress: {
         street: investmentStreet,
         town: investmentTown,
@@ -273,16 +275,25 @@ export default function RecuperationOfferForm() {
           >
             {Object.keys(recuperationDevices).map((key) => (
               <option key={key} value={key}>
-                {recuperationDevices[key].name}
+                {recuperationDevices[key].name + (isEnthalpyVariant ? ' entalpiczny' : '')}
               </option>
             ))}
           </select>
           {offerMode === 'dobor' && (
-            <small>
+            <small style={{ display: 'block', marginTop: '8px' }}>
               Urządzenie dobrane automatycznie na podstawie powierzchni. Możesz
               je zmienić.
             </small>
           )}
+        </div>
+        <div className="input-group-inline" style={{ marginTop: '10px' }}>
+          <input
+            type="checkbox"
+            id="reku_enthalpyVariant"
+            checked={isEnthalpyVariant}
+            onChange={(event) => setIsEnthalpyVariant(event.target.checked)}
+          />
+          <label htmlFor="reku_enthalpyVariant">Wariant entalpiczny</label>
         </div>
       </fieldset>
 
