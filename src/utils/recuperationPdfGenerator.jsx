@@ -8,7 +8,6 @@ import {
   recuperationVariants,
   recuperationItemsById,
   recuperationMainItems,
-  DRILLING_ITEM_ID,
 } from '../data/tables/recuperationData';
 import { getTemplatePathsForDevice } from '../data/tables/pdfTemplateSets';
 
@@ -404,19 +403,15 @@ export async function generateRecuperationOfferPDF(formData) {
     price,
     isNetto,
     showPrice,
-    offerMode,
     deviceKey,
-    surfaceArea,
     variantKey,
-  variantLabel,
-  mainItemIds = [],
-  addonItemIds = [],
-  drillingMode,
-  includeAquaClear,
-  isEnthalpyVariant = false,
-  investmentAddress = {},
-  advisorInfo = {},
-} = formData;
+    mainItemIds = [],
+    addonItemIds = [],
+    includeAquaClear,
+    isEnthalpyVariant = false,
+    investmentAddress = {},
+    advisorInfo = {},
+  } = formData;
 
   try {
     const pdfDoc = await PDFDocument.create();
@@ -478,38 +473,7 @@ export async function generateRecuperationOfferPDF(formData) {
 
     const offerDetails = [
       { type: 'title', value: 'OFERTA NA SYSTEM REKUPERACJI' },
-      { label: 'Klient:', value: userName.toUpperCase() },
-      { label: 'Zakres oferty:', value: variantLabel },
     ];
-
-    if (offerMode === 'dobor') {
-      offerDetails.push({
-        label: 'Powierzchnia domu:',
-        value: `${surfaceArea} m²`,
-      });
-    }
-
-    const drillingDetail =
-      drillingMode === 'addon'
-        ? 'wiercenie jako opcja dodatkowa'
-        : 'wiercenie w zakresie podstawowym';
-
-    if (
-      (mainItemIds && mainItemIds.includes(DRILLING_ITEM_ID)) ||
-      (addonItemIds && addonItemIds.includes(DRILLING_ITEM_ID))
-    ) {
-      offerDetails.push({
-        label: 'Wiercenie koroną:',
-        value: drillingDetail,
-      });
-    }
-
-    if (isEnthalpyVariant) {
-      offerDetails.push({
-        label: 'Wariant wymiennika:',
-        value: 'entalpiczny',
-      });
-    }
 
     currentY = drawHeaderBlock(
       offerPage,
@@ -790,5 +754,4 @@ export async function generateRecuperationOfferPDF(formData) {
     return null;
   }
 }
-
 

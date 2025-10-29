@@ -401,3 +401,14 @@ export const recuperationVariants = {
   },
 };
 
+recuperationVariants.samRekuperatorZEtapami = {
+  key: 'samRekuperatorZEtapami',
+  label: 'Sam rekuperator + Etap 1 + Etap 2',
+  itemIds: Array.from(
+    new Set([
+      ...recuperationVariants.samRekuperator.itemIds,
+      ...recuperationVariants.etap1.itemIds,
+      ...recuperationVariants.etap2.itemIds,
+    ])
+  ),
+};
