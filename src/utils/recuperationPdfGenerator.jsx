@@ -445,6 +445,8 @@ export async function generateRecuperationOfferPDF(formData) {
     isNetto,
     showPrice,
     deviceKey,
+    customDeviceName,
+    customDeviceCatalog,
     variantKey,
     mainItemIds = [],
     includeAquaClear,
@@ -496,6 +498,25 @@ export async function generateRecuperationOfferPDF(formData) {
       })
     );
     const templatePdfEntries = templateFetchResults.filter(Boolean);
+    let customCatalogBuffer = null;
+    if (customDeviceCatalog) {
+      if (customDeviceCatalog.buffer instanceof ArrayBuffer) {
+        customCatalogBuffer = customDeviceCatalog.buffer;
+      } else if (
+        typeof ArrayBuffer !== 'undefined' &&
+        ArrayBuffer.isView &&
+        ArrayBuffer.isView(customDeviceCatalog.buffer)
+      ) {
+        customCatalogBuffer = customDeviceCatalog.buffer;
+      }
+    }
+    if (customCatalogBuffer && customCatalogBuffer.byteLength > 0) {
+      templatePdfEntries.push({
+        path: customDeviceCatalog.name || 'custom_device_catalog.pdf',
+        buffer: customCatalogBuffer,
+        isCustom: true,
+      });
+    }
 
     if (templatePdfEntries.length > 0) {
       const coverEntry = templatePdfEntries.shift();
@@ -548,12 +569,25 @@ export async function generateRecuperationOfferPDF(formData) {
     }) - 10;
 
     const selectedDevice = recuperationDevices[deviceKey];
-    const deviceForOutput = selectedDevice
-      ? {
-          ...selectedDevice,
-          name: `${selectedDevice.name}${isEnthalpyVariant ? ' entalpiczny' : ''}`,
-        }
-      : undefined;
+    const normalizedCustomDeviceName =
+      typeof customDeviceName === 'string' ? customDeviceName.trim() : '';
+    const baseDeviceName =
+      normalizedCustomDeviceName ||
+      (selectedDevice && selectedDevice.name) ||
+      '';
+    const deviceForOutput =
+      selectedDevice || baseDeviceName
+        ? {
+            ...(selectedDevice || { description: '' }),
+            ...(baseDeviceName
+              ? {
+                  name: `${baseDeviceName}${
+                    isEnthalpyVariant ? ' entalpiczny' : ''
+                  }`,
+                }
+              : {}),
+          }
+        : undefined;
     const variant = recuperationVariants[variantKey];
     const fallbackIds =
       variant?.itemIds || recuperationMainItems.map((item) => item.id);
@@ -674,10 +708,12 @@ export async function generateRecuperationOfferPDF(formData) {
       deviceKey.toLowerCase().includes('drafton');
 
     if (showPrice) {
+      const priceBlockPadding = 18;
+      const priceMinY = 70;
       let pricePage = lastContentPage;
-      let priceY = finalY - 30;
+      let priceY = finalY - priceBlockPadding;
 
-      if (priceY < 120) {
+      if (priceY < priceMinY) {
         pricePage = pdfDoc.addPage();
         priceY = pricePage.getSize().height - 140;
       }
@@ -694,7 +730,7 @@ export async function generateRecuperationOfferPDF(formData) {
         color: rgb(0.6, 0, 0.15),
       });
       lastContentPage = pricePage;
-      finalY = priceY - 40;
+      finalY = priceY - 24;
     }
 
     if (isDrafton) {
