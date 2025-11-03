@@ -103,10 +103,36 @@ export async function drawTable(pdfDoc, page, fonts, tableData, startY, title, c
         columnPositions.push(columnPositions[i] + tableConfig.columnWidths[i]);
     }
     
+    const drawSectionTitle = (page, yPos, label) => {
+        const title = String(label ?? '').toUpperCase();
+        const titleFontSize = 12;
+        const titlePaddingY = 6;
+        const titleHeight = titleFontSize + titlePaddingY * 2;
+        const highlightColor = rgb(0.6, 0, 0.15);
+
+        const titleY = yPos - titleHeight;
+        page.drawRectangle({
+            x: tableStartX,
+            y: titleY,
+            width: tableWidth,
+            height: titleHeight,
+            color: highlightColor,
+        });
+
+        const textWidth = boldFont.widthOfTextAtSize(title, titleFontSize);
+        page.drawText(title, {
+            x: tableStartX + (tableWidth - textWidth) / 2,
+            y: titleY + titlePaddingY,
+            font: boldFont,
+            size: titleFontSize,
+            color: rgb(1, 1, 1),
+        });
+
+        return titleY - 10;
+    };
+
     if (title) {
-        currentY -= 5;
-        currentPage.drawText(title, { x: tableStartX, y: currentY, font: boldFont, size: 9, color: rgb(0.1, 0.1, 0.25) });
-        currentY -= (9 + 8);
+        currentY = drawSectionTitle(currentPage, currentY, title);
     }
 
     let tableSegmentTopY = currentY;
@@ -140,8 +166,7 @@ export async function drawTable(pdfDoc, page, fonts, tableData, startY, title, c
             currentPage = pdfDoc.addPage();
             currentY = currentPage.getSize().height - tableConfig.pageMargins.top;
             if (title) {
-                currentPage.drawText(`${title} (c.d.)`, { x: tableStartX, y: currentY, font: boldFont, size: 9, color: rgb(0.1, 0.1, 0.25) });
-                currentY -= (9 + 8);
+                currentY = drawSectionTitle(currentPage, currentY, `${title} (c.d.)`);
             }
             tableSegmentTopY = currentY;
             currentY = drawHeader(currentPage, currentY);

@@ -1,4 +1,4 @@
-export const recuperationDevices = {
+﻿export const recuperationDevices = {
   AERIS_350: {
     name: 'Rekuperator AERIS next 350 VV',
     description:
@@ -344,10 +344,10 @@ export const recuperationItemsById = recuperationMainItems.reduce((acc, item) =>
   return acc;
 }, {});
 
-export const recuperationVariants = {
+export const recuperationStages = {
   samRekuperator: {
     key: 'samRekuperator',
-    label: 'Sam rekuperator',
+    label: 'Urządzenie',
     itemIds: [
       'SAM-1',
       'SAM-2',
@@ -365,7 +365,7 @@ export const recuperationVariants = {
   },
   etap1: {
     key: 'etap1',
-    label: 'Etap 1 — projekt i rozprowadzenie instalacji',
+    label: 'Projekt i rozprowadzenie instalacji',
     itemIds: [
       'ETAP1-1',
       'ETAP1-2',
@@ -383,7 +383,7 @@ export const recuperationVariants = {
   },
   etap2: {
     key: 'etap2',
-    label: 'Etap 2 — montaż centrali i uruchomienie',
+    label: 'Montaż rekuperatora',
     itemIds: [
       'ETAP2-1',
       'ETAP2-2',
@@ -401,14 +401,66 @@ export const recuperationVariants = {
   },
 };
 
-recuperationVariants.samRekuperatorZEtapami = {
-  key: 'samRekuperatorZEtapami',
-  label: 'Sam rekuperator + Etap 1 + Etap 2',
-  itemIds: Array.from(
-    new Set([
-      ...recuperationVariants.samRekuperator.itemIds,
-      ...recuperationVariants.etap1.itemIds,
-      ...recuperationVariants.etap2.itemIds,
-    ])
-  ),
+const mergeUnique = (...arrays) => Array.from(new Set(arrays.flat()));
+
+const stageSectionTitles = {
+  samRekuperator: 'Urządzenie',
+  etap1: 'Projekt i rozprowadzenie instalacji',
+  etap2: 'Montaż rekuperatora',
 };
+
+const createSection = (stageKey) => ({
+  stageKey,
+  title: stageSectionTitles[stageKey] || 'Zakres prac i komponenty systemu',
+});
+
+export const recuperationVariants = {
+  samRekuperator: {
+    key: 'samRekuperator',
+    label: 'Urządzenie / sam rekuperator',
+    itemIds: [...recuperationStages.samRekuperator.itemIds],
+    sections: [createSection('samRekuperator')],
+  },
+  samRekuperatorProjektRozprowadzenie: {
+    key: 'samRekuperatorProjektRozprowadzenie',
+    label: 'Rekuperator + projekt + rozprowadzenie',
+    itemIds: mergeUnique(
+      recuperationStages.samRekuperator.itemIds,
+      recuperationStages.etap1.itemIds
+    ),
+    sections: [createSection('samRekuperator'), createSection('etap1')],
+  },
+  samRekuperatorProjektMontaz: {
+    key: 'samRekuperatorProjektMontaz',
+    label: 'Rekuperator + projekt + rozprowadzenie + montaż',
+    itemIds: mergeUnique(
+      recuperationStages.samRekuperator.itemIds,
+      recuperationStages.etap1.itemIds,
+      recuperationStages.etap2.itemIds
+    ),
+    sections: [createSection('samRekuperator'), createSection('etap1'), createSection('etap2')],
+  },
+  projektMontazCentrali: {
+    key: 'projektMontazCentrali',
+    label: 'Rozprowadzenie + montaż centrali',
+    itemIds: mergeUnique(
+      recuperationStages.etap1.itemIds,
+      recuperationStages.etap2.itemIds
+    ),
+    sections: [createSection('etap1'), createSection('etap2')],
+  },
+};
+
+export const recuperationItemStageMap = Object.entries(recuperationStages).reduce(
+  (acc, [stageKey, stage]) => {
+    stage.itemIds.forEach((id) => {
+      acc[id] = stageKey;
+    });
+    return acc;
+  },
+  {}
+);
+
+recuperationItemStageMap['21'] = recuperationItemStageMap['21'] || 'samRekuperator';
+
+

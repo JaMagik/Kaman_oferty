@@ -1,4 +1,4 @@
-// src/utils/recuperationPdfGenerator.jsx
+﻿// src/utils/recuperationPdfGenerator.jsx
 
 import { PDFDocument, rgb } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
@@ -8,6 +8,8 @@ import {
   recuperationVariants,
   recuperationItemsById,
   recuperationMainItems,
+  recuperationStages,
+  recuperationItemStageMap,
 } from '../data/tables/recuperationData';
 import { getTemplatePathsForDevice } from '../data/tables/pdfTemplateSets';
 
@@ -30,6 +32,45 @@ const buildRowsForIds = (ids, selectedDevice) =>
       return ['', name, description, item.unit, item.quantity];
     })
     .filter(Boolean);
+
+const getMainTableConfig = (rowCount) => {
+  const base = {
+    columnWidths: [30, 205, 230, 42, 48],
+    headerHeight: 27,
+    padding: { top: 10, bottom: 10, left: 6, right: 6 },
+    headerFontSize: 9.6,
+    contentFontSize: 8.2,
+    descriptionFontSize: 7.5,
+    lineHeightMultiplier: 1.26,
+    pageMargins: { top: 30, bottom: 34 },
+  };
+
+  if (rowCount > 22) {
+    return {
+      ...base,
+      contentFontSize: 7.8,
+      descriptionFontSize: 7.1,
+      lineHeightMultiplier: 1.12,
+      padding: { ...base.padding, top: 6, bottom: 6 },
+      headerHeight: 24,
+      pageMargins: { top: 24, bottom: 30 },
+    };
+  }
+
+  if (rowCount > 18) {
+    return {
+      ...base,
+      contentFontSize: 8,
+      descriptionFontSize: 7.3,
+      lineHeightMultiplier: 1.16,
+      padding: { ...base.padding, top: 8, bottom: 8 },
+      headerHeight: 25,
+      pageMargins: { top: 26, bottom: 32 },
+    };
+  }
+
+  return base;
+};
 
 const isPdfBuffer = (buffer) => {
   if (!(buffer instanceof ArrayBuffer) || buffer.byteLength < 5) {
@@ -406,7 +447,6 @@ export async function generateRecuperationOfferPDF(formData) {
     deviceKey,
     variantKey,
     mainItemIds = [],
-    addonItemIds = [],
     includeAquaClear,
     isEnthalpyVariant = false,
     investmentAddress = {},
@@ -529,107 +569,109 @@ export async function generateRecuperationOfferPDF(formData) {
       effectiveMainIds = effectiveMainIds.filter((id) => id !== '21');
     }
 
-    let mainTableData = buildRowsForIds(effectiveMainIds, deviceForOutput).map(
-      (row, index) => {
-        const newRow = [...row];
-        newRow[0] = String(index + 1);
-        return newRow;
+    const variantSections =
+      Array.isArray(variant?.sections) && variant.sections.length > 0
+        ? variant.sections
+        : [{ stageKey: 'samRekuperator', title: variant?.label || 'Zakres prac i komponenty systemu' }];
+
+    const assignedIds = new Set();
+    const sectionsToRender = [];
+
+    for (const section of variantSections) {
+      if (!section || !section.stageKey) {
+        continue;
       }
-    );
 
-    currentY -= 15;
+      const stageIds = effectiveMainIds.filter((id) => {
+        if (assignedIds.has(id)) {
+          return false;
+        }
+        return recuperationItemStageMap[id] === section.stageKey;
+      });
 
-    const mainTableConfig = (() => {
-      const rowCount = mainTableData.length;
-      const base = {
-        columnWidths: [30, 205, 230, 42, 48],
-        headerHeight: 24,
-        padding: { top: 6, bottom: 6, left: 6, right: 6 },
-        headerFontSize: 9.4,
-        contentFontSize: 8.2,
-        descriptionFontSize: 7.5,
-        lineHeightMultiplier: 1.16,
-        pageMargins: { top: 26, bottom: 32 },
-      };
-      if (rowCount > 22) {
-        return {
-          ...base,
-          contentFontSize: 7.8,
-          descriptionFontSize: 7.1,
-          lineHeightMultiplier: 1.12,
-          pageMargins: { top: 24, bottom: 30 },
-        };
+      if (stageIds.length === 0) {
+        continue;
       }
-      if (rowCount > 18) {
-        return {
-          ...base,
-          contentFontSize: 8,
-          descriptionFontSize: 7.3,
-          lineHeightMultiplier: 1.14,
-          pageMargins: { top: 25, bottom: 30 },
-        };
+
+      stageIds.forEach((id) => assignedIds.add(id));
+      sectionsToRender.push({
+        title:
+          section.title ||
+          recuperationStages[section.stageKey]?.label ||
+          'Zakres prac i komponenty systemu',
+        ids: stageIds,
+      });
+    }
+
+    const remainingIds = effectiveMainIds.filter((id) => !assignedIds.has(id));
+    if (remainingIds.length > 0) {
+      if (sectionsToRender.length === 0) {
+        sectionsToRender.push({
+          title: variant?.label || 'Zakres prac i komponenty systemu',
+          ids: remainingIds,
+        });
+      } else {
+        const lastSection = sectionsToRender[sectionsToRender.length - 1];
+        lastSection.ids = [...lastSection.ids, ...remainingIds];
       }
-      return base;
-    })();
+    }
 
-    const tableResult = await drawTable(
-      pdfDoc,
-      offerPage,
-      { regular: regularFont, bold: boldFont },
-      mainTableData,
-      currentY,
-      'Zakres prac i komponenty systemu',
-      mainTableConfig
-    );
+    if (sectionsToRender.length === 0) {
+      sectionsToRender.push({
+        title: variant?.label || 'Zakres prac i komponenty systemu',
+        ids: [...effectiveMainIds],
+      });
+    }
 
-    lastContentPage = tableResult.finalPage;
-    let finalY = tableResult.finalY;
+    const tableStartPage = offerPage;
+    const tableStartY = currentY - 15;
 
-    const isDrafton =
-      typeof deviceKey === 'string' &&
-      deviceKey.toLowerCase().includes('drafton');
+    let tableResult = null;
+    let finalY = tableStartY;
 
-    if (addonItemIds && addonItemIds.length > 0) {
-      const optionalRows = buildRowsForIds(addonItemIds, deviceForOutput).map(
-        (row, index) => {
+    for (const section of sectionsToRender) {
+      const rows = buildRowsForIds(section.ids, deviceForOutput).map(
+        (row, rowIndex) => {
           const newRow = [...row];
-          newRow[0] = String(index + 1);
+          newRow[0] = String(rowIndex + 1);
           return newRow;
         }
       );
 
-      let optionalPage = lastContentPage;
-      let optionalStartY = finalY - 40;
-
-      if (optionalStartY < 120) {
-        optionalPage = pdfDoc.addPage();
-        optionalStartY = optionalPage.getSize().height - 80;
+      if (rows.length === 0) {
+        continue;
       }
 
-      const optionalTableConfig = {
-        columnWidths: [30, 205, 230, 42, 48],
-        headerHeight: 22,
-        padding: { top: 5, bottom: 5, left: 6, right: 6 },
-        headerFontSize: 9,
-        contentFontSize: 7.8,
-        descriptionFontSize: 7.2,
-        lineHeightMultiplier: 1.12,
-        pageMargins: { top: 24, bottom: 28 },
-      };
+      const tableConfig = getMainTableConfig(rows.length);
+      const startPage =
+        tableResult === null ? tableStartPage : pdfDoc.addPage();
+      const startY =
+        tableResult === null
+          ? tableStartY
+          : startPage.getSize().height - tableConfig.pageMargins.top;
 
-      const optionalResult = await drawTable(
+      tableResult = await drawTable(
         pdfDoc,
-        optionalPage,
+        startPage,
         { regular: regularFont, bold: boldFont },
-        optionalRows,
-        optionalStartY,
-        'Opcje dodatkowe',
-        optionalTableConfig
+        rows,
+        startY,
+        section.title,
+        tableConfig
       );
-
-      lastContentPage = optionalResult.finalPage;
-      finalY = optionalResult.finalY;
     }
+
+    if (tableResult) {
+      lastContentPage = tableResult.finalPage;
+      finalY = tableResult.finalY;
+    } else {
+      lastContentPage = tableStartPage;
+      finalY = tableStartY;
+    }
+
+    const isDrafton =
+      typeof deviceKey === 'string' &&
+      deviceKey.toLowerCase().includes('drafton');
 
     if (showPrice) {
       let pricePage = lastContentPage;
@@ -655,47 +697,14 @@ export async function generateRecuperationOfferPDF(formData) {
       finalY = priceY - 40;
     }
 
-    const generalOptionsRows = [
-      {
-        name: 'System antysmogowy ALPHAclear',
-        quantity: '1',
-        price: '6 337 PLN',
-      },
-      {
-        name: 'Wkład węglowy dla ALPHAclear do redukcji zapachów (opcja)',
-        quantity: '1',
-        price: '357 PLN',
-      },
-      {
-        name: 'Podstawa dla central AERISnext/DRAFTON Professional (*)',
-        quantity: '1',
-        price: '730 PLN',
-      },
-    ];
-
-    const generalOptionsPage = pdfDoc.addPage();
-    const generalOptionsResult = drawOptionsPricingSection({
-      pdfDoc,
-      startPage: generalOptionsPage,
-      fonts: { regular: regularFont, bold: boldFont },
-      startY: generalOptionsPage.getSize().height - 80,
-      title: 'Opcje dodatkowe',
-      rows: generalOptionsRows,
-      note:
-        'W przypadku montażu centrali na uchwytach ściennych cena za podstawę pomiń.',
-      footer: 'Wszystkie podane ceny są cenami katalogowymi netto.',
-    });
-
-    lastContentPage = generalOptionsResult.finalPage;
-    finalY = generalOptionsResult.finalY;
-
     if (isDrafton) {
+      const draftOptionsPage = pdfDoc.addPage();
       const draftOptionsResult = drawOptionsPricingSection({
         pdfDoc,
-        startPage: lastContentPage,
+        startPage: draftOptionsPage,
         fonts: { regular: regularFont, bold: boldFont },
-        startY: finalY - 20,
-        title: 'Opcje do Draftona – sterowanie bezprzewodowe',
+        startY: draftOptionsPage.getSize().height - 80,
+        title: 'Opcje do Draftona - sterowanie bezprzewodowe',
         introText:
           'Opcjonalne sterowanie bezprzewodowe dla central DRAFTON Professional:',
         rows: [
@@ -710,7 +719,7 @@ export async function generateRecuperationOfferPDF(formData) {
             price: '580 PLN',
           },
           {
-            name: 'Radiowy panel sterujący z czujnikiem CO₂ Drafton PRO',
+            name: 'Radiowy panel sterujący z czujnikiem CO2 Drafton PRO',
             quantity: '1',
             price: '1 390 PLN',
           },
@@ -721,7 +730,7 @@ export async function generateRecuperationOfferPDF(formData) {
             price: '680 PLN',
           },
           {
-            name: 'Radiowy czujnik CO₂ Drafton PRO',
+            name: 'Radiowy czujnik CO2 Drafton PRO',
             quantity: '1',
             price: '1 290 PLN',
           },
@@ -736,7 +745,6 @@ export async function generateRecuperationOfferPDF(formData) {
       lastContentPage = draftOptionsResult.finalPage;
       finalY = draftOptionsResult.finalY;
     }
-
     for (const entry of templatePdfEntries) {
       const templateDoc = await PDFDocument.load(entry.buffer);
       const copiedPages = await pdfDoc.copyPages(
