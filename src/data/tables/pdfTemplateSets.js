@@ -624,6 +624,13 @@ export const pdfTemplateSets = {
     groupPage2,
     commonContactPage,
   ],
+  custom: [
+    '/pdf_templates/recuperation/ogolny_rekuperacja.pdf',
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
 };
 
 
@@ -639,4 +646,3 @@ export function getTemplatePathsForDevice(deviceType, model) {
   // W przeciwnym razie zwróć standardowy zestaw (który jest tablicą) lub ogólny domyślny
   return templateSet || defaultTemplatePaths;
 }
-
