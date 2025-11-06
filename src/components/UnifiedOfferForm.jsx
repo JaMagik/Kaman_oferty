@@ -172,6 +172,33 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
     return parsed;
   };
 
+  const heatPumpQuantityFields = [
+    {
+      id: "outdoorUnitQty",
+      label: "Jednostki zewnętrzne",
+      value: outdoorUnitQty,
+      onChange: (nextValue) => setOutdoorUnitQty(getPositiveInt(nextValue, 1)),
+    },
+    {
+      id: "indoorUnitQty",
+      label: "Jednostki wewnętrzne",
+      value: indoorUnitQty,
+      onChange: (nextValue) => setIndoorUnitQty(getPositiveInt(nextValue, 1)),
+    },
+    {
+      id: "heatingCircuitQty",
+      label: "Obiegi grzewcze",
+      value: heatingCircuitQty,
+      onChange: (nextValue) => setHeatingCircuitQty(getPositiveInt(nextValue, 1)),
+    },
+    {
+      id: "heatPumpControllerQty",
+      label: "Sterowniki/regulatory",
+      value: heatPumpControllerQty,
+      onChange: (nextValue) => setHeatPumpControllerQty(getPositiveInt(nextValue, 1)),
+    },
+  ];
+
   useEffect(() => {
     if (!isBoiler) {
       setBoilerCirculationPumpQty(1);
@@ -493,58 +520,36 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
                   id="customQuantityToggle"
                   checked={isCustomQuantity}
                   onChange={(e) => {
-                    const nextChecked = e.target.checked;
-                    setIsCustomQuantity(nextChecked);
-                    if (!nextChecked) {
-                      setOutdoorUnitQty(1);
-                      setIndoorUnitQty(1);
-                      setHeatingCircuitQty(1);
-                      setHeatPumpControllerQty(1);
-                    }
-                  }}
-                />
-                <label htmlFor="customQuantityToggle">Dostosuj ilości jednostek i obiegów</label>
-              </div>
-              {isCustomQuantity && (
-                <div className="quantity-grid">
-                  <label htmlFor="outdoorUnitQty">Jednostki zewnętrzne</label>
-                  <input
-                    id="outdoorUnitQty"
-                    type="number"
-                    min="1"
-                    value={outdoorUnitQty}
-                    onChange={(e) => setOutdoorUnitQty(getPositiveInt(e.target.value, 1))}
-                  />
-
-                  <label htmlFor="indoorUnitQty">Jednostki wewnętrzne</label>
-                  <input
-                    id="indoorUnitQty"
-                    type="number"
-                    min="1"
-                    value={indoorUnitQty}
-                    onChange={(e) => setIndoorUnitQty(getPositiveInt(e.target.value, 1))}
-                  />
-
-                  <label htmlFor="heatingCircuitQty">Obiegi grzewcze</label>
-                  <input
-                    id="heatingCircuitQty"
-                    type="number"
-                    min="1"
-                    value={heatingCircuitQty}
-                    onChange={(e) => setHeatingCircuitQty(getPositiveInt(e.target.value, 1))}
-                  />
-                  <label htmlFor="heatPumpControllerQty">Sterowniki/regulatory</label>
-                  <input
-                    id="heatPumpControllerQty"
-                    type="number"
-                    min="1"
-                    value={heatPumpControllerQty}
-                    onChange={(e) => setHeatPumpControllerQty(getPositiveInt(e.target.value, 1))}
-                  />
-                </div>
-              )}
+                  const nextChecked = e.target.checked;
+                  setIsCustomQuantity(nextChecked);
+                  if (!nextChecked) {
+                    setOutdoorUnitQty(1);
+                    setIndoorUnitQty(1);
+                    setHeatingCircuitQty(1);
+                    setHeatPumpControllerQty(1);
+                  }
+                }}
+              />
+              <label htmlFor="customQuantityToggle">Dostosuj ilości jednostek, obiegów i sterowników</label>
             </div>
-          )}
+            {isCustomQuantity && (
+              <div className="quantity-grid">
+                {heatPumpQuantityFields.map(({ id, label, value, onChange }) => (
+                  <React.Fragment key={id}>
+                    <label htmlFor={id}>{label}</label>
+                    <input
+                      id={id}
+                      type="number"
+                      min="1"
+                      value={value}
+                      onChange={(e) => onChange(e.target.value)}
+                    />
+                  </React.Fragment>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
 
           {isBoiler && (
@@ -663,4 +668,3 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
     </form>
   );
 }
-

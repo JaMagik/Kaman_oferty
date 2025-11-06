@@ -596,13 +596,13 @@ function prepareTableData(deviceType, model, tankCapacity, bufferCapacity, syste
     }
     if (!isKotel && !isAc) {
         const controllersQty = normalizeQty(quantityOptions.heatPumpControllers, 1);
-        const controllerIndex = mainTableData.findIndex(row => {
+        mainTableData.forEach((row, index) => {
+            if (!Array.isArray(row)) return;
             const name = normalizeName(row[1]);
-            return name.includes('sterownik') || name.includes('regulator');
+            if (name.includes('sterownik') || name.includes('regulator')) {
+                mainTableData[index][3] = String(controllersQty);
+            }
         });
-        if (controllerIndex !== -1) {
-            mainTableData[controllerIndex][3] = String(controllersQty);
-        }
     }
 
 
@@ -880,7 +880,6 @@ export async function generateOfferPDF(
         return null;
     }
 }
-
 
 
 
