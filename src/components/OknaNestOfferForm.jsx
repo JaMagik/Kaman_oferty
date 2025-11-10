@@ -122,6 +122,63 @@ const buildDefaultWindowOptionPriceState = () => {
   return state;
 };
 
+const OFFER_COUNTER_STORAGE_KEY = 'oknaNestOfferCounters';
+
+const getAdvisorInitials = (displayName) => {
+  if (!displayName) {
+    return 'OF';
+  }
+  const parts = displayName
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  if (parts.length === 0) {
+    return 'OF';
+  }
+  const firstInitial = parts[0][0] || '';
+  const lastInitial = parts.length > 1 ? parts[parts.length - 1][0] : parts[0][1] || '';
+  const initials = `${firstInitial || ''}${lastInitial || ''}`.toUpperCase();
+  return initials || 'OF';
+};
+
+const reserveOfferNumber = (displayName) => {
+  const initials = getAdvisorInitials(displayName);
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const year = now.getFullYear();
+  const fallbackNumber = `${initials}/${month}/1`;
+
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return {
+      offerNumber: fallbackNumber,
+      meta: { initials, month, year, value: 1 },
+    };
+  }
+
+  let counters = {};
+  try {
+    const stored = window.localStorage.getItem(OFFER_COUNTER_STORAGE_KEY);
+    counters = stored ? JSON.parse(stored) : {};
+  } catch (error) {
+    counters = {};
+  }
+
+  const bucketKey = `${initials}-${year}-${month}`;
+  const nextValue = (counters[bucketKey] ?? 0) + 1;
+  counters[bucketKey] = nextValue;
+
+  try {
+    window.localStorage.setItem(OFFER_COUNTER_STORAGE_KEY, JSON.stringify(counters));
+  } catch (error) {
+    // ignore write errors, fallback number already computed
+  }
+
+  return {
+    offerNumber: `${initials}/${month}/${nextValue}`,
+    meta: { initials, month, year, value: nextValue },
+  };
+};
+
 export default function OknaNestOfferForm() {
   const defaultAdvisor =
     clientAdvisorOptions.find((advisor) => advisor.value === 'robert') || clientAdvisorOptions[0];
@@ -517,6 +574,9 @@ export default function OknaNestOfferForm() {
       return;
     }
 
+    const advisorNameForNumber = advisor.label || advisor.value || userName.trim();
+    const { offerNumber: generatedOfferNumber } = reserveOfferNumber(advisorNameForNumber || userName.trim());
+
     setPricingAssumptionsPayload(null);
     setIsProcessing(true);
 
@@ -536,6 +596,7 @@ export default function OknaNestOfferForm() {
           phone: advisor.phone || '',
           email: advisor.email || '',
         },
+        offerNumber: generatedOfferNumber,
         generatedAt: Date.now(),
         additionalNotes: additionalNotes.trim(),
         calculations: {
@@ -603,6 +664,7 @@ export default function OknaNestOfferForm() {
         installationExtras: installationExtrasState,
         optionPrices: optionPriceState,
         vatRate: resolvedVatRate,
+        offerNumber: generatedOfferNumber,
         attachmentFile,
       });
 
@@ -641,10 +703,15 @@ export default function OknaNestOfferForm() {
       }
       const clientName = pricingAssumptionsPayload.userName || userName || 'klient';
       const safeName = clientName.trim().replace(/\s+/g, '_') || 'klient';
+      const safeOfferNumber = (pricingAssumptionsPayload.offerNumber || '')
+        .trim()
+        .replace(/[^\w]+/g, '_');
       const url = URL.createObjectURL(assumptionsBlob);
       const anchor = document.createElement('a');
       anchor.href = url;
-      anchor.download = `Zalozenia_cenowe_OknaNest_${safeName}.pdf`;
+      anchor.download = safeOfferNumber
+        ? `Zalozenia_cenowe_${safeOfferNumber}.pdf`
+        : `Zalozenia_cenowe_OknaNest_${safeName}.pdf`;
       document.body.appendChild(anchor);
       anchor.click();
       document.body.removeChild(anchor);

@@ -140,6 +140,7 @@ export async function generateOknaNestPricingAssumptionsPDF(payload = {}) {
       calculations = {},
       generatedAt = Date.now(),
       additionalNotes = '',
+      offerNumber = '',
     } = payload;
 
     const {
@@ -203,6 +204,9 @@ export async function generateOknaNestPricingAssumptionsPDF(payload = {}) {
       `Klient: ${userName || '---'}`,
       `Data wygenerowania: ${generatedDate.toLocaleDateString('pl-PL')}`,
     ];
+    if (offerNumber) {
+      dateLines.push(`Numer oferty: ${offerNumber}`);
+    }
     cursorY -= 26;
     dateLines.forEach((line) => {
       page.drawText(line, {

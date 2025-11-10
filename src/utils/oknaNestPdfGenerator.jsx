@@ -554,6 +554,7 @@ export async function generateOknaNestPDF(formData) {
     clientAdvisor = {},
     preparedBy,
     preparedByLabel,
+    offerNumber = '',
     catalogPrice,
     discountPercent,
     marginPercent,
@@ -762,6 +763,10 @@ export async function generateOknaNestPDF(formData) {
     }
 
     const offerDate = sanitizeNbsp(new Intl.DateTimeFormat('pl-PL').format(new Date()));
+    const offerNumberDisplay = sanitizeNbsp(String(offerNumber || '').trim());
+    const offerSubtitle = offerNumberDisplay
+      ? `Data oferty: ${offerDate}     Nr oferty: ${offerNumberDisplay}`
+      : `Data oferty: ${offerDate}`;
     const offerRecipient = resolveTextValue(userName);
     const headerTitle = '';
     const addressTown = resolveTextValue(investmentAddressDetails.town);
@@ -784,7 +789,7 @@ export async function generateOknaNestPDF(formData) {
     let tablePage = pdfDoc.addPage();
     let currentY = drawPageBranding(tablePage, fonts, logos, {
       title: headerTitle,
-      subtitle: `Data oferty: ${offerDate}`,
+      subtitle: offerSubtitle,
       titleSize: 22,
       subtitleSize: 11,
       extraSpacing: 10,
@@ -903,7 +908,7 @@ export async function generateOknaNestPDF(formData) {
       tablePage = pdfDoc.addPage();
       currentY = drawPageBranding(tablePage, fonts, logos, {
         title: headerTitle,
-        subtitle: `Data oferty: ${offerDate}`,
+        subtitle: offerSubtitle,
         titleSize: 22,
         subtitleSize: 11,
         extraSpacing: 10,
@@ -972,7 +977,7 @@ export async function generateOknaNestPDF(formData) {
       (newPage) =>
         drawPageBranding(newPage, fonts, logos, {
           title: headerTitle,
-          subtitle: `Data oferty: ${offerDate}`,
+          subtitle: offerSubtitle,
           titleSize: 22,
           subtitleSize: 11,
           extraSpacing: 10,
@@ -1161,7 +1166,7 @@ export async function generateOknaNestPDF(formData) {
     tablePage = pdfDoc.addPage();
     currentY = drawPageBranding(tablePage, fonts, logos, {
       title: headerTitle,
-      subtitle: `Data oferty: ${offerDate}`,
+      subtitle: offerSubtitle,
       titleSize: 22,
       subtitleSize: 11,
       extraSpacing: 10,
@@ -1202,7 +1207,7 @@ export async function generateOknaNestPDF(formData) {
       (newPage) =>
         drawPageBranding(newPage, fonts, logos, {
           title: headerTitle,
-          subtitle: `Data oferty: ${offerDate}`,
+          subtitle: offerSubtitle,
           titleSize: 22,
           subtitleSize: 11,
           extraSpacing: 10,
@@ -1216,7 +1221,7 @@ export async function generateOknaNestPDF(formData) {
         tablePage = pdfDoc.addPage();
         currentY = drawPageBranding(tablePage, fonts, logos, {
           title: headerTitle,
-          subtitle: `Data oferty: ${offerDate}`,
+          subtitle: offerSubtitle,
           titleSize: 22,
           subtitleSize: 11,
           extraSpacing: 10,
@@ -1272,7 +1277,7 @@ export async function generateOknaNestPDF(formData) {
         (newPage) =>
           drawPageBranding(newPage, fonts, logos, {
             title: headerTitle,
-            subtitle: `Data oferty: ${offerDate}`,
+            subtitle: offerSubtitle,
             titleSize: 22,
             subtitleSize: 11,
             extraSpacing: 10,
@@ -1312,7 +1317,7 @@ export async function generateOknaNestPDF(formData) {
         tablePage = pdfDoc.addPage();
         currentY = drawPageBranding(tablePage, fonts, logos, {
           title: headerTitle,
-          subtitle: `Data oferty: ${offerDate}`,
+          subtitle: offerSubtitle,
           titleSize: 22,
           subtitleSize: 11,
           extraSpacing: 10,
@@ -1329,7 +1334,7 @@ export async function generateOknaNestPDF(formData) {
         tablePage = pdfDoc.addPage();
         currentY = drawPageBranding(tablePage, fonts, logos, {
           title: headerTitle,
-          subtitle: `Data oferty: ${offerDate}`,
+          subtitle: offerSubtitle,
           titleSize: 22,
           subtitleSize: 11,
           extraSpacing: 14,
@@ -1349,7 +1354,7 @@ export async function generateOknaNestPDF(formData) {
           tablePage = pdfDoc.addPage();
           currentY = drawPageBranding(tablePage, fonts, logos, {
             title: headerTitle,
-            subtitle: `Data oferty: ${offerDate}`,
+            subtitle: offerSubtitle,
             titleSize: 22,
             subtitleSize: 11,
             extraSpacing: 14,
@@ -1522,7 +1527,7 @@ export async function generateOknaNestPDF(formData) {
       tablePage = pdfDoc.addPage();
       currentY = drawPageBranding(tablePage, fonts, logos, {
         title: headerTitle,
-        subtitle: `Data oferty: ${offerDate}`,
+        subtitle: offerSubtitle,
         titleSize: 22,
         subtitleSize: 11,
         extraSpacing: 12,
@@ -1565,7 +1570,7 @@ export async function generateOknaNestPDF(formData) {
         (newPage) =>
           drawPageBranding(newPage, fonts, logos, {
             title: headerTitle,
-            subtitle: `Data oferty: ${offerDate}`,
+            subtitle: offerSubtitle,
             titleSize: 22,
             subtitleSize: 11,
             extraSpacing: 12,
@@ -1578,7 +1583,7 @@ export async function generateOknaNestPDF(formData) {
         tablePage = pdfDoc.addPage();
         currentY = drawPageBranding(tablePage, fonts, logos, {
           title: headerTitle,
-          subtitle: `Data oferty: ${offerDate}`,
+          subtitle: offerSubtitle,
           titleSize: 22,
           subtitleSize: 11,
           extraSpacing: 12,
