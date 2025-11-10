@@ -1,6 +1,7 @@
 // src/components/OknaNestOfferForm.jsx
 import React, { useEffect, useMemo, useState } from 'react';
 import { generateOknaNestPDF } from '../utils/oknaNestPdfGenerator';
+import { generateOknaNestPricingAssumptionsPDF } from '../utils/oknaNestPricingAssumptionsPdfGenerator';
 import {
   profileTypeOptions,
   assemblyTypeOptions,
@@ -186,6 +187,8 @@ export default function OknaNestOfferForm() {
   const [installationExtrasState, setInstallationExtrasState] = useState(() => buildDefaultInstallationExtrasState());
   const [optionPriceState, setOptionPriceState] = useState(() => buildDefaultWindowOptionPriceState());
   const [isProcessing, setIsProcessing] = useState(false);
+  const [pricingAssumptionsPayload, setPricingAssumptionsPayload] = useState(null);
+  const [isGeneratingAssumptions, setIsGeneratingAssumptions] = useState(false);
 
   useEffect(() => {
     if (demolitionType === 'na') {
@@ -474,6 +477,7 @@ export default function OknaNestOfferForm() {
     }
 
     const perimeterValue = parsePreviewNumber(windowPerimeter);
+    const areaValue = parsePreviewNumber(windowArea);
     const rateValue = parsePreviewNumber(installationRatePerMeter);
     const extraValue = parsePreviewNumber(installationPerMeterExtra);
     const overrideValue = parsePreviewNumber(installationTotalOverride);
@@ -508,9 +512,49 @@ export default function OknaNestOfferForm() {
     const resolvedVatRate = vatPreset === 'custom' ? vatCustom : vatPreset;
     const advisor = selectedAdvisor || defaultAdvisor || {};
 
+    if (!pricePreview) {
+      alert('Uzupelnij dane finansowe (cena katalogowa i montaz), aby obliczyc oferte.');
+      return;
+    }
+
+    setPricingAssumptionsPayload(null);
     setIsProcessing(true);
 
     try {
+      const pricePreviewSnapshot = pricePreview ? { ...pricePreview } : null;
+      const assumptionsSnapshot = {
+        userName: userName.trim(),
+        investmentAddressDetails: {
+          town: townValue,
+          street: streetValue,
+          postalCode: postalValue,
+          city: cityValue,
+        },
+        investmentAddressText,
+        clientAdvisor: {
+          name: advisor.label || '',
+          phone: advisor.phone || '',
+          email: advisor.email || '',
+        },
+        generatedAt: Date.now(),
+        additionalNotes: additionalNotes.trim(),
+        calculations: {
+          catalogPrice: parsePreviewNumber(catalogPrice),
+          discountPercent: parsePreviewNumber(discountPercent),
+          marginPercent: parsePreviewNumber(marginPercent),
+          vatRate: parsePreviewNumber(resolvedVatRate),
+          installationPricingMode,
+          installationRatePerMeter: installationPricingMode === 'per-meter' ? rateValue : 0,
+          installationPerMeterExtra: installationPricingMode === 'per-meter' ? extraValue : 0,
+          installationOverride: installationPricingMode === 'flat' ? overrideValue : 0,
+          installationComputed: computedInstallation,
+          installationApplied: effectiveInstallation,
+          windowPerimeter: perimeterValue,
+          windowArea: areaValue,
+          pricePreview: pricePreviewSnapshot,
+        },
+      };
+
       const pdfBlob = await generateOknaNestPDF({
         userName: userName.trim(),
         investmentAddress: investmentAddressText,
@@ -571,6 +615,7 @@ export default function OknaNestOfferForm() {
         anchor.click();
         document.body.removeChild(anchor);
         URL.revokeObjectURL(url);
+        setPricingAssumptionsPayload(assumptionsSnapshot);
       } else {
         alert('Nie udalo sie wygenerowac pliku PDF.');
       }
@@ -579,6 +624,36 @@ export default function OknaNestOfferForm() {
       alert(`Wystapil blad: ${error.message}`);
     } finally {
       setIsProcessing(false);
+    }
+  };
+
+  const handleDownloadAssumptions = async () => {
+    if (!pricingAssumptionsPayload) {
+      return;
+    }
+
+    setIsGeneratingAssumptions(true);
+    try {
+      const assumptionsBlob = await generateOknaNestPricingAssumptionsPDF(pricingAssumptionsPayload);
+      if (!assumptionsBlob) {
+        alert('Nie udalo sie przygotowac pliku z zalozeniami cenowymi.');
+        return;
+      }
+      const clientName = pricingAssumptionsPayload.userName || userName || 'klient';
+      const safeName = clientName.trim().replace(/\s+/g, '_') || 'klient';
+      const url = URL.createObjectURL(assumptionsBlob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = `Zalozenia_cenowe_OknaNest_${safeName}.pdf`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Blad podczas generowania zalozen cenowych:', error);
+      alert(`Wystapil blad podczas generowania zalozen cenowych: ${error.message}`);
+    } finally {
+      setIsGeneratingAssumptions(false);
     }
   };
 
@@ -1224,6 +1299,16 @@ export default function OknaNestOfferForm() {
       <button type="submit" disabled={isProcessing}>
         {isProcessing ? 'Przetwarzanie...' : 'Generuj PDF Okna Nest'}
       </button>
+      {pricingAssumptionsPayload && (
+        <button
+          type="button"
+          onClick={handleDownloadAssumptions}
+          disabled={isGeneratingAssumptions}
+          style={{ marginTop: '10px', background: '#555' }}
+        >
+          {isGeneratingAssumptions ? 'Przygotowywanie...' : 'Pobierz zalozenia cenowe'}
+        </button>
+      )}
     </form>
   );
 }
