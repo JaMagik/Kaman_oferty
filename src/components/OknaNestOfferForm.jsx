@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { generateOknaNestPDF } from '../utils/oknaNestPdfGenerator';
 import { generateOknaNestPricingAssumptionsPDF } from '../utils/oknaNestPricingAssumptionsPdfGenerator';
+import { reserveOfferNumber } from '../utils/offerNumbering';
 import {
   profileTypeOptions,
   assemblyTypeOptions,
@@ -122,62 +123,7 @@ const buildDefaultWindowOptionPriceState = () => {
   return state;
 };
 
-const OFFER_COUNTER_STORAGE_KEY = 'oknaNestOfferCounters';
-
-const getAdvisorInitials = (displayName) => {
-  if (!displayName) {
-    return 'OF';
-  }
-  const parts = displayName
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean);
-  if (parts.length === 0) {
-    return 'OF';
-  }
-  const firstInitial = parts[0][0] || '';
-  const lastInitial = parts.length > 1 ? parts[parts.length - 1][0] : parts[0][1] || '';
-  const initials = `${firstInitial || ''}${lastInitial || ''}`.toUpperCase();
-  return initials || 'OF';
-};
-
-const reserveOfferNumber = (displayName) => {
-  const initials = getAdvisorInitials(displayName);
-  const now = new Date();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const year = now.getFullYear();
-  const fallbackNumber = `${initials}/${month}/1`;
-
-  if (typeof window === 'undefined' || !window.localStorage) {
-    return {
-      offerNumber: fallbackNumber,
-      meta: { initials, month, year, value: 1 },
-    };
-  }
-
-  let counters = {};
-  try {
-    const stored = window.localStorage.getItem(OFFER_COUNTER_STORAGE_KEY);
-    counters = stored ? JSON.parse(stored) : {};
-  } catch (error) {
-    counters = {};
-  }
-
-  const bucketKey = `${initials}-${year}-${month}`;
-  const nextValue = (counters[bucketKey] ?? 0) + 1;
-  counters[bucketKey] = nextValue;
-
-  try {
-    window.localStorage.setItem(OFFER_COUNTER_STORAGE_KEY, JSON.stringify(counters));
-  } catch (error) {
-    // ignore write errors, fallback number already computed
-  }
-
-  return {
-    offerNumber: `${initials}/${month}/${nextValue}`,
-    meta: { initials, month, year, value: nextValue },
-  };
-};
+const OKNA_OFFER_COUNTER_STORAGE_KEY = 'oknaNestOfferCounters';
 
 export default function OknaNestOfferForm() {
   const defaultAdvisor =
@@ -575,7 +521,14 @@ export default function OknaNestOfferForm() {
     }
 
     const advisorNameForNumber = advisor.label || advisor.value || userName.trim();
-    const { offerNumber: generatedOfferNumber } = reserveOfferNumber(advisorNameForNumber || userName.trim());
+    const { offerNumber: generatedOfferNumber } = reserveOfferNumber(
+      advisorNameForNumber || userName.trim(),
+      {
+        storageKey: OKNA_OFFER_COUNTER_STORAGE_KEY,
+        fallbackInitials: 'OF',
+        categoryCode: 'OKN',
+      }
+    );
 
     setPricingAssumptionsPayload(null);
     setIsProcessing(true);

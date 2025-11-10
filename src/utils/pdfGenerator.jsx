@@ -712,7 +712,8 @@ export async function generateOfferPDF(
   quantityOptions,
   showPrice,
   investmentAddress = {},
-  advisorInfo = {}
+  advisorInfo = {},
+  offerNumber = ''
 ) {
     if (!userName?.trim()) {
         alert('Uzupełnij pole Imię i Nazwisko!');
@@ -756,6 +757,12 @@ export async function generateOfferPDF(
             deviceType, model, tankCapacity, bufferCapacity, systemType, offerOptions, isKotel, quantityOptions, isAc
         );
         
+        const offerDateDisplay = new Intl.DateTimeFormat('pl-PL').format(new Date());
+        const offerNumberDisplay = typeof offerNumber === 'string' ? offerNumber.trim() : '';
+        const subtitleText = offerNumberDisplay
+            ? `Data oferty: ${offerDateDisplay}     Nr oferty: ${offerNumberDisplay}`
+            : `Data oferty: ${offerDateDisplay}`;
+
         let currentY = pageHeight - 22;
 
         if (kamanLogoImage) {
@@ -763,6 +770,17 @@ export async function generateOfferPDF(
             dynamicPage.drawImage(kamanLogoImage, { x: (pageWidth - logoDims.width) / 2, y: currentY - logoDims.height, width: logoDims.width, height: logoDims.height });
             currentY -= (logoDims.height + 16);
         }
+
+        const subtitleFontSize = 11;
+        const subtitleWidth = regularFont.widthOfTextAtSize(subtitleText, subtitleFontSize);
+        dynamicPage.drawText(subtitleText, {
+            x: (pageWidth - subtitleWidth) / 2,
+            y: currentY,
+            size: subtitleFontSize,
+            font: regularFont,
+            color: rgb(0.32, 0.32, 0.32),
+        });
+        currentY -= subtitleFontSize + 12;
 
         const leftEntries = [
             { label: 'Oferta dla', lines: [userName || '---'] },
@@ -880,8 +898,6 @@ export async function generateOfferPDF(
         return null;
     }
 }
-
-
 
 
 

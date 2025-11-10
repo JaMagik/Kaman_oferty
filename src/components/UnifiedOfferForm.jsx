@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { generateOfferPDF } from "../utils/pdfGenerator";
 import TrelloActions from './TrelloActions';
+import { reserveOfferNumber } from '../utils/offerNumbering';
 
 import { mitsubishiBaseTables } from "../data/tables/mitsubishiTables";
 import { atlanticBaseTables } from "../data/tables/atlanticTables";
@@ -91,6 +92,7 @@ const hybridBufferDefaults = {
   "24 kW": "1000L",
 };
 const acDeviceTypes = ['MITSUBISHI AY', 'MITSUBISHI HR', 'VIVAX Y-Design', 'VIVAX H-Design', 'VIVAX M-Design', 'VIVAX Q-Design', 'VIVAX N-Design'];
+const HEAT_PUMP_COUNTER_STORAGE_KEY = 'heatPumpOfferCounters';
 
 export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT_PUMP }) {
   const initialDeviceType = deviceCategory === DEVICE_CATEGORY.BOILER ? BOILER_DEFAULT_DEVICE : HEAT_PUMP_DEFAULT_DEVICE;
@@ -302,6 +304,16 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
       email: selectedAdvisor?.email || '',
     };
 
+    const shouldAssignOfferNumber = isHeatPumpCategory && !isBoiler && !isAcDevice;
+    const advisorNameForNumber = advisorSummary.label || selectedAdvisor?.value || userName;
+    const { offerNumber: generatedOfferNumber } = shouldAssignOfferNumber
+      ? reserveOfferNumber(advisorNameForNumber || userName, {
+          storageKey: HEAT_PUMP_COUNTER_STORAGE_KEY,
+          fallbackInitials: 'HP',
+          categoryCode: 'PC',
+        })
+      : { offerNumber: '' };
+
     const pdfData = await generateOfferPDF(
       price,
       userName,
@@ -324,7 +336,8 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
       },
       showPrice,
       investmentAddress,
-      advisorSummary
+      advisorSummary,
+      generatedOfferNumber
     );
     if (pdfData) {
       setGeneratedPdfData(pdfData);
