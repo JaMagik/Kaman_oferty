@@ -17,6 +17,7 @@ import {
   glassTypeOptions,
 } from '../data/windowsOfferConfig';
 import { clientAdvisorOptions } from '../data/clientAdvisorOptions';
+import { HST_WINDOW_SURCHARGE_VALUE } from '../constants/pricing';
 
 const ADDITIONAL_OFFER_ID_SET = new Set(additionalOfferIds);
 
@@ -158,6 +159,7 @@ export default function OknaNestOfferForm() {
   const [installationRatePerMeter, setInstallationRatePerMeter] = useState('');
   const [installationPerMeterExtra, setInstallationPerMeterExtra] = useState('');
   const [installationTotalOverride, setInstallationTotalOverride] = useState('');
+  const [hstWindowCount, setHstWindowCount] = useState('');
   const [windowPerimeter, setWindowPerimeter] = useState('');
   const [windowArea, setWindowArea] = useState('');
   const [profileTypeSelection, setProfileTypeSelection] = useState(firstProfileOption);
@@ -263,6 +265,7 @@ export default function OknaNestOfferForm() {
     setInstallationRatePerMeter('');
     setInstallationPerMeterExtra('');
     setInstallationTotalOverride('8500');
+    setHstWindowCount('0');
     setWindowPerimeter('132');
     setWindowArea('48');
     setProfileTypeSelection('veka');
@@ -372,6 +375,8 @@ export default function OknaNestOfferForm() {
     const ratePerMeter = parsePreviewNumber(installationRatePerMeter);
     const extraPerMeter = parsePreviewNumber(installationPerMeterExtra);
     const flatOverride = parsePreviewNumber(installationTotalOverride);
+    const hstWindowsCountValue = Math.max(Math.floor(parsePreviewNumber(hstWindowCount)), 0);
+    const hstWindowsSurcharge = hstWindowsCountValue * HST_WINDOW_SURCHARGE_VALUE;
 
     let installationComputed = 0;
     let installationApplied = 0;
@@ -393,7 +398,7 @@ export default function OknaNestOfferForm() {
     const vatRaw = vatPreset === 'custom' ? vatCustom : vatPreset;
     const vatRateValue = Math.max(parsePreviewNumber(vatRaw), 0);
 
-    const baseSum = catalog + installationApplied;
+    const baseSum = catalog + installationApplied + hstWindowsSurcharge;
     if (baseSum <= 0) {
       return null;
     }
@@ -401,8 +406,8 @@ export default function OknaNestOfferForm() {
     const discountRate = Math.min(Math.max(discountRateRaw, 0), 100);
     const discountAmount = catalog * (discountRate / 100);
     const discountedWindowsPrice = Math.max(catalog - discountAmount, 0);
-    const netAfterDiscount = discountedWindowsPrice + installationApplied;
-    const marginAmount = netAfterDiscount * (Math.max(marginRate, 0) / 100);
+    const netAfterDiscount = discountedWindowsPrice + installationApplied + hstWindowsSurcharge;
+    const marginAmount = discountedWindowsPrice * (Math.max(marginRate, 0) / 100);
     const netWithMargin = netAfterDiscount + marginAmount;
     const vatAmount = netWithMargin * (vatRateValue / 100);
     const grossTotal = netWithMargin + vatAmount;
@@ -424,6 +429,8 @@ export default function OknaNestOfferForm() {
       vatAmount,
       grossTotal,
       vatRateValue,
+      hstWindowsCount: hstWindowsCountValue,
+      hstWindowsSurcharge,
     };
   }, [
     catalogPrice,
@@ -436,6 +443,7 @@ export default function OknaNestOfferForm() {
     marginPercent,
     vatPreset,
     vatCustom,
+    hstWindowCount,
   ]);
 
   const handleGeneratePDF = async (event) => {
@@ -484,6 +492,8 @@ export default function OknaNestOfferForm() {
     const rateValue = parsePreviewNumber(installationRatePerMeter);
     const extraValue = parsePreviewNumber(installationPerMeterExtra);
     const overrideValue = parsePreviewNumber(installationTotalOverride);
+    const hstWindowCountValue = Math.max(Math.floor(parsePreviewNumber(hstWindowCount)), 0);
+    const hstWindowsSurchargeValue = hstWindowCountValue * HST_WINDOW_SURCHARGE_VALUE;
 
     let computedInstallation = 0;
     let effectiveInstallation = 0;
@@ -565,6 +575,8 @@ export default function OknaNestOfferForm() {
           installationApplied: effectiveInstallation,
           windowPerimeter: perimeterValue,
           windowArea: areaValue,
+          hstWindowCount: hstWindowCountValue,
+          hstWindowsSurcharge: hstWindowsSurchargeValue,
           pricePreview: pricePreviewSnapshot,
         },
       };
@@ -596,6 +608,8 @@ export default function OknaNestOfferForm() {
         installationPriceOverride: installationPricingMode === 'flat' ? installationTotalOverride : '',
         windowPerimeter,
         windowArea,
+        hstWindowCount,
+        hstWindowsSurcharge: String(hstWindowsSurchargeValue),
         profileType: profileTypeValue,
         hardwareThickness,
         assemblyType,
@@ -814,6 +828,21 @@ export default function OknaNestOfferForm() {
             />
           </div>
           <div className="input-group">
+            <label htmlFor="okna_hstWindows">Okna HST (szt.)</label>
+            <input
+              id="okna_hstWindows"
+              type="number"
+              step="1"
+              min="0"
+              value={hstWindowCount}
+              onChange={(event) => setHstWindowCount(event.target.value)}
+              placeholder="np. 2"
+            />
+            <small style={{ display: 'block', marginTop: '8px', color: '#555' }}>
+              Kazde okno dolicza {HST_WINDOW_SURCHARGE_VALUE.toLocaleString('pl-PL')} PLN netto.
+            </small>
+          </div>
+          <div className="input-group">
             <label htmlFor="okna_installationMode">Sposób rozliczenia montażu</label>
             <select
               id="okna_installationMode"
@@ -926,6 +955,12 @@ export default function OknaNestOfferForm() {
                 <div>Dodatkowa kwota: {pricePreview.installationPerMeterExtra.toFixed(2)} PLN</div>
               )}
               <div>Montaz w kalkulacji: {pricePreview.installationApplied.toFixed(2)} PLN</div>
+              {pricePreview.hstWindowsSurcharge > 0 && (
+                <div>
+                  Doplata HST ({pricePreview.hstWindowsCount} szt.):{' '}
+                  {pricePreview.hstWindowsSurcharge.toFixed(2)} PLN
+                </div>
+              )}
               {pricePreview.discountAmount > 0 && (
                 <>
                   <div>

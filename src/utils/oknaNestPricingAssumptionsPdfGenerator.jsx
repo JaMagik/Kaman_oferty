@@ -1,6 +1,7 @@
 // src/utils/oknaNestPricingAssumptionsPdfGenerator.jsx
 import { PDFDocument, rgb } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
+import { HST_WINDOW_SURCHARGE_VALUE } from '../constants/pricing';
 
 const FONT_REGULAR_PATH = '/fonts/OpenSans-Regular.ttf';
 const FONT_BOLD_PATH = '/fonts/OpenSans-Bold.ttf';
@@ -156,8 +157,19 @@ export async function generateOknaNestPricingAssumptionsPDF(payload = {}) {
       installationApplied = 0,
       windowPerimeter = 0,
       windowArea = 0,
+      hstWindowCount = 0,
+      hstWindowsSurcharge = 0,
       pricePreview = {},
     } = calculations;
+
+    const hstWindowCountNumber = Math.max(Math.floor(ensureNumber(hstWindowCount)), 0);
+    const providedHstSurcharge = ensureNumber(hstWindowsSurcharge);
+    const hstSurchargeNumber =
+      hstWindowCountNumber > 0
+        ? providedHstSurcharge > 0
+          ? providedHstSurcharge
+          : hstWindowCountNumber * HST_WINDOW_SURCHARGE_VALUE
+        : 0;
 
     const preview = {
       baseSum: ensureNumber(pricePreview.baseSum),
@@ -170,6 +182,8 @@ export async function generateOknaNestPricingAssumptionsPDF(payload = {}) {
       grossTotal: ensureNumber(pricePreview.grossTotal),
       installationApplied: ensureNumber(pricePreview.installationApplied),
       installationComputed: ensureNumber(pricePreview.installationComputed),
+      hstWindowsCount: hstWindowCountNumber,
+      hstWindowsSurcharge: hstSurchargeNumber,
     };
 
     const doc = await PDFDocument.create();
@@ -290,6 +304,16 @@ export async function generateOknaNestPricingAssumptionsPDF(payload = {}) {
       label: 'Montaz w kalkulacji',
       value: formatCurrency(ensureNumber(installationApplied || installationComputed)),
     });
+    if (hstWindowCountNumber > 0) {
+      financialRows.push({
+        label: 'Okna HST',
+        value: `${hstWindowCountNumber} szt. x ${formatCurrency(HST_WINDOW_SURCHARGE_VALUE)}`,
+      });
+      financialRows.push({
+        label: 'Doplata HST',
+        value: formatCurrency(hstSurchargeNumber),
+      });
+    }
 
     cursorY = drawKeyValueRows(page, fonts, financialRows, cursorY, marginX, labelWidth);
 
@@ -301,6 +325,10 @@ export async function generateOknaNestPricingAssumptionsPDF(payload = {}) {
         { label: 'Kwota rabatu', value: formatCurrency(preview.discountAmount) },
         { label: 'Okna po rabacie', value: formatCurrency(preview.discountedWindowsPrice) },
         { label: 'Suma netto po rabacie', value: formatCurrency(preview.netAfterDiscount) },
+        preview.hstWindowsSurcharge > 0 && {
+          label: 'Doplata HST (kwota)',
+          value: formatCurrency(preview.hstWindowsSurcharge),
+        },
         { label: 'Marza (kwota)', value: formatCurrency(preview.marginAmount) },
         { label: 'Cena netto oferty', value: formatCurrency(preview.netWithMargin) },
         { label: 'VAT kwotowo', value: formatCurrency(preview.vatAmount) },

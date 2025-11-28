@@ -13,6 +13,7 @@ import {
   demolitionDirectionOptions,
   additionalOfferIds,
 } from '../data/windowsOfferConfig';
+import { HST_WINDOW_SURCHARGE_VALUE } from '../constants/pricing';
 
 const additionalOfferIdSet = new Set(additionalOfferIds);
 
@@ -566,6 +567,8 @@ export async function generateOknaNestPDF(formData) {
     installationPriceOverride,
     windowPerimeter,
     windowArea,
+    hstWindowCount = '0',
+    hstWindowsSurcharge = '0',
     profileType,
     hardwareThickness,
     assemblyType,
@@ -622,6 +625,14 @@ export async function generateOknaNestPDF(formData) {
   const installationPriceNumber =
     installationPriceNumberRaw > 0 ? installationPriceNumberRaw : fallbackInstallationPrice;
   const vatRateNumber = Math.max(parseInputNumber(vatRate), 0);
+  const hstWindowCountNumber = Math.max(Math.floor(parseInputNumber(hstWindowCount)), 0);
+  const providedHstSurcharge = parseInputNumber(hstWindowsSurcharge);
+  const hstWindowsSurchargeNumber =
+    hstWindowCountNumber > 0
+      ? providedHstSurcharge > 0
+        ? providedHstSurcharge
+        : hstWindowCountNumber * HST_WINDOW_SURCHARGE_VALUE
+      : 0;
 
   if (windowPerimeterNumber <= 0 || windowAreaNumber <= 0) {
     alert('Podaj laczna powierzchnie oraz obwod okien.');
@@ -635,8 +646,8 @@ export async function generateOknaNestPDF(formData) {
 
   const windowsDiscountAmount = catalogPriceNumber * (discountPercentNumber / 100);
   const discountedWindowsPrice = Math.max(catalogPriceNumber - windowsDiscountAmount, 0);
-  const netAfterDiscount = discountedWindowsPrice + installationPriceNumber;
-  const marginValueNumber = netAfterDiscount * (marginPercentNumber / 100);
+  const netAfterDiscount = discountedWindowsPrice + installationPriceNumber + hstWindowsSurchargeNumber;
+  const marginValueNumber = discountedWindowsPrice * (marginPercentNumber / 100);
   const finalNetPrice = netAfterDiscount + marginValueNumber;
   const vatAmount = finalNetPrice * (vatRateNumber / 100);
   const finalGrossPrice = finalNetPrice + vatAmount;
@@ -1162,6 +1173,13 @@ export async function generateOknaNestPDF(formData) {
       { element: `VAT (${formatNumber(vatRateNumber, 0)})`, amount: formatCurrency(vatAmount) },
       { element: 'CENA BRUTTO OFERTY Z MONTAZEM', amount: formatCurrency(finalGrossPrice) },
     ];
+
+    if (hstWindowsSurchargeNumber > 0) {
+      priceTableRows.unshift({
+        element: `Doplata HST (${hstWindowCountNumber} szt.)`,
+        amount: formatCurrency(hstWindowsSurchargeNumber),
+      });
+    }
 
     tablePage = pdfDoc.addPage();
     currentY = drawPageBranding(tablePage, fonts, logos, {

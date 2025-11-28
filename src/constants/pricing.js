@@ -1,0 +1,2 @@
+export const HST_WINDOW_SURCHARGE_VALUE = 1000;
+
