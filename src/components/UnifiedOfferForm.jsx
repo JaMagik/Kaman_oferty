@@ -450,6 +450,7 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
               <option value="Mitsubishi-hydrobox-PUZ-1F">Mitsubishi Hydrobox (Zubadan PUZ 1-faz.)</option>
               <option value="Mitsubishi-ecoinverter">Mitsubishi Ecoinverter (Cylinder)</option>
               <option value="Mitsubishi-ecoinverter-hydrobox">Mitsubishi Ecoinverter (Hydrobox)</option>
+              <option value="Mitsubishi-hp">Mitsubishi Hyper Heating</option>
             </optgroup>
             <optgroup label="Pompy Ciepła Toshiba">
               <option value="Toshiba 1F">Toshiba (1-fazowe)</option>

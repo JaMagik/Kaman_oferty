@@ -570,9 +570,9 @@ const mitsubishiEcoinverterHydrobox_8kW_base = [
 // --- Mitsubishi HP (Hyper Heating - SUZ) ---
 
 const mitsubishiHP_4kW_base = [
-  ['1', 'Pompa ciepła – jednostka zewnętrzna 4 kW 1F (SUZ‑Hyper Heating)', 'szt.', '1', 'Mitsubishi SUZ Hyper Heating 4 kW – Split, zasilanie 230 V, czynnik chłodniczy R32; technologia Hyper Heating utrzymuje 100 % mocy grzewczej nawet przy –15 °C.'],
-  ['2', 'Hydrobox – jednostka wewnętrzna', 'szt.', '1', 'EHSD‑YM9D – grzałka elektryczna 6/9 kW oraz wbudowane naczynie wzbiorcze 10 l. Steruje obiegiem grzewczym i przygotowaniem CWU.'],
- ['3', 'Pompa obiegowa CO KAMAN PRO', 'szt.', '1', 'Zapewnia prawidłowy obieg czynnika grzewczego w instalacji.'],
+  ['1', 'Pompa ciepła – jednostka zewnętrzna 4 kW (SUZ-SHWM40VAH)', 'szt.', '1', 'Mitsubishi SUZ-SHWM40VAH – Hyper Heating | Split | moc 4,0 kW, zasilanie 230 V, czynnik chłodniczy R32; technologia Hyper Heating utrzymuje pełną moc grzewczą przy niskich temperaturach.'],
+  ['2', 'Hydrobox – jednostka wewnętrzna (ERSD-YM9E)', 'szt.', '1', 'Mitsubishi ERSD-YM9E – hydrobox z grzałką elektryczną 6/9 kW oraz wbudowanym naczyniem wzbiorczym 10 l; steruje obiegiem grzewczym i przygotowaniem CWU.'],
+  ['3', 'Pompa obiegowa CO KAMAN PRO', 'szt.', '1', 'Zapewnia prawidłowy obieg czynnika grzewczego w instalacji.'],
 
  ['4', 'Komplet elementów hydraulicznych', 'kpl.', '1', 'W tym: zawory kulowe, zawory zwrotne, odpowietrzniki automatyczne, filtry, trójniki, kształtki, nyple, redukcje i pozostała armatura niezbędna do wykonania instalacji wodnej.'],
   ['5', 'Komplet elementów elektrycznych', 'kpl.', '1', 'Okablowanie, bezpieczniki, zabezpieczenia różnicowo-prądowe i nadprądowe, rozdzielnia – zgodnie z wymaganiami producenta dla bezpiecznego działania układu.'],
@@ -589,8 +589,8 @@ const mitsubishiHP_4kW_base = [
 ];
 
 const mitsubishiHP_6kW_base = [
-  ['1', 'Pompa ciepła – jednostka zewnętrzna 6 kW 1F (SUZ‑Hyper Heating)', 'szt.', '1', 'Mitsubishi SUZ Hyper Heating 6 kW – Split, zasilanie 230 V, R32; pełna wydajność grzewcza dzięki technologii Hyper Heating.'],
-  ['2', 'Hydrobox – jednostka wewnętrzna', 'szt.', '1', 'EHSD‑YM9D – grzałka 6/9 kW, naczynie 10 l. Steruje obiegiem grzewczym i CWU.'],
+  ['1', 'Pompa ciepła – jednostka zewnętrzna 6 kW (SUZ-SHWM60VAH)', 'szt.', '1', 'Mitsubishi SUZ-SHWM60VAH – Hyper Heating | Split | moc 6,0 kW, zasilanie 230 V, czynnik chłodniczy R32; pełna wydajność grzewcza dzięki technologii Hyper Heating.'],
+  ['2', 'Hydrobox – jednostka wewnętrzna (ERSD-YM9E)', 'szt.', '1', 'Mitsubishi ERSD-YM9E – hydrobox z grzałką 6/9 kW i wbudowanym naczyniem 10 l; zarządza obiegiem grzewczym i CWU.'],
   ...mitsubishiHP_4kW_base.slice(2)
 ];
 
@@ -646,7 +646,7 @@ export const mitsubishiBaseTables = {
     '6 kW': mitsubishiEcoinverterHydrobox_6kW_base,
   },
   'Mitsubishi-hp': { // Hyper Heating
-    '6 kW': mitsubishiHP_6kW_base,
     '4 kW': mitsubishiHP_4kW_base,
+    '6 kW': mitsubishiHP_6kW_base,
   }
 };

@@ -132,12 +132,10 @@ export const pdfTemplateSets = {
     commonContactPage,
   ],
   'Mitsubishi-hp': [
-    '/pdf_templates/mitsubishi/hyper-heating/1_okladka.pdf',
-  
-    '/pdf_templates/mitsubishi/hyper-heating/2_opcje_dodatkowe.pdf',
-    '/pdf_templates/mitsubishi/hyper-heating/3_katalog.pdf',
-     oNas,
-      groupPage,
+    '/pdf_templates/mitsubishi/ecoinverter-hydrobox/1_okladka.pdf',
+    '/pdf_templates/mitsubishi/hyper-heating/2_hyper_heating_ds.pdf',
+    oNas,
+    groupPage,
     groupPage2,
     commonContactPage,
   ],
