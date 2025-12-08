@@ -13,14 +13,24 @@ const doorTypeOptions = [
   { value: 'wejsciowe', label: 'Drzwi wejsciowe' },
   { value: 'tarasowe', label: 'Drzwi tarasowe' },
   { value: 'techniczne', label: 'Drzwi techniczne' },
+  { value: 'wewnetrzne', label: 'Drzwi wewnetrzne' },
 ];
 
-const doorMaterialOptions = [
-  { value: 'aluminium', label: 'Aluminium' },
-  { value: 'pvc', label: 'PVC' },
-  { value: 'drewno', label: 'Drewno' },
-  { value: 'stal', label: 'Stal' },
-];
+const doorMaterialOptionsByType = {
+  default: [
+    { value: 'aluminium', label: 'Aluminium' },
+    { value: 'pvc', label: 'PVC' },
+    { value: 'drewno', label: 'Drewno' },
+    { value: 'stal', label: 'Stal' },
+  ],
+  wewnetrzne: [
+    { value: 'plytowe', label: 'Plytowe' },
+    { value: 'ramowe', label: 'Ramowe' },
+  ],
+};
+
+const getDoorMaterialOptions = (doorType) =>
+  doorMaterialOptionsByType[doorType] || doorMaterialOptionsByType.default;
 
 const doorExtrasConfig = [
   { id: 'seal-tape', label: 'Szczelny montaz (tasmy)' },
@@ -101,7 +111,11 @@ export default function DoorsOfferForm() {
   );
 
   const [doorType, setDoorType] = useState(doorTypeOptions[0]?.value || '');
-  const [doorMaterial, setDoorMaterial] = useState(doorMaterialOptions[0]?.value || '');
+  const [doorMaterial, setDoorMaterial] = useState(() => {
+    const initialType = doorTypeOptions[0]?.value || '';
+    const initialMaterialOptions = getDoorMaterialOptions(initialType);
+    return initialMaterialOptions[0]?.value || '';
+  });
   const [doorColor, setDoorColor] = useState('');
 
   const [catalogPrice, setCatalogPrice] = useState('');
@@ -123,6 +137,18 @@ export default function DoorsOfferForm() {
   const [extrasState, setExtrasState] = useState(() => buildDefaultExtrasState());
 
   const resetGeneratedPdf = () => setGeneratedPdfData(null);
+
+  const availableDoorMaterialOptions = useMemo(() => getDoorMaterialOptions(doorType), [doorType]);
+
+  const handleDoorTypeChange = (nextType) => {
+    setDoorType(nextType);
+    setDoorMaterial((currentMaterial) => {
+      const nextMaterialOptions = getDoorMaterialOptions(nextType);
+      const isCurrentValid = nextMaterialOptions.some((option) => option.value === currentMaterial);
+      return isCurrentValid ? currentMaterial : nextMaterialOptions[0]?.value || '';
+    });
+    resetGeneratedPdf();
+  };
 
   const validateCommonFields = () => {
     if (!userName.trim()) {
@@ -638,10 +664,7 @@ export default function DoorsOfferForm() {
             <select
               id="doors_type"
               value={doorType}
-              onChange={(event) => {
-                setDoorType(event.target.value);
-                resetGeneratedPdf();
-              }}
+              onChange={(event) => handleDoorTypeChange(event.target.value)}
             >
               {doorTypeOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -660,7 +683,7 @@ export default function DoorsOfferForm() {
                 resetGeneratedPdf();
               }}
             >
-              {doorMaterialOptions.map((option) => (
+              {availableDoorMaterialOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>

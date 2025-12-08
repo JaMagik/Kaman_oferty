@@ -140,7 +140,6 @@ export const pdfTemplateSets = {
     commonContactPage,
   ],
 
-  // --- MITSUBISHI (Klimatyzatory) ---
   'MITSUBISHI AY': [
         '/pdf_templates/mitsubishi/ay/1_okladka.pdf',
     '/pdf_templates/mitsubishi/ay/ay_datasheet_1.pdf',
@@ -159,7 +158,6 @@ export const pdfTemplateSets = {
     commonContactPage,
   ],
   
-  // --- TOSHIBA ---
   'Toshiba 3F': [
     '/pdf_templates/toshiba/3-fazowe/1_okladka.pdf',
     '/pdf_templates/toshiba/3-fazowe/3_katalog.pdf',
@@ -181,8 +179,7 @@ export const pdfTemplateSets = {
     commonContactPage,
   ],
 
-  // --- ATLANTIC ---
-  'ATLANTIC': [ // Atlantic Extensa AI Duo
+  'ATLANTIC': [ 
     '/pdf_templates/atlantic/extensa-ai-duo/1_okladka.pdf',
     '/pdf_templates/atlantic/extensa-ai-duo/3_katalog.pdf',
      oNas,
@@ -190,7 +187,7 @@ export const pdfTemplateSets = {
     groupPage2,
     commonContactPage,
   ],
-  'ATLANTIC-HYDROBOX': [ // Atlantic Excelia AI Hydrobox
+  'ATLANTIC-HYDROBOX': [ 
     '/pdf_templates/atlantic/excelia-ai-hydrobox/1_okladka.pdf',
     '/pdf_templates/atlantic/excelia-ai-hydrobox/3_katalog.pdf',
      oNas,
@@ -198,7 +195,7 @@ export const pdfTemplateSets = {
     groupPage2,
     commonContactPage,
   ],
-  'ATLANTIC-EXTENSA': [ // Atlantic Excelia AI Hydrobox
+  'ATLANTIC-EXTENSA': [ 
     '/pdf_templates/atlantic/extensa-hydrobox/1_okladka.pdf',
     '/pdf_templates/atlantic/extensa-hydrobox/atlantic_extensa_hydrobox.pdf',
      oNas,
@@ -206,7 +203,7 @@ export const pdfTemplateSets = {
     groupPage2,
     commonContactPage,
   ],
-   'ATLANTIC-EXTENSA-CYLINDER': [ // Atlantic Excelia AI Hydrobox
+   'ATLANTIC-EXTENSA-CYLINDER': [ 
     '/pdf_templates/atlantic/extensa-cylinder/1_okladka.pdf',
     '/pdf_templates/atlantic/extensa-cylinder/EXTENSA-AI-DUO-R32-KARTA-KATALOGOWA-1.pdf',
     '/pdf_templates/atlantic/extensa-cylinder/EXTENSA-AI-DUO-R32-KARTA-KATALOGOWA-2.pdf',
@@ -215,7 +212,7 @@ export const pdfTemplateSets = {
     groupPage2,
     commonContactPage,
   ],
-  'ATLANTIC-M-DUO': [ // Atlantic M-Duo
+  'ATLANTIC-M-DUO': [ 
     
     '/pdf_templates/atlantic/s-tri-duo/1_okladka.pdf',
     '/pdf_templates/atlantic/s-duo/3.1_atlantic_s_duo.pdf',
