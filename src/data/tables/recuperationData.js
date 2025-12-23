@@ -17,6 +17,30 @@
       'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła ≥ 90%.',
     type: 'central',
   },
+  EXPRE_XV_300: {
+    name: 'Rekuperator EXPRE XV 300',
+    description:
+      'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła ≥ 90%.',
+    type: 'central',
+  },
+  EXPRE_XV_450: {
+    name: 'Rekuperator EXPRE XV 450',
+    description:
+      'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła ≥ 90%.',
+    type: 'central',
+  },
+  EXPRE_XV_600: {
+    name: 'Rekuperator EXPRE XV 600',
+    description:
+      'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła ≥ 90%.',
+    type: 'central',
+  },
+  THESSLAGREEN_AIRPACK_500V: {
+    name: 'Rekuperator ThesslaGreen AirPack 500V',
+    description:
+      'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła ≥ 90%.',
+    type: 'central',
+  },
   DRAFTON_PRO_225: {
     name: 'Rekuperator DRAFTON Professional 225',
     description:
@@ -46,13 +70,11 @@
 export const getRecommendedRecuperator = (area) => {
   const surface = Number(area);
   if (Number.isNaN(surface) || surface <= 0) {
-    return 'AERIS_350';
+    return 'EXPRE_XV_300';
   }
-  if (surface <= 110) return 'AERIS_350';
-  if (surface <= 140) return 'DRAFTON_PRO_325';
-  if (surface <= 180) return 'AERIS_450';
-  if (surface <= 220) return 'DRAFTON_PRO_450';
-  return 'AERIS_600';
+  if (surface <= 110) return 'EXPRE_XV_300';
+  if (surface <= 180) return 'EXPRE_XV_450';
+  return 'EXPRE_XV_600';
 };
 
 export const DRILLING_ITEM_ID = 'ETAP1-6';

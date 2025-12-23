@@ -544,6 +544,41 @@ export const pdfTemplateSets = {
     groupPage2,
     commonContactPage,
   ],
+  'EXPRE_XV_300': [
+    '/pdf_templates/recuperation/expre-xv/1_okladka.pdf', // Okladka
+    '/pdf_templates/recuperation/expre-xv/expre_xv_ds1.pdf', // Karta katalogowa
+    '/pdf_templates/recuperation/expre-xv/expre_xv_ds2.pdf', // Karta katalogowa
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+  'EXPRE_XV_450': [
+    '/pdf_templates/recuperation/expre-xv/1_okladka.pdf',
+    '/pdf_templates/recuperation/expre-xv/expre_xv_ds1.pdf',
+    '/pdf_templates/recuperation/expre-xv/expre_xv_ds2.pdf',
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+  'EXPRE_XV_600': [
+    '/pdf_templates/recuperation/expre-xv/1_okladka.pdf',
+    '/pdf_templates/recuperation/expre-xv/expre_xv_ds1.pdf',
+    '/pdf_templates/recuperation/expre-xv/expre_xv_ds2.pdf',
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+  'THESSLAGREEN_AIRPACK_500V': [
+    '/pdf_templates/recuperation/thesslagreen/1_okladka.pdf', // Okladka
+    '/pdf_templates/recuperation/thesslagreen/airpack_500v_ds1.pdf', // Karta katalogowa
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
   'DRAFTON_PRO_225': [
    '/pdf_templates/recuperation/drafton/1_okladka.pdf',
     '/pdf_templates/recuperation/drafton/ds_drafton_1.pdf',

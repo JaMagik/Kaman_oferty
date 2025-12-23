@@ -114,6 +114,8 @@ export default function RecuperationOfferForm() {
 
 
 
+  const [hasManualDeviceSelection, setHasManualDeviceSelection] = useState(false);
+
   const [customDeviceName, setCustomDeviceName] = useState('');
   const [customDeviceCatalog, setCustomDeviceCatalog] = useState(null);
 
@@ -122,6 +124,26 @@ export default function RecuperationOfferForm() {
   useEffect(() => {
 
     if (offerMode !== 'dobor') {
+
+      return;
+
+    }
+
+    setHasManualDeviceSelection(false);
+
+  }, [surfaceArea, offerMode]);
+
+
+
+  useEffect(() => {
+
+    if (offerMode !== 'dobor') {
+
+      return;
+
+    }
+
+    if (hasManualDeviceSelection) {
 
       return;
 
@@ -143,7 +165,7 @@ export default function RecuperationOfferForm() {
 
     setSelectedDeviceKey(recommendedKey);
 
-  }, [surfaceArea, offerMode, selectedDeviceKey]);
+  }, [surfaceArea, offerMode, selectedDeviceKey, hasManualDeviceSelection]);
 
 
 
@@ -674,6 +696,7 @@ export default function RecuperationOfferForm() {
               const value = event.target.value;
 
               setSelectedDeviceKey(value);
+              setHasManualDeviceSelection(true);
 
               if (value !== CUSTOM_DEVICE_KEY) {
 
