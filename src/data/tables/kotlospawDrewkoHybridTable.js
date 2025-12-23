@@ -28,14 +28,14 @@ const drewkoPlus_12kW_base = [
 // --- Kotłospaw Drewko Hybrid 18 kW ---
 const drewkoPlus_18kW_base = drewkoPlus_12kW_base.map(row =>
   row[0] === '1'
-    ?  ['1', 'Kocioł zgazowujący drewno Kotłospaw Drewko Hybrid 12 kW', 'szt.', '1', 'Automatyczny kocioł 5 klasy zgazowujący drewno.', 'common']
+    ?  ['1', 'Kocioł zgazowujący drewno Kotłospaw Drewko Hybrid 18 kW', 'szt.', '1', 'Automatyczny kocioł 5 klasy zgazowujący drewno.', 'common']
     : [...row]
 );
 
 // --- Kotłospaw Drewko Hybrid 24 kW ---
 const drewkoPlus_24kW_base = drewkoPlus_12kW_base.map(row =>
   row[0] === '1'
-    ?  ['1', 'Kocioł zgazowujący drewno Kotłospaw Drewko Hybrid 12 kW', 'szt.', '1', 'Automatyczny kocioł 5 klasy zgazowujący drewno.', 'common']
+    ?  ['1', 'Kocioł zgazowujący drewno Kotłospaw Drewko Hybrid 24 kW', 'szt.', '1', 'Automatyczny kocioł 5 klasy zgazowujący drewno.', 'common']
     : [...row]
 );
 
