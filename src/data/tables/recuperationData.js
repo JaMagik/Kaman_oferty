@@ -41,6 +41,48 @@
       'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła ≥ 90%.',
     type: 'central',
   },
+  DOMEKT_R450VC6M: {
+    name: 'Rekuperator Domekt R450VC6M',
+    description:
+      'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła ≥ 90%.',
+    type: 'central',
+  },
+  VUTR_VEC_280_V_EC: {
+    name: 'Rekuperator VUTR VEC 280 V EC',
+    description:
+      'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła ≥ 90%.',
+    type: 'central',
+  },
+  VUTR_VEC_280_VE_EC: {
+    name: 'Rekuperator VUTR VEC 280 VE EC',
+    description:
+      'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła ≥ 90%.',
+    type: 'central',
+  },
+  VUTR_VEC_400_V_EC: {
+    name: 'Rekuperator VUTR VEC 400 V EC',
+    description:
+      'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła ≥ 90%.',
+    type: 'central',
+  },
+  VUTR_VEC_400_VE_EC: {
+    name: 'Rekuperator VUTR VEC 400 VE EC',
+    description:
+      'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła ≥ 90%.',
+    type: 'central',
+  },
+  VUTR_VEC_600_V_EC: {
+    name: 'Rekuperator VUTR VEC 600 V EC',
+    description:
+      'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła ≥ 90%.',
+    type: 'central',
+  },
+  VUTR_VEC_600_VE_EC: {
+    name: 'Rekuperator VUTR VEC 600 VE EC',
+    description:
+      'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła ≥ 90%.',
+    type: 'central',
+  },
   DRAFTON_PRO_225: {
     name: 'Rekuperator DRAFTON Professional 225',
     description:

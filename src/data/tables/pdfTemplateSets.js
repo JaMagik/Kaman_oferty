@@ -579,6 +579,62 @@ export const pdfTemplateSets = {
     groupPage2,
     commonContactPage,
   ],
+  'DOMEKT_R450VC6M': [
+    '/pdf_templates/recuperation/domekt/1_okladka.pdf', // Okladka
+    '/pdf_templates/recuperation/domekt/r450vc6m_ds1.pdf', // Karta katalogowa
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+  'VUTR_VEC_280_V_EC': [
+    '/pdf_templates/recuperation/vutr-vec/1_okladka.pdf', // Okladka
+    '/pdf_templates/recuperation/vutr-vec/vutr_vec_ds1.pdf', // Karta katalogowa
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+  'VUTR_VEC_280_VE_EC': [
+    '/pdf_templates/recuperation/vutr-vec/1_okladka.pdf',
+    '/pdf_templates/recuperation/vutr-vec/vutr_vec_ds1.pdf',
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+  'VUTR_VEC_400_V_EC': [
+    '/pdf_templates/recuperation/vutr-vec/1_okladka.pdf',
+    '/pdf_templates/recuperation/vutr-vec/vutr_vec_ds1.pdf',
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+  'VUTR_VEC_400_VE_EC': [
+    '/pdf_templates/recuperation/vutr-vec/1_okladka.pdf',
+    '/pdf_templates/recuperation/vutr-vec/vutr_vec_ds1.pdf',
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+  'VUTR_VEC_600_V_EC': [
+    '/pdf_templates/recuperation/vutr-vec/1_okladka.pdf',
+    '/pdf_templates/recuperation/vutr-vec/vutr_vec_ds1.pdf',
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+  'VUTR_VEC_600_VE_EC': [
+    '/pdf_templates/recuperation/vutr-vec/1_okladka.pdf',
+    '/pdf_templates/recuperation/vutr-vec/vutr_vec_ds1.pdf',
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
   'DRAFTON_PRO_225': [
    '/pdf_templates/recuperation/drafton/1_okladka.pdf',
     '/pdf_templates/recuperation/drafton/ds_drafton_1.pdf',
