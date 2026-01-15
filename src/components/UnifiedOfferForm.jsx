@@ -460,6 +460,8 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
               <option value="ATLANTIC-S">Atlantic S-TRI-Duo cylinder</option>
               <option value="ATLANTIC-EXCELIA">Atlantic EXCELIA AI TRI hydrobox</option>
               <option value="ATLANTIC-EXTENSA">Atlantic EXTENSA hydrobox</option>
+              <option value="ATLANTIC-EXTENSA-S">Atlantic EXTENSA S hydrobox (bez zbiornika)</option>
+              <option value="ATLANTIC-EXTENSA-S-DUO">Atlantic EXTENSA S Duo cylinder</option>
               <option value="ATLANTIC-EXTENSA-CYLINDER">Atlantic EXTENSA cylinder</option>
             </optgroup>
             <optgroup label="Pompy Ciepła Viessmann">

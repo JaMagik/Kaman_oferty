@@ -143,6 +143,89 @@ const atlanticExtensaCylinder_10kW_base= [
 ];
 
 
+const atlanticExtensaDuoCommonRows = [
+  ['2', 'Jednostka wewnetrzna (modul hydrauliczny z wbudowanym zasobnikiem 190L)', 'szt.', '1', 'Modul hydrauliczny ze zintegrowanym emaliowanym zasobnikiem CWU 190L (dedykowany do pomp ciepla, izolacja wysokiej klasy), wbudowany bufor 16L, grzalka 3 kW (mozliwosc rozszerzenia do 6 kW), obsluga obiegow grzewczych i przygotowanie CWU.'],
+  ['3', 'Pompa obiegowa CO KAMAN PRO', 'szt.', '1', 'Zapewnia prawidlowy obieg czynnika grzewczego w instalacji.'],
+  ['4', 'Komplet elementow hydraulicznych', 'kpl.', '1', 'Zawory, ksztaltki, filtry, odpowietrzniki i inna armatura niezbedna do kompletnej instalacji wodnej.'],
+  ['5', 'Komplet elementow elektrycznych', 'kpl.', '1', 'Okablowanie, bezpieczniki, zabezpieczenia nadpradowe i roznicowopradowe, rozdzielnia - calosc zgodna z wymaganiami producenta.'],
+  ['6', 'Grupa bezpieczenstwa C.O.', 'kpl.', '1', 'Zawor bezpieczenstwa, odpowietrznik automatyczny, manometr - ochrona obiegu grzewczego.'],
+  ['7', 'Grupa bezpieczenstwa CWU', 'szt.', '1', 'Zawor bezpieczenstwa 6 bar, zawor zwrotny, manometr - zabezpieczenie zasobnika CWU.'],
+  ['8', 'Rury miedziane chlodnicze z izolacja', 'kpl.', '1', 'Rury w trwalej izolacji odpornej na UV do polaczenia jednostki zewnetrznej i wewnetrznej.'],
+  ['9', 'Izolacja termiczna rur wodnych', 'kpl.', '1', 'Otuliny z pianki technicznej dla ochrony przewodow wodnych przed wychladzaniem.'],
+  ['10', 'Stojak lub wieszak pod jednostke zewnetrzna', 'szt.', '1', 'Konstrukcja wsporcza ze stali nierdzewnej, dobierana do miejsca montazu i modelu pompy - do montazu na gruncie lub scianie.'],
+  ['11', 'Sterownik bezprzewodowy (A59)', 'szt.', '1', 'Sterownik bezprzewodowy do zarzadzania praca pompy z funkcja auto-adaptacji.'],
+  ['12', 'Podlaczenie do istniejacej instalacji C.O. i CWU', 'kpl.', '1', 'Wpiecie zgodnie z DTR i wytycznymi producenta - gwarancja prawidlowej pracy systemu.'],
+  ['13', 'Uruchomienie systemu i testy', 'kpl.', '1', 'Odpowietrzenie, proba szczelnosci, napelnienie i konfiguracja parametrow zgodnie z zaleceniami producenta.'],
+  ['14', 'Szkolenie uzytkownika', 'kpl.', '1', 'Przekazanie zasad obslugi systemu, omowienie trybow pracy, dokumentacja i instrukcje.'],
+  ['15', 'Dokumentacja powykonawcza i protokoly odbioru', 'kpl.', '1', 'Komplet dokumentow do zgloszenia instalacji oraz rozliczenia dotacji.'],
+  ['16', 'Pomoc w uzyskaniu dotacji', 'kpl.', '1', 'Wsparcie w przygotowaniu wniosku i dokumentow do programu Czyste Powietrze.', 'common'],
+  ['17', 'Gwarancja i serwis', 'kpl.', '1', 'Pompa ciepla objeta 5-letnia gwarancja przy rejestracji oraz wsparcie techniczne i serwisowe.'],
+];
+
+const atlanticExtensaDuo_3kW_base = [
+  ['1', 'ATLANTIC Extensa Duo 3 kW', 'szt.', '1', 'ATLANTIC Extensa Duo 3 kW - jednostka typu split, zasilanie 230/400V (w zaleznosci od wariantu), wysoka efektywnosc, cichy tryb pracy, czynnik chlodniczy R32.'],
+  ...atlanticExtensaDuoCommonRows,
+];
+
+const atlanticExtensaDuo_5kW_base = [
+  ['1', 'ATLANTIC Extensa Duo 5 kW', 'szt.', '1', 'ATLANTIC Extensa Duo 5 kW - jednostka typu split, zasilanie 230/400V (w zaleznosci od wariantu), wysoka efektywnosc, cichy tryb pracy, czynnik chlodniczy R32.'],
+  ...atlanticExtensaDuoCommonRows,
+];
+
+const atlanticExtensaDuo_6kW_base = [
+  ['1', 'ATLANTIC Extensa Duo 6 kW', 'szt.', '1', 'ATLANTIC Extensa Duo 6 kW - jednostka typu split, zasilanie 230/400V (w zaleznosci od wariantu), wysoka efektywnosc, cichy tryb pracy, czynnik chlodniczy R32.'],
+  ...atlanticExtensaDuoCommonRows,
+];
+
+const atlanticExtensaDuo_8kW_base = [
+  ['1', 'ATLANTIC Extensa Duo 8 kW', 'szt.', '1', 'ATLANTIC Extensa Duo 8 kW - jednostka typu split, zasilanie 230/400V (w zaleznosci od wariantu), wysoka efektywnosc, cichy tryb pracy, czynnik chlodniczy R32.'],
+  ...atlanticExtensaDuoCommonRows,
+];
+
+const atlanticExtensaDuo_10kW_base = [
+  ['1', 'ATLANTIC Extensa Duo 10 kW', 'szt.', '1', 'ATLANTIC Extensa Duo 10 kW - jednostka typu split, zasilanie 230/400V (w zaleznosci od wariantu), wysoka efektywnosc, cichy tryb pracy, czynnik chlodniczy R32.'],
+  ...atlanticExtensaDuoCommonRows,
+];
+
+const atlanticExtensaSCommonRows = [
+  ['2', 'Jednostka wewnetrzna (hydrobox bez wbudowanego zasobnika)', 'szt.', '1', 'Hydrobox do pomp ciepla bez zintegrowanego zasobnika CWU, z wewnetrznym buforem i osprzetem wymaganym przez producenta.'],
+  ['3', 'Pompa obiegowa CO KAMAN PRO', 'szt.', '1', 'Zapewnia prawidlowy obieg czynnika grzewczego w instalacji.'],
+  ['4', 'Komplet elementow hydraulicznych', 'kpl.', '1', 'Zawory, ksztaltki, filtry, odpowietrzniki i inna armatura niezbedna do kompletnej instalacji wodnej.'],
+  ['5', 'Komplet elementow elektrycznych', 'kpl.', '1', 'Okablowanie, bezpieczniki, zabezpieczenia nadpradowe i roznicowopradowe, rozdzielnia - calosc zgodna z wymaganiami producenta.'],
+  ['6', 'Grupa bezpieczenstwa C.O.', 'kpl.', '1', 'Zawor bezpieczenstwa, odpowietrznik automatyczny, manometr - ochrona obiegu grzewczego.'],
+  ['7', 'Grupa bezpieczenstwa CWU', 'szt.', '1', 'Zawor bezpieczenstwa 6 bar, zawor zwrotny, manometr - zabezpieczenie zasobnika CWU.'],
+  ['8', 'Rury miedziane chlodnicze z izolacja', 'kpl.', '1', 'Rury w trwalej izolacji odpornej na UV do polaczenia jednostki zewnetrznej i wewnetrznej.'],
+  ['9', 'Izolacja termiczna rur wodnych', 'kpl.', '1', 'Otuliny z pianki technicznej dla ochrony przewodow wodnych przed wychladzaniem.'],
+  ['10', 'Stojak lub wieszak pod jednostke zewnetrzna', 'szt.', '1', 'Konstrukcja wsporcza ze stali nierdzewnej, dobierana do miejsca montazu i modelu pompy - do montazu na gruncie lub scianie.'],
+  ['11', 'Sterownik bezprzewodowy (A59)', 'szt.', '1', 'Sterownik bezprzewodowy do zarzadzania praca pompy z funkcja auto-adaptacji.'],
+  ['12', 'Podlaczenie do istniejacej instalacji C.O. i CWU', 'kpl.', '1', 'Wpiecie zgodnie z DTR i wytycznymi producenta - gwarancja prawidlowej pracy systemu.'],
+  ['13', 'Uruchomienie systemu i testy', 'kpl.', '1', 'Odpowietrzenie, proba szczelnosci, napelnienie i konfiguracja parametrow zgodnie z zaleceniami producenta.'],
+  ['14', 'Szkolenie uzytkownika', 'kpl.', '1', 'Przekazanie zasad obslugi systemu, omowienie trybow pracy, dokumentacja i instrukcje.'],
+  ['15', 'Dokumentacja powykonawcza i protokoly odbioru', 'kpl.', '1', 'Komplet dokumentow do zgloszenia instalacji oraz rozliczenia dotacji.'],
+  ['16', 'Pomoc w uzyskaniu dotacji', 'kpl.', '1', 'Wsparcie w przygotowaniu wniosku i dokumentow do programu Czyste Powietrze.', 'common'],
+  ['17', 'Gwarancja i serwis', 'kpl.', '1', 'Pompa ciepla objeta 5-letnia gwarancja przy rejestracji oraz wsparcie techniczne i serwisowe.'],
+];
+
+const atlanticExtensaS_5kW_base = [
+  ['1', 'ATLANTIC Extensa S 5 kW Hydrobox', 'szt.', '1', 'ATLANTIC Extensa S 5 kW - jednostka typu split, hydrobox bez wbudowanego zasobnika CWU, czynnik R32, praca cicha i wydajna.'],
+  ...atlanticExtensaSCommonRows,
+];
+
+const atlanticExtensaS_6kW_base = [
+  ['1', 'ATLANTIC Extensa S 6 kW Hydrobox', 'szt.', '1', 'ATLANTIC Extensa S 6 kW - jednostka typu split, hydrobox bez wbudowanego zasobnika CWU, czynnik R32, praca cicha i wydajna.'],
+  ...atlanticExtensaSCommonRows,
+];
+
+const atlanticExtensaS_8kW_base = [
+  ['1', 'ATLANTIC Extensa S 8 kW Hydrobox', 'szt.', '1', 'ATLANTIC Extensa S 8 kW - jednostka typu split, hydrobox bez wbudowanego zasobnika CWU, czynnik R32, praca cicha i wydajna.'],
+  ...atlanticExtensaSCommonRows,
+];
+
+const atlanticExtensaS_10kW_base = [
+  ['1', 'ATLANTIC Extensa S 10 kW Hydrobox', 'szt.', '1', 'ATLANTIC Extensa S 10 kW - jednostka typu split, hydrobox bez wbudowanego zasobnika CWU, czynnik R32, praca cicha i wydajna.'],
+  ...atlanticExtensaSCommonRows,
+];
+
 const atlanticSDuo_14kW_base = [
   ['1', 'ATLANTIC S DUO 14 KW CYLINDER', 'szt.', '1', 'Atlantic S DUO 12 KW Cylinder – jednostka typu split, zasilanie 400V, wysoka efektywność, cichy tryb pracy, czynnik chłodniczy R32.'],
   ['2', 'Jednostka wewnętrzna (moduł hydrauliczny z wbudowanym zasobnikiem 190L)', 'szt.', '1', 'Moduł hydrauliczny ze zintegrowanym emaliowanym zasobnikiem CWU o pojemności 190L (dedykowany do pomp ciepła, wysokiej klasy izolacja), wbudowany bufor 16L, grzałka 3 kW (możliwość rozszerzenia do 6 kW), obsługa obiegów grzewczych i przygotowanie CWU.'],
@@ -247,6 +330,19 @@ export const atlanticBaseTables = {
     '10 kW': atlanticExtensa_10kW_base,
     // Przykładowe dane, dostosuj według potrzeb
     '12 kW': atlanticExtensa_12kW_base, // Przykładowe dane, dostosuj według potrzeb
+  },
+  'ATLANTIC-EXTENSA-S': { // Extensa S hydrobox bez wbudowanego zasobnika
+    '5 kW': atlanticExtensaS_5kW_base,
+    '6 kW': atlanticExtensaS_6kW_base,
+    '8 kW': atlanticExtensaS_8kW_base,
+    '10 kW': atlanticExtensaS_10kW_base,
+  },
+  'ATLANTIC-EXTENSA-S-DUO': {
+    '3 kW': atlanticExtensaDuo_3kW_base,
+    '5 kW': atlanticExtensaDuo_5kW_base,
+    '6 kW': atlanticExtensaDuo_6kW_base,
+    '8 kW': atlanticExtensaDuo_8kW_base,
+    '10 kW': atlanticExtensaDuo_10kW_base,
   },
   'ATLANTIC-EXTENSA-CYLINDER': { 
     // Klucz odpowiadający 'deviceType' dla Extensa AI Duo

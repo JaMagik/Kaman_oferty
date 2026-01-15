@@ -203,6 +203,22 @@ export const pdfTemplateSets = {
     groupPage2,
     commonContactPage,
   ],
+  'ATLANTIC-EXTENSA-S': [
+    '/pdf_templates/atlantic/extensa-s/1_okladka.pdf',
+    '/pdf_templates/atlantic/extensa-s/atlantic_extensa_s_katalog.pdf',
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+  'ATLANTIC-EXTENSA-S-DUO': [
+    '/pdf_templates/atlantic/extensa-s-duo/1_okladka.pdf',
+    '/pdf_templates/atlantic/extensa-s-duo/atlantic_extensa_s_duo_katalog.pdf',
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
    'ATLANTIC-EXTENSA-CYLINDER': [ 
     '/pdf_templates/atlantic/extensa-cylinder/1_okladka.pdf',
     '/pdf_templates/atlantic/extensa-cylinder/EXTENSA-AI-DUO-R32-KARTA-KATALOGOWA-1.pdf',
