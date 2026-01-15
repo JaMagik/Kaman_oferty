@@ -603,6 +603,30 @@ export const pdfTemplateSets = {
     groupPage2,
     commonContactPage,
   ],
+  'DOMEKT_R350': [
+    '/pdf_templates/recuperation/domekt/1_okladka.pdf',
+    '/pdf_templates/recuperation/domekt/r350_ds1.pdf',
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+  'DOMEKT_R400': [
+    '/pdf_templates/recuperation/domekt/1_okladka.pdf',
+    '/pdf_templates/recuperation/domekt/r400_ds1.pdf',
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+  'DOMEKT_R600': [
+    '/pdf_templates/recuperation/domekt/1_okladka.pdf',
+    '/pdf_templates/recuperation/domekt/r600_ds1.pdf',
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
   'VUTR_VEC_280_V_EC': [
     '/pdf_templates/recuperation/vutr-vec/1_okladka.pdf', // Okladka
     '/pdf_templates/recuperation/vutr-vec/vutr_vec_ds1.pdf', // Karta katalogowa

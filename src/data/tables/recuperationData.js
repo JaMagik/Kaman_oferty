@@ -41,6 +41,24 @@
       'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła ≥ 90%.',
     type: 'central',
   },
+  DOMEKT_R350: {
+    name: 'Rekuperator Domekt R350',
+    description:
+      'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła ≥ 90%.',
+    type: 'central',
+  },
+  DOMEKT_R400: {
+    name: 'Rekuperator Domekt R400',
+    description:
+      'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła ≥ 90%.',
+    type: 'central',
+  },
+  DOMEKT_R600: {
+    name: 'Rekuperator Domekt R600',
+    description:
+      'Wysokosprawny wymiennik przeciwprądowy, wentylatory EC, odzysk ciepła ≥ 90%.',
+    type: 'central',
+  },
   DOMEKT_R450VC6M: {
     name: 'Rekuperator Domekt R450VC6M',
     description:
