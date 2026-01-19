@@ -72,6 +72,14 @@ const getMainTableConfig = (rowCount) => {
   return base;
 };
 
+const applyEnthalpyDescription = (text = '') => {
+  const patterns = [/wymiennik przeciwpr[aą]dowy/gi, /wymiennik przeciwpr¥dowy/gi];
+  return patterns.reduce(
+    (current, pattern) => current.replace(pattern, 'wymiennik entalpiczny'),
+    String(text || ''),
+  );
+};
+
 const isPdfBuffer = (buffer) => {
   if (!(buffer instanceof ArrayBuffer) || buffer.byteLength < 5) {
     return false;
@@ -103,6 +111,7 @@ const wrapText = (font, text, size, maxWidth) => {
 };
 
 const OPTIONS_ACCENT_COLOR = rgb(0.62, 0.0, 0.18);
+const OPTIONS_WARNING_COLOR = rgb(0.75, 0, 0.1);
 const INFO_SEPARATOR_COLOR = rgb(0.82, 0.82, 0.82);
 const INFO_LABEL_COLOR = rgb(0.15, 0.15, 0.15);
 
@@ -275,6 +284,22 @@ const drawOptionsPricingSection = ({
     cursorY -= 6;
   }
 
+  if (note) {
+    const noteLines = wrapText(fonts.bold, note, 9.5, tableWidth);
+    noteLines.forEach((line) => {
+      ensureSpace(config.lineHeight + 10);
+      page.drawText(line, {
+        x: tableStartX,
+        y: cursorY,
+        font: fonts.bold,
+        size: 9.5,
+        color: OPTIONS_WARNING_COLOR,
+      });
+      cursorY -= config.lineHeight;
+    });
+    cursorY -= 8;
+  }
+
   const drawHeader = () => {
     ensureSpace(config.headerHeight + 10);
     const headerTop = cursorY;
@@ -393,27 +418,6 @@ const drawOptionsPricingSection = ({
 
   cursorY -= 12;
 
-  if (note) {
-    const noteLines = wrapText(
-      fonts.regular,
-      note,
-      8.5,
-      tableWidth
-    );
-    noteLines.forEach((line) => {
-      ensureSpace(config.lineHeight + 6);
-      page.drawText(line, {
-        x: tableStartX,
-        y: cursorY,
-        font: fonts.regular,
-        size: 8.5,
-        color: rgb(0.25, 0.25, 0.25),
-      });
-      cursorY -= config.lineHeight;
-    });
-    cursorY -= 6;
-  }
-
   if (footer) {
     const footerLines = wrapText(
       fonts.bold,
@@ -449,6 +453,7 @@ export async function generateRecuperationOfferPDF(formData) {
     customDeviceCatalog,
     variantKey,
     mainItemIds = [],
+    addonItemIds = [],
     includeAquaClear,
     isEnthalpyVariant = false,
     investmentAddress = {},
@@ -575,15 +580,33 @@ export async function generateRecuperationOfferPDF(formData) {
       normalizedCustomDeviceName ||
       (selectedDevice && selectedDevice.name) ||
       '';
+    const isDomektDevice =
+      typeof deviceKey === 'string' &&
+      deviceKey.toLowerCase().startsWith('domekt');
+    const resolvedDeviceDescription = (() => {
+      const baseDescription = selectedDevice?.description || '';
+      if (!isEnthalpyVariant) {
+        return baseDescription;
+      }
+      if (isDomektDevice) {
+        return 'Wysokosprawny wymiennik obrotowy, odzysk ciepla >86%';
+      }
+      return applyEnthalpyDescription(baseDescription);
+    })();
+    const enthalpySuffix =
+      isEnthalpyVariant && baseDeviceName
+        ? isDomektDevice
+          ? ' sorpcyjno-entapliczny'
+          : ' entalpiczny'
+        : '';
     const deviceForOutput =
       selectedDevice || baseDeviceName
         ? {
             ...(selectedDevice || { description: '' }),
+            description: resolvedDeviceDescription,
             ...(baseDeviceName
               ? {
-                  name: `${baseDeviceName}${
-                    isEnthalpyVariant ? ' entalpiczny' : ''
-                  }`,
+                  name: `${baseDeviceName}${enthalpySuffix}`,
                 }
               : {}),
           }
@@ -703,6 +726,69 @@ export async function generateRecuperationOfferPDF(formData) {
       finalY = tableStartY;
     }
 
+    const addonRows =
+      Array.isArray(addonItemIds) && addonItemIds.length > 0
+        ? buildRowsForIds(Array.from(new Set(addonItemIds)), deviceForOutput).map(
+            (row, rowIndex) => {
+              const newRow = [...row];
+              newRow[0] = String(rowIndex + 1);
+              return newRow;
+            }
+          )
+        : [];
+
+    if (addonRows.length > 0) {
+      const addonTableConfig = getMainTableConfig(addonRows.length);
+      let addonPage = lastContentPage;
+      let addonStartY = finalY - 18;
+      const minSpaceForAddonTable =
+        addonTableConfig.headerHeight +
+        addonTableConfig.padding.top +
+        addonTableConfig.padding.bottom +
+        40;
+
+      if (
+        addonStartY <
+        addonTableConfig.pageMargins.bottom + minSpaceForAddonTable
+      ) {
+        addonPage = pdfDoc.addPage();
+        addonStartY = addonPage.getSize().height - addonTableConfig.pageMargins.top;
+      }
+
+      const addonTableWidth = addonTableConfig.columnWidths.reduce(
+        (sum, value) => sum + value,
+        0
+      );
+      const addonNoteFontSize = 10;
+      const addonNote =
+        'Opcje dodatkowe nie są uwzględnione w ofercie cenowej.';
+      const addonNoteX = (addonPage.getSize().width - addonTableWidth) / 2;
+      const addonNoteY = addonStartY - addonNoteFontSize;
+
+      addonPage.drawText(addonNote, {
+        x: addonNoteX,
+        y: addonNoteY,
+        font: boldFont,
+        size: addonNoteFontSize,
+        color: OPTIONS_WARNING_COLOR,
+      });
+
+      const addonTableStartY = addonNoteY - 10;
+
+      const addonResult = await drawTable(
+        pdfDoc,
+        addonPage,
+        { regular: regularFont, bold: boldFont },
+        addonRows,
+        addonTableStartY,
+        'Opcje dodatkowe',
+        addonTableConfig
+      );
+
+      lastContentPage = addonResult.finalPage;
+      finalY = addonResult.finalY;
+    }
+
     const isDrafton =
       typeof deviceKey === 'string' &&
       deviceKey.toLowerCase().includes('drafton');
@@ -743,6 +829,7 @@ export async function generateRecuperationOfferPDF(formData) {
         title: 'Opcje do Draftona - sterowanie bezprzewodowe',
         introText:
           'Opcjonalne sterowanie bezprzewodowe dla central DRAFTON Professional:',
+        note: 'Opcje dodatkowe nie są uwzglednione w ofercie cenowej.',
         rows: [
           {
             name: 'Radiowy odbiornik USB Drafton PRO',
