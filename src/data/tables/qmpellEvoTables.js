@@ -28,7 +28,7 @@ const qmpell_8kW_base = [
 // --- Pereko QMPell 12 kW ---
 const qmpell_12kW_base = qmpell_8kW_base.map(row => 
   row[0] === '1'
-    ? ['1', 'Kocioł na Pereko QMPell 12 kW z podajnikiem górnym', 'szt.', '1', 'Automatyczny kocioł 5 klasy z zasobnikiem pelletu montowanym z boku.', 'common']
+    ? ['1', 'Kocioł na Pereko QMPell 12 kW z podajnikiem bocznym', 'szt.', '1', 'Automatyczny kocioł 5 klasy z zasobnikiem pelletu montowanym z boku.', 'common']
     : [...row]
 );
 
@@ -47,4 +47,3 @@ export const qmpellBaseTables = {
   '18 kW': qmpell_18kW_base,
     }
 };
-
