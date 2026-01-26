@@ -713,7 +713,8 @@ export async function generateOfferPDF(
   showPrice,
   investmentAddress = {},
   advisorInfo = {},
-  offerNumber = ''
+  offerNumber = '',
+  vatRate = null
 ) {
     if (!userName?.trim()) {
         alert('Uzupełnij pole Imię i Nazwisko!');
@@ -832,9 +833,21 @@ export async function generateOfferPDF(
         let lastContentPage = tableResult.finalPage;
         let lastYPosAfterTable = tableResult.finalY;
 
-                if (showPrice) {
+        if (showPrice) {
+            const vatRateNumberRaw = typeof vatRate === 'string'
+                ? parseFloat(vatRate.replace(',', '.'))
+                : Number(vatRate);
+            const vatRateNumber = Number.isFinite(vatRateNumberRaw) && vatRateNumberRaw > 0 ? vatRateNumberRaw : null;
+            const vatRateDisplay = typeof vatRateNumber === 'number'
+                ? vatRateNumber.toLocaleString('pl-PL', {
+                    minimumFractionDigits: vatRateNumber % 1 === 0 ? 0 : 2,
+                    maximumFractionDigits: 2,
+                })
+                : null;
+            const vatNote = !isNettoPrice && vatRateDisplay ? ` (VAT ${vatRateDisplay}%)` : '';
+
             const priceSuffix = isNettoPrice ? 'PLN netto' : 'PLN brutto';
-            const priceString = `Cena koncowa: ${cena} ${priceSuffix}`;
+            const priceString = `Cena koncowa: ${cena} ${priceSuffix}${vatNote}`;
             const priceFontSize = 15;
             const priceTextWidth = boldFont.widthOfTextAtSize(priceString, priceFontSize);
 
@@ -898,9 +911,6 @@ export async function generateOfferPDF(
         return null;
     }
 }
-
-
-
 
 
 

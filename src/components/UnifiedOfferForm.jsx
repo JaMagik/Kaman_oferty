@@ -119,6 +119,7 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
   const [includeDemontaz, setIncludeDemontaz] = useState(true);
   const [includePodbudowa, setIncludePodbudowa] = useState(true);
   const [includeMagneticSeparator, setIncludeMagneticSeparator] = useState(false);
+  const [vatRate, setVatRate] = useState('8');
   const [isNettoPrice, setIsNettoPrice] = useState(false);
   const [includeDotacja, setIncludeDotacja] = useState(true);
   const [showPrice, setShowPrice] = useState(true);
@@ -337,7 +338,8 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
       showPrice,
       investmentAddress,
       advisorSummary,
-      generatedOfferNumber
+      generatedOfferNumber,
+      parseFloat(vatRate)
     );
     if (pdfData) {
       setGeneratedPdfData(pdfData);
@@ -428,7 +430,18 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
 
       <label htmlFor="price">Cena Końcowa (PLN):</label>
       <input id="price" type="text" inputMode="decimal" value={formatPriceForDisplay(price)} onChange={handlePriceChange} placeholder="Podaj cenę" />
-      
+
+      <label htmlFor="vatRate">Stawka VAT:</label>
+      <select
+        id="vatRate"
+        value={vatRate}
+        onChange={(e) => setVatRate(e.target.value)}
+        disabled={!showPrice}
+      >
+        <option value="8">8%</option>
+        <option value="23">23%</option>
+      </select>
+
       <div className="input-group-inline">
         <input type="checkbox" id="isNettoPrice" checked={isNettoPrice} onChange={(e) => setIsNettoPrice(e.target.checked)} />
         <label htmlFor="isNettoPrice">Pokaż cenę jako netto</label>
