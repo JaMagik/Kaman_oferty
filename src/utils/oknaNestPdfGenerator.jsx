@@ -237,7 +237,7 @@ const drawSimpleTable = (pdfDoc, startPage, fonts, rows, startY, customConfig = 
       color: config.headerBgColor,
     });
 
-    const headers = ['Lp.', 'Zakres', 'Opis', 'Ilosc', 'Cena'];
+    const headers = ['Lp.', 'Zakres', 'Opis', 'Ilość', 'Cena'];
     let cursor = tableStartX;
     headers.forEach((header, columnIndex) => {
       const columnWidth = config.columnWidths[columnIndex];
@@ -390,6 +390,7 @@ const drawFlexibleTable = (
     bottomMargin: 60,
     align: 'left',
     widthMode: 'center',
+    rowStyleResolver: null,
     ...customConfig,
   };
 
@@ -454,40 +455,56 @@ const drawFlexibleTable = (
 
   drawHeader();
 
+  const resolveRowStyle =
+    typeof config.rowStyleResolver === 'function' ? config.rowStyleResolver : () => ({});
+
   rows.forEach((row, rowIndex) => {
+    const rowStyle = resolveRowStyle(row, rowIndex) || {};
+    const rowFont = rowStyle.font === 'bold' ? fonts.bold : fonts.regular;
+    const rowFontSize = Number(rowStyle.fontSize) > 0 ? rowStyle.fontSize : config.rowFontSize;
+    const rowFontColor = rowStyle.fontColor || config.rowFontColor;
+    const rowLineHeightFactor =
+      Number(rowStyle.lineHeight) > 0 ? rowStyle.lineHeight : config.lineHeight;
+    const rowBgColor =
+      rowStyle.bgColor !== undefined
+        ? rowStyle.bgColor
+        : rowIndex % 2 === 1
+          ? config.evenRowBgColor
+          : null;
+
     const columnContent = columns.map((column) => {
       const raw = row[column.key];
       const text = raw === null || raw === undefined ? '' : String(raw);
       const maxWidth = column.width - config.paddingX * 2;
-      const lines = wrapText(fonts.regular, text, config.rowFontSize, Math.max(maxWidth, 10));
+      const lines = wrapText(rowFont, text, rowFontSize, Math.max(maxWidth, 10));
       return { lines };
     });
 
-    const lineHeight = config.rowFontSize * config.lineHeight;
+    const lineHeight = rowFontSize * rowLineHeightFactor;
     const contentHeight = columnContent.reduce(
       (max, entry) => Math.max(max, entry.lines.length * lineHeight),
-      config.rowFontSize,
+      rowFontSize,
     );
     const rowHeight = contentHeight + config.paddingY * 2;
 
     ensureSpace(rowHeight);
 
     const rowBottomY = cursorY - rowHeight;
-    if (rowIndex % 2 === 1) {
+    if (rowBgColor) {
       page.drawRectangle({
         x: tableStartX,
         y: rowBottomY,
         width: tableWidth,
         height: rowHeight,
-        color: config.evenRowBgColor,
+        color: rowBgColor,
       });
     }
 
     let columnX = tableStartX;
     columnContent.forEach((entry, columnIndex) => {
-      let textY = cursorY - config.paddingY - config.rowFontSize;
+      let textY = cursorY - config.paddingY - rowFontSize;
       entry.lines.forEach((line) => {
-        const textWidth = fonts.regular.widthOfTextAtSize(line, config.rowFontSize);
+        const textWidth = rowFont.widthOfTextAtSize(line, rowFontSize);
         let textX = columnX + config.paddingX;
         const alignment = columns[columnIndex].align || 'left';
         if (alignment === 'center') {
@@ -498,9 +515,9 @@ const drawFlexibleTable = (
         page.drawText(line, {
           x: textX,
           y: textY,
-          size: config.rowFontSize,
-          font: fonts.regular,
-          color: config.rowFontColor,
+          size: rowFontSize,
+          font: rowFont,
+          color: rowFontColor,
         });
         textY -= lineHeight;
       });
@@ -532,7 +549,7 @@ const fetchAsset = async (path, label, { optional = false } = {}) => {
     const response = await fetch(path);
     if (!response.ok) {
       if (optional) {
-        console.warn(`Nie udalo sie pobrac zasobu ${label}: ${path}`);
+        console.warn(`Nie udało się pobrać zasobu ${label}: ${path}`);
         return null;
       }
       throw new Error(`Brak zasobu ${label}: ${path}`);
@@ -542,7 +559,7 @@ const fetchAsset = async (path, label, { optional = false } = {}) => {
     if (!optional) {
       throw error;
     }
-    console.warn(`Pominieto zasob opcjonalny ${label}:`, error);
+    console.warn(`Pominięto zasób opcjonalny ${label}:`, error);
     return null;
   }
 };
@@ -635,12 +652,12 @@ export async function generateOknaNestPDF(formData) {
       : 0;
 
   if (windowPerimeterNumber <= 0 || windowAreaNumber <= 0) {
-    alert('Podaj laczna powierzchnie oraz obwod okien.');
+    alert('Podaj łączną powierzchnię oraz obwód okien.');
     return null;
   }
 
   if (installationPriceNumber <= 0) {
-    alert('Brakuje informacji o lacznej cenie montazu.');
+    alert('Brakuje informacji o łącznej cenie montażu.');
     return null;
   }
 
@@ -709,8 +726,8 @@ export async function generateOknaNestPDF(formData) {
         : resolveTextValue(gasketPackage);
   const microventEnabled = Boolean(featureSelections['feature-microvent']?.enabled);
   const microventLabel = microventEnabled
-    ? 'W zestawie: klamka z funkcja mikrowentylacji'
-    : 'Opcjonalnie: klamka z funkcja mikrowentylacji';
+    ? 'W zestawie: klamka z funkcją mikrowentylacji'
+    : 'Opcjonalnie: klamka z funkcją mikrowentylacji';
   const lazikLabel =
     lazikIncluded === 'yes' ? 'Tak' : lazikIncluded === 'na' ? 'Nie dotyczy' : resolveTextValue(lazikIncluded);
   const { name: advisorName = '', phone: advisorPhone = '', email: advisorEmail = '' } = clientAdvisor || {};
@@ -718,9 +735,10 @@ export async function generateOknaNestPDF(formData) {
   const themeBlue = rgb(0.04, 0.33, 0.58);
   const themeBlueLight = rgb(0.9, 0.95, 0.99);
   const themeText = rgb(0.12, 0.18, 0.24);
+  const themeHighlight = rgb(1, 0.95, 0.85);
   const formatOptionalPrice = (value) => {
     const priceNumber = parseInputNumber(value);
-    return priceNumber > 0 ? formatCurrency(priceNumber) : 'na indywidualna wycene';
+    return priceNumber > 0 ? formatCurrency(priceNumber) : 'na indywidualną wycenę';
   };
   const normalizeExtraState = (value) => {
     if (value && typeof value === 'object') {
@@ -759,8 +777,8 @@ export async function generateOknaNestPDF(formData) {
     const pdfDoc = await PDFDocument.create();
     pdfDoc.registerFontkit(fontkit);
 
-    const regularFont = await pdfDoc.embedFont(regularFontBytes);
-    const boldFont = await pdfDoc.embedFont(boldFontBytes);
+    const regularFont = await pdfDoc.embedFont(regularFontBytes, { subset: false });
+    const boldFont = await pdfDoc.embedFont(boldFontBytes, { subset: false });
     const fonts = { regular: regularFont, bold: boldFont };
     const logos = {
       nest: await pdfDoc.embedPng(nestLogoBytes),
@@ -815,7 +833,7 @@ export async function generateOknaNestPDF(formData) {
     ];
 
     const rightColumnEntries = [
-      { label: 'Oferte sporzadzil', value: preparedByDisplay || advisorName || '---' },
+      { label: 'Ofertę sporządził', value: preparedByDisplay || advisorName || '---' },
       { label: 'Telefon', value: advisorPhone || '---' },
       { label: 'Email', value: advisorEmail || '---' },
     ];
@@ -944,13 +962,13 @@ export async function generateOknaNestPDF(formData) {
       { parameter: 'Wzmocnienie profilu', value: reinforcementLabel },
       { parameter: 'Zawiasy', value: hingeDisplay },
       { parameter: 'Pakiet uszczelek', value: gasketLabel },
-      { parameter: 'Klamka z mikrowentylacja', value: microventLabel },
-      { parameter: 'Ciepla ramka', value: warmSpacerLabel },
+      { parameter: 'Klamka z mikrowentylacją', value: microventLabel },
+      { parameter: 'Ciepła ramka', value: warmSpacerLabel },
       { parameter: 'Pakiet RC', value: rcLabel },
-      { parameter: 'Demontaz starych okien', value: demolitionLabel },
-      { parameter: 'Rodzaj demontazu', value: demolitionTypeLabel },
-      { parameter: 'Kierunek demontazu', value: demolitionDirectionLabel },
-      { parameter: 'Rodzaj montazu', value: assemblyLabel },
+      { parameter: 'Demontaż starych okien', value: demolitionLabel },
+      { parameter: 'Rodzaj demontażu', value: demolitionTypeLabel },
+      { parameter: 'Kierunek demontażu', value: demolitionDirectionLabel },
+      { parameter: 'Rodzaj montażu', value: assemblyLabel },
       { parameter: 'Lazik', value: lazikLabel },
     ];
 
@@ -1074,7 +1092,7 @@ export async function generateOknaNestPDF(formData) {
 
     scopeSummaryRows.push({
       lp: String(scopeIndex++),
-      label: 'Demontaz starych okien',
+      label: 'Demontaż starych okien',
       status: demolitionLabel || '---',
       detail: '---',
     });
@@ -1088,16 +1106,19 @@ export async function generateOknaNestPDF(formData) {
     const getExtraState = (id) => extraStateMap.get(id) || normalizeExtraState();
 
     const combinedExtrasConfig = [
-      { id: 'install-sealed-tape', label: 'Szczelny montaz (tasmy)' },
-      { id: 'install-titan-wings', label: 'Szczelny montaz (Titan Wings)' },
-      { id: 'install-threshold-seal', label: 'Szczelny montaz progow (EPDM)' },
-      { id: 'install-reveal-prep-combined', label: 'Przygotowanie glifow pod szczelny montaz - zagruntowanie i wyrownanie klejem' },
-      { id: 'install-warm-parapets', label: 'Cieple parapety XPS 700 KPA' },
+      { id: 'install-sealed-tape', label: 'Szczelny montaż (taśmy)' },
+      { id: 'install-titan-wings', label: 'Szczelny montaż (Titan Wings)' },
+      { id: 'install-threshold-seal', label: 'Szczelny montaż progów (EPDM)' },
+      {
+        id: 'install-reveal-prep-combined',
+        label: 'Przygotowanie glifów pod szczelny montaż - zagruntowanie i wyrównanie klejem',
+      },
+      { id: 'install-warm-parapets', label: 'Ciepłe parapety XPS 700 KPA' },
       { id: 'install-purenit-extensions', label: 'Poszerzenia pod okna Purenit' },
       { id: 'install-system-extensions', label: 'Poszerzenia systemowe / podwaliny systemowe' },
-      { id: 'install-full-window-demolition', label: 'Demontaz okien w calosci', type: 'demolition' },
-      { id: 'install-outer-sills', label: 'Montaz parapetow zewnetrznych (stal powlekana)', type: 'parapet' },
-      { id: 'install-inner-sills', label: 'Montaz parapetow wewnetrznych (kamien)', type: 'parapet' },
+      { id: 'install-full-window-demolition', label: 'Demontaż okien w całości', type: 'demolition' },
+      { id: 'install-outer-sills', label: 'Montaż parapetów zewnętrznych (stal powlekana)', type: 'parapet' },
+      { id: 'install-inner-sills', label: 'Montaż parapetów wewnętrznych (kamień)', type: 'parapet' },
     ];
 
     const combinedRowsData = [];
@@ -1169,14 +1190,14 @@ export async function generateOknaNestPDF(formData) {
     currentY -= 12;
 
     const priceTableRows = [
-      { element: 'CENA NETTO OFERTY Z MONTAZEM', amount: formatCurrency(finalNetPrice) },
+      { element: 'CENA NETTO OFERTY Z MONTAŻEM', amount: formatCurrency(finalNetPrice) },
       { element: `VAT (${formatNumber(vatRateNumber, 0)})`, amount: formatCurrency(vatAmount) },
-      { element: 'CENA BRUTTO OFERTY Z MONTAZEM', amount: formatCurrency(finalGrossPrice) },
+      { element: 'CENA BRUTTO OFERTY Z MONTAŻEM', amount: formatCurrency(finalGrossPrice), emphasize: true },
     ];
 
     if (hstWindowsSurchargeNumber > 0) {
       priceTableRows.unshift({
-        element: `Doplata HST (${hstWindowCountNumber} szt.)`,
+        element: `Dopłata HST (${hstWindowCountNumber} szt.)`,
         amount: formatCurrency(hstWindowsSurchargeNumber),
       });
     }
@@ -1221,6 +1242,16 @@ export async function generateOknaNestPDF(formData) {
         rowFontColor: themeText,
         evenRowBgColor: themeBlueLight,
         lineColor: rgb(0.78, 0.86, 0.94),
+        rowStyleResolver: (row) =>
+          row.emphasize
+            ? {
+                font: 'bold',
+                fontSize: 11,
+                bgColor: themeHighlight,
+                fontColor: themeText,
+                lineHeight: 1.35,
+              }
+            : null,
       },
       (newPage) =>
         drawPageBranding(newPage, fonts, logos, {
@@ -1255,7 +1286,7 @@ export async function generateOknaNestPDF(formData) {
       });
       currentY -= 16;
       const mountingNote =
-        'Opcje dodatkowe obejmuja rekomendowane warianty montazowe i przygotowanie stolarki. Pozycje oznaczone "TAK" sa uwzglednione w kalkulacji.';
+        'Opcje dodatkowe nie są wliczone w cenę! Pozycje obejmują rekomendowane warianty montażowe i przygotowanie stolarki.';
       const mountingNoteLines = wrapText(regularFont, mountingNote, 9.5, tablePage.getSize().width - 120);
       mountingNoteLines.forEach((line) => {
         tablePage.drawText(line, {
@@ -1276,10 +1307,9 @@ export async function generateOknaNestPDF(formData) {
         mountingRows,
         [
           { key: 'lp', header: 'Lp.', width: 36, align: 'center' },
-          { key: 'label', header: 'Pozycja', width: 210 },
-          { key: 'status', header: 'Status', width: 70, align: 'center' },
-          { key: 'quantity', header: 'Sztuk', width: 60, align: 'center' },
-          { key: 'price', header: 'Cena (PLN)', width: 95, align: 'right' },
+          { key: 'label', header: 'Pozycja', width: 240 },
+          { key: 'quantity', header: 'Sztuk', width: 70, align: 'center' },
+          { key: 'price', header: 'Cena (PLN)', width: 110, align: 'right' },
         ],
         currentY,
         {
@@ -1402,7 +1432,7 @@ export async function generateOknaNestPDF(formData) {
       if (priceNumber > 0) {
         return formatCurrency(priceNumber);
       }
-      return selected ? 'w cenie' : 'na indywidualna wycene';
+      return selected ? 'w cenie' : 'na indywidualną wycenę';
     };
 
     const outerSillsExtra = getExtraState('install-outer-sills');
@@ -1412,16 +1442,16 @@ export async function generateOknaNestPDF(formData) {
     const outerSillsQuantity = String(outerSillsExtra.quantity ?? '').trim();
     const outerSillsDetailBase = getOptionDetail(
       'external-sills',
-      'Parapety zewnetrzne dopasowane do koloru stolarki i elewacji.',
+      'Parapety zewnętrzne dopasowane do koloru stolarki i elewacji.',
     );
     const outerSillsDetail = outerSillsQuantity
-      ? `${outerSillsDetailBase}${outerSillsDetailBase.endsWith('.') ? '' : '.'} Ilosc: ${outerSillsQuantity}.`
+      ? `${outerSillsDetailBase}${outerSillsDetailBase.endsWith('.') ? '' : '.'} Ilość: ${outerSillsQuantity}.`
       : outerSillsDetailBase;
 
     if (!outerSillsExtra.selected) {
       complementaryCandidates.push({
         priority: 1.0,
-        label: 'Parapety zewnetrzne',
+        label: 'Parapety zewnętrzne',
         status: 'Opcja',
         price: formatPriceDisplay(outerSillsPriceNumber, false),
         detail: outerSillsDetail,
@@ -1433,16 +1463,16 @@ export async function generateOknaNestPDF(formData) {
     const internalSillsQuantity = String(innerSillsExtra.quantity ?? '').trim();
     const internalSillsDetailBase = getOptionDetail(
       'internal-sills',
-      'Parapety wewnetrzne docinane na wymiar i osadzane po montazu stolarki.',
+      'Parapety wewnętrzne docinane na wymiar i osadzane po montażu stolarki.',
     );
     const internalSillsDetail = internalSillsQuantity
-      ? `${internalSillsDetailBase}${internalSillsDetailBase.endsWith('.') ? '' : '.'} Ilosc: ${internalSillsQuantity}.`
+      ? `${internalSillsDetailBase}${internalSillsDetailBase.endsWith('.') ? '' : '.'} Ilość: ${internalSillsQuantity}.`
       : internalSillsDetailBase;
 
     if (!innerSillsExtra.selected) {
       complementaryCandidates.push({
         priority: 1.1,
-        label: 'Parapety wewnetrzne',
+        label: 'Parapety wewnętrzne',
         status: 'Opcja',
         price: formatPriceDisplay(internalSillsPriceNumber, false),
         detail: internalSillsDetail,
@@ -1455,12 +1485,12 @@ export async function generateOknaNestPDF(formData) {
       parseInputNumber(internalBlindsExtra.price) + getOptionPriceNumber('internal-blinds');
     const internalBlindsDetail = getOptionDetail(
       'internal-blinds',
-      'Rolety wewnetrzne, plisy lub zaluzje dopasowane do profilu okna.',
+      'Rolety wewnętrzne, plisy lub żaluzje dopasowane do profilu okna.',
     );
 
     complementaryCandidates.push({
       priority: 1.2,
-      label: 'Rolety wewnetrzne',
+      label: 'Rolety wewnętrzne',
       status: internalBlindsSelected ? 'TAK' : 'Opcja',
       price: formatPriceDisplay(internalBlindsPriceNumber, internalBlindsSelected),
       detail: internalBlindsDetail,
@@ -1470,12 +1500,12 @@ export async function generateOknaNestPDF(formData) {
     const externalBlindsPriceNumber = getOptionPriceNumber('external-blinds');
     const externalBlindsDetail = getOptionDetail(
       'external-blinds',
-      'Rolety zewnetrzne, screeny lub zaluzje fasadowe z integracja sterowania.',
+      'Rolety zewnętrzne, screeny lub żaluzje fasadowe z integracją sterowania.',
     );
 
     complementaryCandidates.push({
       priority: 1.3,
-      label: 'Rolety zewnetrzne / screeny / zaluzje zewnetrzne',
+      label: 'Rolety zewnętrzne / screeny / żaluzje zewnętrzne',
       status: externalBlindsSelected ? 'TAK' : 'Opcja',
       price: formatPriceDisplay(externalBlindsPriceNumber, externalBlindsSelected),
       detail: externalBlindsDetail,
@@ -1520,7 +1550,7 @@ export async function generateOknaNestPDF(formData) {
       getOptionPriceNumber('system-extensions');
     const poszerzeniaDetail = getOptionDetail(
       'system-extensions',
-      'Poszerzenia progowe i podwaliny stabilizujace montaz stolarki.',
+      'Poszerzenia progowe i podwaliny stabilizujące montaż stolarki.',
     );
 
     complementaryCandidates.push({
@@ -1675,7 +1705,7 @@ export async function generateOknaNestPDF(formData) {
           }
         }
       } catch (error) {
-        console.warn('Nie udalo sie dodac zalacznika formularza:', error);
+        console.warn('Nie udało się dodać załącznika formularza:', error);
       }
     }
 
@@ -1691,7 +1721,7 @@ export async function generateOknaNestPDF(formData) {
           }
         }
       } catch (error) {
-        console.warn(`Nie udalo sie dodac PDF ${pdfPath}:`, error);
+        console.warn(`Nie udało się dodać PDF ${pdfPath}:`, error);
       }
     }
 
@@ -1703,7 +1733,7 @@ export async function generateOknaNestPDF(formData) {
             const buffer = await fetchAsset(option.pdfPath, `opis opcji ${option.label}`, { optional: true });
             return buffer ? { buffer, option } : null;
           } catch (error) {
-            console.warn(`Pominieto zalacznik PDF dla opcji ${option.label}:`, error);
+            console.warn(`Pominięto załącznik PDF dla opcji ${option.label}:`, error);
             return null;
           }
         })
@@ -1719,7 +1749,7 @@ export async function generateOknaNestPDF(formData) {
           pdfDoc.addPage(copiedPage);
         }
       } catch (error) {
-        console.warn('Nie udalo sie dodac zalacznika PDF:', error);
+        console.warn('Nie udało się dodać załącznika PDF:', error);
       }
     }
     if (contactBytes) {
@@ -1728,7 +1758,7 @@ export async function generateOknaNestPDF(formData) {
         const [contactPage] = await pdfDoc.copyPages(contactDoc, [0]);
         pdfDoc.addPage(contactPage);
       } catch (error) {
-        console.warn('Nie udalo sie dodac strony kontaktowej:', error);
+        console.warn('Nie udało się dodać strony kontaktowej:', error);
       }
     }
 
