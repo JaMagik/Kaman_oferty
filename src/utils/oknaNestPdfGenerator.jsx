@@ -64,6 +64,80 @@ const ensureSentence = (value) => {
   return /[.!?]$/.test(trimmed) ? trimmed : `${trimmed}.`;
 };
 
+const removeDiacritics = (value = '') =>
+  String(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/ł/g, 'l')
+    .replace(/Ł/g, 'L');
+
+const streamToText = (stream) => {
+  if (!stream) {
+    return '';
+  }
+  try {
+    const decoded = typeof stream.decode === 'function' ? stream.decode() : null;
+    if (!decoded) {
+      return '';
+    }
+    if (typeof decoded === 'string') {
+      return decoded;
+    }
+    if (decoded instanceof Uint8Array) {
+      if (typeof TextDecoder !== 'undefined') {
+        return new TextDecoder('latin1').decode(decoded);
+      }
+      return String.fromCharCode(...decoded);
+    }
+    return String(decoded);
+  } catch (error) {
+    console.warn('Nie udało się odczytać strumienia PDF:', error);
+    return '';
+  }
+};
+
+const containsPriceKeywords = (text) => {
+  if (!text) return false;
+  const normalized = removeDiacritics(text)
+    .toUpperCase()
+    .replace(/\s+/g, ' ');
+  const keywordHit = /(BRUTTO|NETTO|VAT|PLN|ZL|ZŁ)/.test(normalized);
+  const currencyNumberHit = /\d{1,3}(?:[ \u00a0.,]\d{3})*(?:[.,]\d{2})?\s*(PLN|ZL)/.test(normalized);
+  return keywordHit || currencyNumberHit;
+};
+
+const pageContainsPriceText = (page) => {
+  try {
+    const streams = page.getContentStreams?.();
+    if (!streams || streams.length === 0) {
+      return false;
+    }
+    const content = streams.map((stream) => streamToText(stream)).join('\n');
+    return containsPriceKeywords(content);
+  } catch (error) {
+    console.warn('Nie udało się przeanalizować treści strony PDF:', error);
+    return false;
+  }
+};
+
+const bufferLikelyHasPrice = (buffer) => {
+  if (!buffer) return false;
+  try {
+    const uint8 = buffer instanceof ArrayBuffer ? new Uint8Array(buffer) : buffer;
+    const sample = uint8.slice(0, Math.min(uint8.length, 200000));
+    const asString =
+      typeof TextDecoder !== 'undefined'
+        ? new TextDecoder('latin1').decode(sample)
+        : String.fromCharCode(...sample);
+    return containsPriceKeywords(asString);
+  } catch (error) {
+    console.warn('Nie udało się przeanalizować załącznika PDF:', error);
+    return false;
+  }
+};
+
+const redactPriceArea = () => {};
+
 const formatNumber = (value, fractionDigits = 2) => {
   const formatter = new Intl.NumberFormat('pl-PL', {
     minimumFractionDigits: fractionDigits,
@@ -1697,10 +1771,14 @@ export async function generateOknaNestPDF(formData) {
       try {
         const attachmentBytes = await resolveAttachmentBytes(attachmentFile);
         if (attachmentBytes) {
+          const attachmentLikelyHasPrice = bufferLikelyHasPrice(attachmentBytes);
           const attachmentDoc = await PDFDocument.load(attachmentBytes);
           const attachmentPageCount = attachmentDoc.getPageCount();
           for (let index = 0; index < attachmentPageCount; index += 1) {
             const [copiedPage] = await pdfDoc.copyPages(attachmentDoc, [index]);
+            if (pageContainsPriceText(copiedPage) || attachmentLikelyHasPrice) {
+              redactPriceArea(copiedPage);
+            }
             pdfDoc.addPage(copiedPage);
           }
         }
@@ -1742,10 +1820,14 @@ export async function generateOknaNestPDF(formData) {
     const filteredOptionalBuffers = optionalPdfBuffers.filter(Boolean);
     for (const item of filteredOptionalBuffers) {
       try {
+        const annexLikelyHasPrice = bufferLikelyHasPrice(item.buffer);
         const annexDoc = await PDFDocument.load(item.buffer);
         const pageCount = annexDoc.getPageCount();
         for (let index = 0; index < pageCount; index += 1) {
           const [copiedPage] = await pdfDoc.copyPages(annexDoc, [index]);
+          if (pageContainsPriceText(copiedPage) || annexLikelyHasPrice) {
+            redactPriceArea(copiedPage);
+          }
           pdfDoc.addPage(copiedPage);
         }
       } catch (error) {
