@@ -810,6 +810,7 @@ export async function generateOknaNestPDF(formData) {
   const themeBlueLight = rgb(0.9, 0.95, 0.99);
   const themeText = rgb(0.12, 0.18, 0.24);
   const themeHighlight = rgb(1, 0.95, 0.85);
+  const themeWarning = rgb(0.82, 0.0, 0.12);
   const formatOptionalPrice = (value) => {
     const priceNumber = parseInputNumber(value);
     return priceNumber > 0 ? formatCurrency(priceNumber) : 'na indywidualną wycenę';
@@ -1360,7 +1361,7 @@ export async function generateOknaNestPDF(formData) {
       });
       currentY -= 16;
       const mountingNote =
-        'Opcje dodatkowe nie są wliczone w cenę! Pozycje obejmują rekomendowane warianty montażowe i przygotowanie stolarki.';
+        'OPCJE DODATKOWE NIE SĄ WLICZONE W CENĘ! POZYCJE OBEJMUJĄ REKOMENDOWANE WARIANTY MONTAŻOWE I PRZYGOTOWANIE STOLARKI.';
       const mountingNoteLines = wrapText(regularFont, mountingNote, 9.5, tablePage.getSize().width - 120);
       mountingNoteLines.forEach((line) => {
         tablePage.drawText(line, {
@@ -1368,7 +1369,7 @@ export async function generateOknaNestPDF(formData) {
           y: currentY,
           size: 9.5,
           font: regularFont,
-          color: themeText,
+          color: themeWarning,
         });
         currentY -= 12;
       });
