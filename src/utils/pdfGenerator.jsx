@@ -535,8 +535,8 @@ function drawExtrasPage(page, fonts, data, title) {
         footerY -= footerLineHeight;
     });
 }
-function prepareTableData(deviceType, model, tankCapacity, bufferCapacity, systemType, offerOptions, isKotel, quantityOptions, isAc) {
-    let mainTableData = getTableData(deviceType, model, tankCapacity, bufferCapacity, systemType, isAc).map(sanitizeRowEntry);
+function prepareTableData(deviceType, model, tankCapacity, bufferCapacity, systemType, offerOptions, isKotel, quantityOptions, isAc, acScopeSelection) {
+    let mainTableData = getTableData(deviceType, model, tankCapacity, bufferCapacity, systemType, isAc, acScopeSelection).map(sanitizeRowEntry);
     let extrasTableData = (isKotel ? [...opcjeDlaKotlow] : [...opcjeDlaPompCiepla]).map(sanitizeRowEntry);
     quantityOptions = quantityOptions || {};
 
@@ -714,7 +714,8 @@ export async function generateOfferPDF(
   investmentAddress = {},
   advisorInfo = {},
   offerNumber = '',
-  vatRate = null
+  vatRate = null,
+  acScopeSelection = null
 ) {
     if (!userName?.trim()) {
         alert('Uzupełnij pole Imię i Nazwisko!');
@@ -755,15 +756,9 @@ export async function generateOfferPDF(
         const { width: pageWidth, height: pageHeight } = dynamicPage.getSize();
         
         const { mainTableData, extrasTableData } = prepareTableData(
-            deviceType, model, tankCapacity, bufferCapacity, systemType, offerOptions, isKotel, quantityOptions, isAc
+            deviceType, model, tankCapacity, bufferCapacity, systemType, offerOptions, isKotel, quantityOptions, isAc, acScopeSelection
         );
         
-        const offerDateDisplay = new Intl.DateTimeFormat('pl-PL').format(new Date());
-        const offerNumberDisplay = typeof offerNumber === 'string' ? offerNumber.trim() : '';
-        const subtitleText = offerNumberDisplay
-            ? `Data oferty: ${offerDateDisplay}     Nr oferty: ${offerNumberDisplay}`
-            : `Data oferty: ${offerDateDisplay}`;
-
         let currentY = pageHeight - 22;
 
         if (kamanLogoImage) {
@@ -771,17 +766,6 @@ export async function generateOfferPDF(
             dynamicPage.drawImage(kamanLogoImage, { x: (pageWidth - logoDims.width) / 2, y: currentY - logoDims.height, width: logoDims.width, height: logoDims.height });
             currentY -= (logoDims.height + 16);
         }
-
-        const subtitleFontSize = 11;
-        const subtitleWidth = regularFont.widthOfTextAtSize(subtitleText, subtitleFontSize);
-        dynamicPage.drawText(subtitleText, {
-            x: (pageWidth - subtitleWidth) / 2,
-            y: currentY,
-            size: subtitleFontSize,
-            font: regularFont,
-            color: rgb(0.32, 0.32, 0.32),
-        });
-        currentY -= subtitleFontSize + 12;
 
         const leftEntries = [
             { label: 'Oferta dla', lines: [userName || '---'] },
@@ -833,21 +817,9 @@ export async function generateOfferPDF(
         let lastContentPage = tableResult.finalPage;
         let lastYPosAfterTable = tableResult.finalY;
 
-        if (showPrice) {
-            const vatRateNumberRaw = typeof vatRate === 'string'
-                ? parseFloat(vatRate.replace(',', '.'))
-                : Number(vatRate);
-            const vatRateNumber = Number.isFinite(vatRateNumberRaw) && vatRateNumberRaw > 0 ? vatRateNumberRaw : null;
-            const vatRateDisplay = typeof vatRateNumber === 'number'
-                ? vatRateNumber.toLocaleString('pl-PL', {
-                    minimumFractionDigits: vatRateNumber % 1 === 0 ? 0 : 2,
-                    maximumFractionDigits: 2,
-                })
-                : null;
-            const vatNote = !isNettoPrice && vatRateDisplay ? ` (VAT ${vatRateDisplay}%)` : '';
-
+                if (showPrice) {
             const priceSuffix = isNettoPrice ? 'PLN netto' : 'PLN brutto';
-            const priceString = `Cena koncowa: ${cena} ${priceSuffix}${vatNote}`;
+            const priceString = `Cena koncowa: ${cena} ${priceSuffix}`;
             const priceFontSize = 15;
             const priceTextWidth = boldFont.widthOfTextAtSize(priceString, priceFontSize);
 
@@ -911,6 +883,9 @@ export async function generateOfferPDF(
         return null;
     }
 }
+
+
+
 
 
 
