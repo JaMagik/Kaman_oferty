@@ -125,7 +125,7 @@ export function getTableData(deviceType, model, tankCapacity, bufferCapacity, sy
   }
 
   // Logika dla pomp ciepła i kotłów
-  const boilerDeviceTypes = ["LAZAR", "Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid", "Kotlospaw duoko", "Viessmann Easypell"];
+  const boilerDeviceTypes = ["LAZAR SmartFire", "LAZAR DSPELL", "LAZAR PelletFOCUS", "Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid", "Kotlospaw duoko", "Viessmann Easypell"];
   const isBoiler = boilerDeviceTypes.includes(deviceType);
   const returnPumpBoilers = ["Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid", "Kotlospaw duoko", "Viessmann Easypell"];
 

@@ -295,14 +295,32 @@ export const pdfTemplateSets = {
   ],
 
   // --- KOTŁY NA PELLET ---
-  'LAZAR': [
+  'LAZAR SmartFire': [
     '/pdf_templates/kotly-pellet/lazar/1_okladka.pdf',
-    
-     '/pdf_templates/kotly-pellet/lazar/lazar.ds1.pdf',
-     '/pdf_templates/kotly-pellet/lazar/lazar.ds2.pdf',
-     '/pdf_templates/kotly-pellet/lazar/lazar.ds3.pdf',
-     oNas,
-          groupPage,
+
+    '/pdf_templates/kotly-pellet/lazar/lazar.ds1.pdf',
+    '/pdf_templates/kotly-pellet/lazar/lazar.ds2.pdf',
+    '/pdf_templates/kotly-pellet/lazar/lazar.ds3.pdf',
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+
+  'LAZAR DSPELL': [
+    '/pdf_templates/kotly-pellet/lazar-dspell/1_okladka.pdf',
+    '/pdf_templates/kotly-pellet/lazar-dspell/lazar_dspell_ds.pdf',
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+
+  'LAZAR PelletFOCUS': [
+    '/pdf_templates/kotly-pellet/lazar-pelletfocus/1_okladka.pdf',
+    '/pdf_templates/kotly-pellet/lazar-pelletfocus/lazar_pelletfocus_ds.pdf',
+    oNas,
+    groupPage,
     groupPage2,
     commonContactPage,
   ],

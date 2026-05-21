@@ -29,7 +29,7 @@ const DEVICE_CATEGORY = {
 };
 
 const HEAT_PUMP_DEFAULT_DEVICE = "Mitsubishi-cylinder-PUZ";
-const BOILER_DEFAULT_DEVICE = "LAZAR";
+const BOILER_DEFAULT_DEVICE = "LAZAR SmartFire";
 
 const allDevicesData = {
   ...mitsubishiBaseTables,
@@ -50,7 +50,9 @@ const allDevicesData = {
 };
 
 const boilerDeviceTypes = [
-  "LAZAR",
+  "LAZAR SmartFire",
+  "LAZAR DSPELL",
+  "LAZAR PelletFOCUS",
   "Kotlospaw Slimko Plus",
   "Kotlospaw slimko plus niski",
   "QMPELL",
@@ -142,6 +144,7 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
   const isBoiler = boilerDeviceTypes.includes(deviceType);
   const isAcDevice = acDeviceTypes.includes(deviceType);
   const isHybridBoiler = hybridBoilerDeviceTypes.includes(deviceType);
+  const isLazar = deviceType.startsWith("LAZAR");
 
   const isKotlospaw = deviceType.toLowerCase().includes('kotlospaw');
   const isHeatPumpCategory = deviceCategory === DEVICE_CATEGORY.HEAT_PUMP;
@@ -289,7 +292,7 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
       magneticSeparator: !isBoiler && !isAcDevice && includeMagneticSeparator,
       dotacja: includeDotacja,
       exhaustFan: isKotlospaw && includeExhaustFan,
-      returnProtection: isBoiler && includeReturnProtection,
+      returnProtection: isBoiler && !isLazar && includeReturnProtection,
     };
 
     const investmentAddress = {
@@ -503,7 +506,9 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
         {!isHeatPumpCategory && (
           <>
             <optgroup label="Kotły na Pellet">
-              <option value="LAZAR">Lazar</option>
+              <option value="LAZAR SmartFire">Lazar SmartFire</option>
+              <option value="LAZAR PelletFOCUS">Lazar PelletFOCUS</option>
+              <option value="LAZAR DSPELL">Lazar DSPELL</option>
               <option value="QMPELL">QMPell EVO</option>
               <option value="Kotlospaw Slimko Plus">Kotłospaw Slimko Plus</option>
               <option value="Kotlospaw slimko plus niski">Kotłospaw Slimko Plus niski</option>
@@ -648,7 +653,7 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
                 )}
               </>
             )}
-            {isBoiler && (
+            {isBoiler && !isLazar && (
               <div className="option-row">
                 <input
                   type="checkbox"
