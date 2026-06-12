@@ -15,6 +15,7 @@ import { kotlospawSlimkoPlusNiskiBaseTables } from "../data/tables/kotlospawSlim
 import { qmpellBaseTables } from "../data/tables/qmpellEvoTables";
 import { kotlospawDrewkoPlusBaseTables } from "../data/tables/kotlospawDrewkoPlusTable";
 import { kotlospawDrewkoHybridBaseTables } from "../data/tables/kotlospawDrewkoHybridTable";
+import { kotlospawInPellBaseTables } from "../data/tables/kotlospawInPellTable";
 import { toshiba1fBaseTables } from '../data/tables/toshiba1fTable';
 import { kaisaiHydroboxBaseTables } from '../data/tables/kaisaiTable';
 
@@ -42,6 +43,7 @@ const allDevicesData = {
   ...qmpellBaseTables,
   ...kotlospawDrewkoPlusBaseTables,
   ...kotlospawDrewkoHybridBaseTables,
+  ...kotlospawInPellBaseTables,
   ...toshiba1fBaseTables,
   ...kaisaiHydroboxBaseTables,
   ...panasonicBaseTables,
@@ -55,6 +57,7 @@ const boilerDeviceTypes = [
   "LAZAR PelletFOCUS",
   "Kotlospaw Slimko Plus",
   "Kotlospaw slimko plus niski",
+  "Kotlospaw In-pell",
   "QMPELL",
   "Kotlospaw drewko plus",
   "Kotlospaw drewko hybrid",
@@ -512,6 +515,7 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
               <option value="QMPELL">QMPell EVO</option>
               <option value="Kotlospaw Slimko Plus">Kotłospaw Slimko Plus</option>
               <option value="Kotlospaw slimko plus niski">Kotłospaw Slimko Plus niski</option>
+              <option value="Kotlospaw In-pell">Kotłospaw In-pell</option>
               <option value="Kotlospaw duoko">Kotłospaw Duoko</option>
               <option value="Viessmann Easypell">Viessmann Easypell</option>
             </optgroup>

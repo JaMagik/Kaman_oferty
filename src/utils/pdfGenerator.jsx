@@ -540,7 +540,7 @@ function prepareTableData(deviceType, model, tankCapacity, bufferCapacity, syste
     let extrasTableData = (isKotel ? [...opcjeDlaKotlow] : [...opcjeDlaPompCiepla]).map(sanitizeRowEntry);
     quantityOptions = quantityOptions || {};
 
-    const kotlospawDeviceTypes = ["Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid", "Kotlospaw duoko"];
+    const kotlospawDeviceTypes = ["Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "Kotlospaw In-pell", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid", "Kotlospaw duoko"];
     const isLazarDevice = deviceType.startsWith('LAZAR');
     let producerOptions = null;
     if (kotlospawDeviceTypes.includes(deviceType)) {
@@ -723,11 +723,11 @@ export async function generateOfferPDF(
         return null;
     }
 
-    const kotlyDeviceTypes = ["LAZAR SmartFire", "LAZAR DSPELL", "LAZAR PelletFOCUS", "Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid", "Kotlospaw duoko"];
+    const kotlyDeviceTypes = ["LAZAR SmartFire", "LAZAR DSPELL", "LAZAR PelletFOCUS", "Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "Kotlospaw In-pell", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid", "Kotlospaw duoko"];
     const acDeviceTypes = ['MITSUBISHI AY', 'MITSUBISHI HR', 'VIVAX Y-Design', 'VIVAX H-Design', 'VIVAX Q-Design', 'VIVAX N-Design'];
     const isKotel = kotlyDeviceTypes.includes(deviceType);
     const isAc = acDeviceTypes.includes(deviceType);
-    const kotlospawDeviceTypes = ["Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid", "Kotlospaw duoko"];
+    const kotlospawDeviceTypes = ["Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "Kotlospaw In-pell", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid", "Kotlospaw duoko"];
 
     try {
         const selectedTemplatePaths = getTemplatePathsForDevice(deviceType, model);

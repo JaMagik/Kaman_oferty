@@ -11,6 +11,7 @@ import { kotlospawSlimkoPlusNiskiBaseTables } from './kotlospawSlimkoPlusNiskiTa
 import { qmpellBaseTables } from "./qmpellEvoTables"; 
 import { kotlospawDrewkoPlusBaseTables } from "./kotlospawDrewkoPlusTable";
 import { kotlospawDrewkoHybridBaseTables } from "./kotlospawDrewkoHybridTable";
+import { kotlospawInPellBaseTables } from "./kotlospawInPellTable";
 import { kaisaiHydroboxBaseTables } from './kaisaiTable';
 import { opcjeDlaPompCiepla, opcjeDlaKotlow } from './opcjeDodatkowe.js';
 import { acModels, acScopeTemplate, acBaseTables } from './acData';
@@ -22,6 +23,7 @@ const allDeviceTables = {
     ...mitsubishiBaseTables, ...atlanticBaseTables, ...lazarBaseTables,
     ...viessmannBaseTables, ...nibeBaseTables, ...kotlospawSlimkoPlusBaseTables,...kotlospawSlimkoPlusNiskiBaseTables,
     ...qmpellBaseTables, ...kotlospawDrewkoPlusBaseTables, ...kotlospawDrewkoHybridBaseTables,...toshiba1fBaseTables,
+    ...kotlospawInPellBaseTables,
     ...kaisaiHydroboxBaseTables,
     ...acBaseTables,
      ...panasonicBaseTables, 
@@ -125,9 +127,9 @@ export function getTableData(deviceType, model, tankCapacity, bufferCapacity, sy
   }
 
   // Logika dla pomp ciepła i kotłów
-  const boilerDeviceTypes = ["LAZAR SmartFire", "LAZAR DSPELL", "LAZAR PelletFOCUS", "Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid", "Kotlospaw duoko", "Viessmann Easypell"];
+  const boilerDeviceTypes = ["LAZAR SmartFire", "LAZAR DSPELL", "LAZAR PelletFOCUS", "Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "Kotlospaw In-pell", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid", "Kotlospaw duoko", "Viessmann Easypell"];
   const isBoiler = boilerDeviceTypes.includes(deviceType);
-  const returnPumpBoilers = ["Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid", "Kotlospaw duoko", "Viessmann Easypell"];
+  const returnPumpBoilers = ["Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "Kotlospaw In-pell", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid", "Kotlospaw duoko", "Viessmann Easypell"];
 
   if (!allDeviceTables[deviceType] || !allDeviceTables[deviceType][model]) {
     return [];
