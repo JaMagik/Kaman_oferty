@@ -45,6 +45,8 @@ const lazar_22kW_440L_base = createLazarTable('Kociol na pellet - Lazar SmartFir
 const lazar_dspell_20kW_base = createLazarTable('Kociol na pellet - LAZAR DSPELL 20 kW');
 const lazar_pelletfocus_20kW_base = createLazarTable('Kociol na pellet - LAZAR PelletFOCUS 20 kW');
 
+const lazar_dspell_10kW_base = createLazarTable('Kociol na pellet - LAZAR DSPELL 10 kW');
+
 export const lazarBaseTables = {
   'LAZAR SmartFire': {
     '11 kW/150': lazar_11kW_150L_base,
@@ -58,6 +60,7 @@ export const lazarBaseTables = {
     '22 kW/440': lazar_22kW_440L_base,
   },
   'LAZAR DSPELL': {
+    '10 kW': lazar_dspell_10kW_base,
     '20 kW': lazar_dspell_20kW_base,
   },
   'LAZAR PelletFOCUS': {
