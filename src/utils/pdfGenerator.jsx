@@ -723,7 +723,7 @@ export async function generateOfferPDF(
         return null;
     }
 
-    const kotlyDeviceTypes = ["LAZAR SmartFire", "LAZAR DSPELL", "LAZAR PelletFOCUS", "Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "Kotlospaw In-pell", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid", "Kotlospaw duoko"];
+    const kotlyDeviceTypes = ["LAZAR SmartFire", "LAZAR DSPELL", "LAZAR DS", "LAZAR PelletFOCUS", "Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "Kotlospaw In-pell", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid", "Kotlospaw duoko"];
     const acDeviceTypes = ['MITSUBISHI AY', 'MITSUBISHI HR', 'VIVAX Y-Design', 'VIVAX H-Design', 'VIVAX Q-Design', 'VIVAX N-Design'];
     const isKotel = kotlyDeviceTypes.includes(deviceType);
     const isAc = acDeviceTypes.includes(deviceType);

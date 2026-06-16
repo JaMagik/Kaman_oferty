@@ -316,6 +316,15 @@ export const pdfTemplateSets = {
     commonContactPage,
   ],
 
+  'LAZAR DS': [
+    '/pdf_templates/kotly-pellet/lazar-ds/1_okladka.pdf',
+    '/pdf_templates/kotly-pellet/lazar-ds/lazar_ds_karta_katalogowa.pdf',
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+
   'LAZAR PelletFOCUS': [
     '/pdf_templates/kotly-pellet/lazar-pelletfocus/1_okladka.pdf',
     '/pdf_templates/kotly-pellet/lazar-pelletfocus/lazar_pelletfocus_ds.pdf',
