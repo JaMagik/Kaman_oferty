@@ -297,12 +297,24 @@ export const pdfTemplateSets = {
   // --- KOTŁY NA PELLET ---
   'LAZAR': [
     '/pdf_templates/kotly-pellet/lazar/1_okladka.pdf',
-    
-     '/pdf_templates/kotly-pellet/lazar/lazar.ds1.pdf',
-     '/pdf_templates/kotly-pellet/lazar/lazar.ds2.pdf',
-     '/pdf_templates/kotly-pellet/lazar/lazar.ds3.pdf',
-     oNas,
-          groupPage,
+    '/pdf_templates/kotly-pellet/lazar/lazar.ds1.pdf',
+    '/pdf_templates/kotly-pellet/lazar/lazar.ds2.pdf',
+    '/pdf_templates/kotly-pellet/lazar/lazar.ds3.pdf',
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+
+  'LAZAR-EXCLUSIVE': [
+    '/pdf_templates/kotly-pellet/lazar/1_okladka.pdf',
+    '/pdf_templates/kotly-pellet/lazar/lazar.ds1.pdf',
+    '/pdf_templates/kotly-pellet/lazar/lazar.ds2.pdf',
+    '/pdf_templates/kotly-pellet/lazar/lazar.ds3.pdf',
+    '/pdf_templates/kotly-pellet/lazar/lazar.exclusive.1.pdf',
+    '/pdf_templates/kotly-pellet/lazar/lazar.exclusive.2.pdf',
+    oNas,
+    groupPage,
     groupPage2,
     commonContactPage,
   ],

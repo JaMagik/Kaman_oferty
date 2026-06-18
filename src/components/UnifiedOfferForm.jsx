@@ -51,6 +51,7 @@ const allDevicesData = {
 
 const boilerDeviceTypes = [
   "LAZAR",
+  "LAZAR-EXCLUSIVE",
   "Kotlospaw Slimko Plus",
   "Kotlospaw slimko plus niski",
   "QMPELL",
@@ -502,17 +503,22 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
         )}
         {!isHeatPumpCategory && (
           <>
-            <optgroup label="Kotły na Pellet">
-              <option value="LAZAR">Lazar</option>
+            <optgroup label="Lazar">
+              <option value="LAZAR">Lazar SmartFire</option>
+              <option value="LAZAR-EXCLUSIVE">Lazar SmartFire Exclusive</option>
+            </optgroup>
+            <optgroup label="QMPell">
               <option value="QMPELL">QMPell EVO</option>
+            </optgroup>
+            <optgroup label="Kotłospaw">
               <option value="Kotlospaw Slimko Plus">Kotłospaw Slimko Plus</option>
               <option value="Kotlospaw slimko plus niski">Kotłospaw Slimko Plus niski</option>
               <option value="Kotlospaw duoko">Kotłospaw Duoko</option>
-              <option value="Viessmann Easypell">Viessmann Easypell</option>
-            </optgroup>
-            <optgroup label="Kotły na Drewno / Hybrydowe">
               <option value="Kotlospaw drewko plus">Kotłospaw Drewko Plus</option>
               <option value="Kotlospaw drewko hybrid">Kotłospaw Drewko Hybrid</option>
+            </optgroup>
+            <optgroup label="Viessmann">
+              <option value="Viessmann Easypell">Viessmann Easypell</option>
             </optgroup>
           </>
         )}

@@ -544,7 +544,7 @@ function prepareTableData(deviceType, model, tankCapacity, bufferCapacity, syste
     let producerOptions = null;
     if (kotlospawDeviceTypes.includes(deviceType)) {
         producerOptions = [...opcjeKotlospawProducent].map(sanitizeRowEntry);
-    } else if (deviceType === 'LAZAR') {
+    } else if (deviceType === 'LAZAR' || deviceType === 'LAZAR-EXCLUSIVE') {
         producerOptions = [...opcjeLazarProducent].map(sanitizeRowEntry);
     }
 
@@ -654,7 +654,7 @@ function prepareTableData(deviceType, model, tankCapacity, bufferCapacity, syste
         { key: 'podbudowa', name: 'Wykonanie podbudowy pod jednostke zewnetrzna', applicable: () => !isAc && !isKotel },
         { key: 'magneticSeparator', name: magneticSeparatorLabel, applicable: () => !isKotel && !isAc },
         { key: 'exhaustFan', name: 'Wentylator wyciagowy', applicable: () => isKotel },
-        { key: 'returnProtection', name: 'Zastosowanie termostatycznej ochrony powrotu', applicable: () => isKotel && deviceType !== 'LAZAR' },
+        { key: 'returnProtection', name: 'Zastosowanie termostatycznej ochrony powrotu', applicable: () => isKotel && deviceType !== 'LAZAR' && deviceType !== 'LAZAR-EXCLUSIVE' },
     ];
     
     movableItems.forEach(item => {
@@ -721,7 +721,7 @@ export async function generateOfferPDF(
         return null;
     }
 
-    const kotlyDeviceTypes = ["LAZAR", "Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid", "Kotlospaw duoko"];
+    const kotlyDeviceTypes = ["LAZAR", "LAZAR-EXCLUSIVE", "Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid", "Kotlospaw duoko"];
     const acDeviceTypes = ['MITSUBISHI AY', 'MITSUBISHI HR', 'VIVAX Y-Design', 'VIVAX H-Design', 'VIVAX Q-Design', 'VIVAX N-Design'];
     const isKotel = kotlyDeviceTypes.includes(deviceType);
     const isAc = acDeviceTypes.includes(deviceType);

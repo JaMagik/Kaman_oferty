@@ -42,6 +42,18 @@ const lazar_22kW_150L_base = createLazarTable('Kociol na pellet - Lazar SmartFir
 const lazar_22kW_240L_base = createLazarTable('Kociol na pellet - Lazar SmartFire 22 kW / 240L');
 const lazar_22kW_440L_base = createLazarTable('Kociol na pellet - Lazar SmartFire 22 kW / 440L');
 
+const lazar_exclusive_11kW_150L_base = createLazarTable('Kociol na pellet - Lazar SmartFire Exclusive 11 kW / 150L');
+const lazar_exclusive_11kW_240L_base = createLazarTable('Kociol na pellet - Lazar SmartFire Exclusive 11 kW / 240L');
+const lazar_exclusive_11kW_440L_base = createLazarTable('Kociol na pellet - Lazar SmartFire Exclusive 11 kW / 440L');
+
+const lazar_exclusive_15kW_150L_base = createLazarTable('Kociol na pellet - Lazar SmartFire Exclusive 15 kW / 150L');
+const lazar_exclusive_15kW_240L_base = createLazarTable('Kociol na pellet - Lazar SmartFire Exclusive 15 kW / 240L');
+const lazar_exclusive_15kW_440L_base = createLazarTable('Kociol na pellet - Lazar SmartFire Exclusive 15 kW / 440L');
+
+const lazar_exclusive_22kW_150L_base = createLazarTable('Kociol na pellet - Lazar SmartFire Exclusive 22 kW / 150L');
+const lazar_exclusive_22kW_240L_base = createLazarTable('Kociol na pellet - Lazar SmartFire Exclusive 22 kW / 240L');
+const lazar_exclusive_22kW_440L_base = createLazarTable('Kociol na pellet - Lazar SmartFire Exclusive 22 kW / 440L');
+
 export const lazarBaseTables = {
   'LAZAR': {
     '11 kW/150': lazar_11kW_150L_base,
@@ -53,6 +65,17 @@ export const lazarBaseTables = {
     '22 kW/150': lazar_22kW_150L_base,
     '22 kW/240': lazar_22kW_240L_base,
     '22 kW/440': lazar_22kW_440L_base,
+  },
+  'LAZAR-EXCLUSIVE': {
+    '11 kW/150': lazar_exclusive_11kW_150L_base,
+    '11 kW/240': lazar_exclusive_11kW_240L_base,
+    '11 kW/440': lazar_exclusive_11kW_440L_base,
+    '15 kW/150': lazar_exclusive_15kW_150L_base,
+    '15 kW/240': lazar_exclusive_15kW_240L_base,
+    '15 kW/440': lazar_exclusive_15kW_440L_base,
+    '22 kW/150': lazar_exclusive_22kW_150L_base,
+    '22 kW/240': lazar_exclusive_22kW_240L_base,
+    '22 kW/440': lazar_exclusive_22kW_440L_base,
   },
 };
 
