@@ -295,7 +295,7 @@ export const pdfTemplateSets = {
   ],
 
   // --- KOTŁY NA PELLET ---
-  'LAZAR': [
+  'LAZAR SmartFire': [
     '/pdf_templates/kotly-pellet/lazar/1_okladka.pdf',
     '/pdf_templates/kotly-pellet/lazar/lazar.ds1.pdf',
     '/pdf_templates/kotly-pellet/lazar/lazar.ds2.pdf',
@@ -307,12 +307,38 @@ export const pdfTemplateSets = {
   ],
 
   'LAZAR-EXCLUSIVE': [
-    '/pdf_templates/kotly-pellet/lazar/1_okladka.pdf',
+    '/pdf_templates/kotly-pellet/lazar/lazar.exclusive.1.pdf',
     '/pdf_templates/kotly-pellet/lazar/lazar.ds1.pdf',
     '/pdf_templates/kotly-pellet/lazar/lazar.ds2.pdf',
     '/pdf_templates/kotly-pellet/lazar/lazar.ds3.pdf',
-    '/pdf_templates/kotly-pellet/lazar/lazar.exclusive.1.pdf',
     '/pdf_templates/kotly-pellet/lazar/lazar.exclusive.2.pdf',
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+
+  'LAZAR DSPELL': [
+    '/pdf_templates/kotly-pellet/lazar-dspell/1_okladka.pdf',
+    '/pdf_templates/kotly-pellet/lazar-dspell/lazar_dspell_ds.pdf',
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+
+  'LAZAR DS': [
+    '/pdf_templates/kotly-pellet/lazar-ds/1_okladka.pdf',
+    '/pdf_templates/kotly-pellet/lazar-ds/lazar_ds_karta_katalogowa.pdf',
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+
+  'LAZAR PelletFOCUS': [
+    '/pdf_templates/kotly-pellet/lazar-pelletfocus/1_okladka.pdf',
+    '/pdf_templates/kotly-pellet/lazar-pelletfocus/lazar_pelletfocus_ds.pdf',
     oNas,
     groupPage,
     groupPage2,
@@ -335,6 +361,14 @@ export const pdfTemplateSets = {
     '/pdf_templates/kotly-pellet/kotlospaw-slimko-plus/slimko_plus_karta_katalogowa_2.pdf',
      oNas,
       groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+  'Kotlospaw In-pell': [
+    '/pdf_templates/kotly-pellet/kotlospaw-in-pell/1_okladka.pdf',
+    '/pdf_templates/kotly-pellet/kotlospaw-in-pell/ulotka_in_pell.pdf',
+    oNas,
+    groupPage,
     groupPage2,
     commonContactPage,
   ],

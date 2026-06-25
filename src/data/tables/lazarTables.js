@@ -24,11 +24,19 @@ const lazar_base_template = [
   ['15', 'Gwarancja i serwis', 'kpl.', '1', 'Kociol objety 10-letnia gwarancja przy rejestracji - zapewniamy wsparcie techniczne i serwisowe.', 'common'],
 ];
 
-const createLazarTable = (name) => {
+const createLazarTable = (name, deviceDescription = null, warrantyDescription = null) => {
   const table = JSON.parse(JSON.stringify(lazar_base_template));
   table[0][1] = name;
+  if (deviceDescription) table[0][4] = deviceDescription;
+  if (warrantyDescription) {
+    const warrantyRow = table.find(row => row[1] === 'Gwarancja i serwis');
+    if (warrantyRow) warrantyRow[4] = warrantyDescription;
+  }
   return table;
 };
+
+const lazarDsDescription = 'Kociol na drewno i pellet klasy 5 i EcoDesign, z ceramiczna komora spalania, prosta obsluga i praca bez zasilania elektrycznego.';
+const lazarDsWarrantyDescription = 'Kociol objety wsparciem serwisowym producenta - serwis fabryczny dostepny na terenie kraju.';
 
 const lazar_11kW_150L_base = createLazarTable('Kociol na pellet - Lazar SmartFire 11 kW / 150L');
 const lazar_11kW_240L_base = createLazarTable('Kociol na pellet - Lazar SmartFire 11 kW / 240L');
@@ -42,20 +50,29 @@ const lazar_22kW_150L_base = createLazarTable('Kociol na pellet - Lazar SmartFir
 const lazar_22kW_240L_base = createLazarTable('Kociol na pellet - Lazar SmartFire 22 kW / 240L');
 const lazar_22kW_440L_base = createLazarTable('Kociol na pellet - Lazar SmartFire 22 kW / 440L');
 
-const lazar_exclusive_11kW_150L_base = createLazarTable('Kociol na pellet - Lazar SmartFire Exclusive 11 kW / 150L');
-const lazar_exclusive_11kW_240L_base = createLazarTable('Kociol na pellet - Lazar SmartFire Exclusive 11 kW / 240L');
-const lazar_exclusive_11kW_440L_base = createLazarTable('Kociol na pellet - Lazar SmartFire Exclusive 11 kW / 440L');
+// SmartFire z pakietem Exclusive ma te same moce i wyposazenie bazowe co SmartFire.
+const lazar_exclusive_11kW_150L_base = createLazarTable('Kociol na pellet - Lazar SmartFire z pakietem Exclusive 11 kW / 150L');
+const lazar_exclusive_11kW_240L_base = createLazarTable('Kociol na pellet - Lazar SmartFire z pakietem Exclusive 11 kW / 240L');
+const lazar_exclusive_11kW_440L_base = createLazarTable('Kociol na pellet - Lazar SmartFire z pakietem Exclusive 11 kW / 440L');
 
-const lazar_exclusive_15kW_150L_base = createLazarTable('Kociol na pellet - Lazar SmartFire Exclusive 15 kW / 150L');
-const lazar_exclusive_15kW_240L_base = createLazarTable('Kociol na pellet - Lazar SmartFire Exclusive 15 kW / 240L');
-const lazar_exclusive_15kW_440L_base = createLazarTable('Kociol na pellet - Lazar SmartFire Exclusive 15 kW / 440L');
+const lazar_exclusive_15kW_150L_base = createLazarTable('Kociol na pellet - Lazar SmartFire z pakietem Exclusive 15 kW / 150L');
+const lazar_exclusive_15kW_240L_base = createLazarTable('Kociol na pellet - Lazar SmartFire z pakietem Exclusive 15 kW / 240L');
+const lazar_exclusive_15kW_440L_base = createLazarTable('Kociol na pellet - Lazar SmartFire z pakietem Exclusive 15 kW / 440L');
 
-const lazar_exclusive_22kW_150L_base = createLazarTable('Kociol na pellet - Lazar SmartFire Exclusive 22 kW / 150L');
-const lazar_exclusive_22kW_240L_base = createLazarTable('Kociol na pellet - Lazar SmartFire Exclusive 22 kW / 240L');
-const lazar_exclusive_22kW_440L_base = createLazarTable('Kociol na pellet - Lazar SmartFire Exclusive 22 kW / 440L');
+const lazar_exclusive_22kW_150L_base = createLazarTable('Kociol na pellet - Lazar SmartFire z pakietem Exclusive 22 kW / 150L');
+const lazar_exclusive_22kW_240L_base = createLazarTable('Kociol na pellet - Lazar SmartFire z pakietem Exclusive 22 kW / 240L');
+const lazar_exclusive_22kW_440L_base = createLazarTable('Kociol na pellet - Lazar SmartFire z pakietem Exclusive 22 kW / 440L');
+
+// Additional Lazar variants from origin/main
+const lazar_dspell_20kW_base = createLazarTable('Kociol na pellet - LAZAR DSPELL 20 kW');
+const lazar_pelletfocus_20kW_base = createLazarTable('Kociol na pellet - LAZAR PelletFOCUS 20 kW');
+
+const lazar_dspell_10kW_base = createLazarTable('Kociol na pellet - LAZAR DSPELL 10 kW');
+const lazar_ds_10kW_base = createLazarTable('Kociol na drewno i pellet - LAZAR DS 10 kW', lazarDsDescription, lazarDsWarrantyDescription);
+const lazar_ds_20kW_base = createLazarTable('Kociol na drewno i pellet - LAZAR DS 20 kW', lazarDsDescription, lazarDsWarrantyDescription);
 
 export const lazarBaseTables = {
-  'LAZAR': {
+  'LAZAR SmartFire': {
     '11 kW/150': lazar_11kW_150L_base,
     '11 kW/240': lazar_11kW_240L_base,
     '11 kW/440': lazar_11kW_440L_base,
@@ -77,7 +94,15 @@ export const lazarBaseTables = {
     '22 kW/240': lazar_exclusive_22kW_240L_base,
     '22 kW/440': lazar_exclusive_22kW_440L_base,
   },
+  'LAZAR DSPELL': {
+    '10 kW': lazar_dspell_10kW_base,
+    '20 kW': lazar_dspell_20kW_base,
+  },
+  'LAZAR DS': {
+    '10 kW': lazar_ds_10kW_base,
+    '20 kW': lazar_ds_20kW_base,
+  },
+  'LAZAR PelletFOCUS': {
+    '20 kW': lazar_pelletfocus_20kW_base,
+  },
 };
-
-
-

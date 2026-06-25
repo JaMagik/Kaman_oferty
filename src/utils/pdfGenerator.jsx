@@ -148,7 +148,7 @@ function drawTable(pdfDoc, initialPage, fonts, tableData, startY, customConfig =
     const { regular: regularFont, bold: boldFont } = fonts;
     
     const defaultConfig = {
-        columnWidths: [30, 160, 250, 35, 35],
+        columnWidths: [30, 175, 275, 35, 35],
         headerHeight: 22,
         padding: { top: 5, bottom: 5, left: 5, right: 5 },
         headerFontSize: 9.5,
@@ -254,6 +254,126 @@ function drawTable(pdfDoc, initialPage, fonts, tableData, startY, customConfig =
     
     return { finalY: currentY, finalPage: currentPage };
 }
+
+const buildMainTableColumnWidths = (pageWidth, tableData) => {
+    const tableWidth = Math.floor(Math.min(pageWidth - 24, 570));
+    const rowCount = tableData.length;
+    const lpWidth = rowCount >= 18 ? 26 : 28;
+    const unitWidth = rowCount >= 18 ? 33 : 34;
+    const qtyWidth = rowCount >= 18 ? 32 : 34;
+    const flexibleWidth = tableWidth - lpWidth - unitWidth - qtyWidth;
+    const averageNameLength = tableData.reduce((sum, row) => sum + String(row[1] || '').length, 0) / Math.max(rowCount, 1);
+    const nameRatio = averageNameLength > 48 ? 0.4 : averageNameLength > 34 ? 0.38 : 0.36;
+    const nameWidth = Math.round(Math.min(205, Math.max(170, flexibleWidth * nameRatio)));
+    const descriptionWidth = tableWidth - lpWidth - unitWidth - qtyWidth - nameWidth;
+
+    return [lpWidth, nameWidth, descriptionWidth, unitWidth, qtyWidth];
+};
+
+const measureMainTableHeight = (tableData, fonts, tableConfig) => {
+    const { regular: regularFont } = fonts;
+    return tableData.reduce((height, row) => {
+        const [, name, , , description] = row;
+        const nameLines = wrapText(name, regularFont, tableConfig.contentFontSize, tableConfig.columnWidths[1] - (tableConfig.padding.left * 2));
+        const descLines = wrapText(description || '', regularFont, tableConfig.descriptionFontSize, tableConfig.columnWidths[2] - (tableConfig.padding.left * 2));
+        const rowHeight = Math.max(
+            nameLines.length * tableConfig.contentFontSize * tableConfig.lineHeight,
+            descLines.length * tableConfig.descriptionFontSize * tableConfig.lineHeight
+        ) + tableConfig.padding.top + tableConfig.padding.bottom;
+        return height + rowHeight;
+    }, tableConfig.headerHeight);
+};
+
+const selectMainTableLayout = ({ pageWidth, tableData, fonts, startY, showPrice }) => {
+    const columnWidths = buildMainTableColumnWidths(pageWidth, tableData);
+    const variants = [
+        {
+            columnWidths,
+            headerHeight: 23,
+            padding: { top: 5.2, bottom: 5.2, left: 5, right: 5 },
+            headerFontSize: 9.4,
+            contentFontSize: 8.5,
+            descriptionFontSize: 7.6,
+            lineHeight: 1.22,
+            pageMargins: { top: 16, bottom: 20 },
+            priceFontSize: 15,
+            priceGap: 22,
+            minPriceY: 42,
+        },
+        {
+            columnWidths,
+            headerHeight: 22,
+            padding: { top: 4.6, bottom: 4.6, left: 5, right: 5 },
+            headerFontSize: 9.2,
+            contentFontSize: 8.2,
+            descriptionFontSize: 7.35,
+            lineHeight: 1.18,
+            pageMargins: { top: 15, bottom: 18 },
+            priceFontSize: 15,
+            priceGap: 20,
+            minPriceY: 40,
+        },
+        {
+            columnWidths,
+            headerHeight: 21,
+            padding: { top: 4, bottom: 4, left: 4.5, right: 4.5 },
+            headerFontSize: 9,
+            contentFontSize: 7.8,
+            descriptionFontSize: 7,
+            lineHeight: 1.16,
+            pageMargins: { top: 14, bottom: 16 },
+            priceFontSize: 14.5,
+            priceGap: 18,
+            minPriceY: 38,
+        },
+        {
+            columnWidths,
+            headerHeight: 20,
+            padding: { top: 3.1, bottom: 3.1, left: 4.5, right: 4.5 },
+            headerFontSize: 8.7,
+            contentFontSize: 7.2,
+            descriptionFontSize: 6.55,
+            lineHeight: 1.1,
+            pageMargins: { top: 12, bottom: 14 },
+            priceFontSize: 14,
+            priceGap: 16,
+            minPriceY: 36,
+        },
+        {
+            columnWidths,
+            headerHeight: 18,
+            padding: { top: 2.4, bottom: 2.4, left: 4, right: 4 },
+            headerFontSize: 8.2,
+            contentFontSize: 6.5,
+            descriptionFontSize: 6,
+            lineHeight: 1.06,
+            pageMargins: { top: 10, bottom: 12 },
+            priceFontSize: 13.5,
+            priceGap: 14,
+            minPriceY: 34,
+        },
+        {
+            columnWidths,
+            headerHeight: 17,
+            padding: { top: 2, bottom: 2, left: 4, right: 4 },
+            headerFontSize: 8,
+            contentFontSize: 6.1,
+            descriptionFontSize: 5.8,
+            lineHeight: 1.03,
+            pageMargins: { top: 10, bottom: 12 },
+            priceFontSize: 13,
+            priceGap: 12,
+            minPriceY: 32,
+        },
+    ];
+
+    const fallbackVariant = variants[variants.length - 1];
+    return variants.find((variant) => {
+        const tableHeight = measureMainTableHeight(tableData, fonts, variant);
+        const reserveForPrice = showPrice ? variant.priceGap + variant.priceFontSize + variant.minPriceY : variant.pageMargins.bottom;
+        return startY - tableHeight >= reserveForPrice;
+    }) || fallbackVariant;
+};
 
 
 
@@ -535,16 +655,17 @@ function drawExtrasPage(page, fonts, data, title) {
         footerY -= footerLineHeight;
     });
 }
-function prepareTableData(deviceType, model, tankCapacity, bufferCapacity, systemType, offerOptions, isKotel, quantityOptions, isAc) {
-    let mainTableData = getTableData(deviceType, model, tankCapacity, bufferCapacity, systemType, isAc).map(sanitizeRowEntry);
+function prepareTableData(deviceType, model, tankCapacity, bufferCapacity, systemType, offerOptions, isKotel, quantityOptions, isAc, acScopeSelection) {
+    let mainTableData = getTableData(deviceType, model, tankCapacity, bufferCapacity, systemType, isAc, acScopeSelection).map(sanitizeRowEntry);
     let extrasTableData = (isKotel ? [...opcjeDlaKotlow] : [...opcjeDlaPompCiepla]).map(sanitizeRowEntry);
     quantityOptions = quantityOptions || {};
 
-    const kotlospawDeviceTypes = ["Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid", "Kotlospaw duoko"];
+    const kotlospawDeviceTypes = ["Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "Kotlospaw In-pell", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid", "Kotlospaw duoko"];
+    const isLazarDevice = String(deviceType || '').startsWith('LAZAR');
     let producerOptions = null;
     if (kotlospawDeviceTypes.includes(deviceType)) {
         producerOptions = [...opcjeKotlospawProducent].map(sanitizeRowEntry);
-    } else if (deviceType === 'LAZAR' || deviceType === 'LAZAR-EXCLUSIVE') {
+    } else if (isLazarDevice) {
         producerOptions = [...opcjeLazarProducent].map(sanitizeRowEntry);
     }
 
@@ -605,7 +726,6 @@ function prepareTableData(deviceType, model, tankCapacity, bufferCapacity, syste
         });
     }
 
-
     if (isKotel) {
         const pumpQty = normalizeQty(quantityOptions.boilerCirculationPumps, 1);
         const controllerQty = normalizeQty(quantityOptions.boilerControllers, 1);
@@ -651,33 +771,58 @@ function prepareTableData(deviceType, model, tankCapacity, bufferCapacity, syste
 
     const movableItems = [
         { key: 'demontaz', name: 'Demontaz starego zrodla ciepla', applicable: () => !isAc },
-        { key: 'podbudowa', name: 'Wykonanie podbudowy pod jednostke zewnetrzna', applicable: () => !isAc && !isKotel },
+        {
+            key: 'podbudowa',
+            name: 'Wykonanie podbudowy pod jednostke zewnetrzna',
+            aliases: ['Wykonanie podbudowy pod jednostke zewnetrzna (fundament)'],
+            applicable: () => !isAc && !isKotel,
+        },
         { key: 'magneticSeparator', name: magneticSeparatorLabel, applicable: () => !isKotel && !isAc },
         { key: 'exhaustFan', name: 'Wentylator wyciagowy', applicable: () => isKotel },
-        { key: 'returnProtection', name: 'Zastosowanie termostatycznej ochrony powrotu', applicable: () => isKotel && deviceType !== 'LAZAR' && deviceType !== 'LAZAR-EXCLUSIVE' },
+        { key: 'returnProtection', name: 'Zastosowanie termostatycznej ochrony powrotu', applicable: () => isKotel && !isLazarDevice },
     ];
+
+    const matchesMovableItem = (rowName, item) => {
+        const normalizedRowName = normalizeName(rowName);
+        return [item.name, ...(item.aliases || [])]
+            .map(normalizeName)
+            .some(candidate => normalizedRowName === candidate || normalizedRowName.includes(candidate));
+    };
     
+    let heatPumpMovableInsertOffset = 0;
+
     movableItems.forEach(item => {
         if (offerOptions[item.key] && item.applicable()) {
-            const itemNameNormalized = normalizeName(item.name);
-            const itemIndexInExtras = extrasTableData.findIndex(row => Array.isArray(row) && normalizeName(row[1]) === itemNameNormalized);
-            
+            const itemIndexInExtras = extrasTableData.findIndex(row => Array.isArray(row) && matchesMovableItem(row[1], item));
+	            
             if (itemIndexInExtras > -1) {
                 const [itemRow] = extrasTableData.splice(itemIndexInExtras, 1);
-                // Struktura opcji dodatkowych: [lp, nazwa, opis, j.m., cena]
-                // Struktura tabeli glownej: [lp, nazwa, j.m., ilosc, opis]
                 const itemRowForMainTable = sanitizeRowEntry(['', itemRow[1], itemRow[3], '1', itemRow[2]]);
-                
-                const insertionKeywords = ['podlaczenie kominowe', 'montaz systemu grzewczego'];
-                let insertAtIndex = mainTableData.findIndex(row => {
-                    const normalized = normalizeName(row[1]);
-                    return insertionKeywords.some(keyword => normalized.includes(keyword));
-                });
+	                
+                let insertAtIndex = -1;
+                let insertedUsingInsulationAnchor = false;
+                if (!isKotel) {
+                    const insulationIndex = mainTableData.findIndex(row => normalizeName(row[1]).includes('izolacja termiczna rur'));
+                    if (insulationIndex !== -1) {
+                        insertAtIndex = insulationIndex + 1 + heatPumpMovableInsertOffset;
+                        heatPumpMovableInsertOffset += 1;
+                        insertedUsingInsulationAnchor = true;
+                    }
+                }
+                if (insertAtIndex === -1) {
+                    const insertionKeywords = ['podlaczenie kominowe', 'montaz systemu grzewczego'];
+                    insertAtIndex = mainTableData.findIndex(row => {
+                        const normalized = normalizeName(row[1]);
+                        return insertionKeywords.some(keyword => normalized.includes(keyword));
+                    });
+                }
                 if (insertAtIndex === -1) {
                     insertAtIndex = mainTableData.findIndex(row => normalizeName(row[1]).includes('koci'));
                     insertAtIndex = insertAtIndex > -1 ? insertAtIndex + 1 : 1;
                 } else {
-                    insertAtIndex += 1;
+                    if (!insertedUsingInsulationAnchor) {
+                        insertAtIndex += 1;
+                    }
                 }
                 mainTableData.splice(insertAtIndex, 0, itemRowForMainTable);
             }
@@ -714,18 +859,25 @@ export async function generateOfferPDF(
   investmentAddress = {},
   advisorInfo = {},
   offerNumber = '',
-  vatRate = null
+  vatRate = null,
+  acScopeSelection = null
 ) {
     if (!userName?.trim()) {
         alert('Uzupełnij pole Imię i Nazwisko!');
         return null;
     }
 
-    const kotlyDeviceTypes = ["LAZAR", "LAZAR-EXCLUSIVE", "Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid", "Kotlospaw duoko"];
-    const acDeviceTypes = ['MITSUBISHI AY', 'MITSUBISHI HR', 'VIVAX Y-Design', 'VIVAX H-Design', 'VIVAX Q-Design', 'VIVAX N-Design'];
+    if ((Array.isArray(offerNumber) || offerNumber?.includedIndexes) && acScopeSelection === null) {
+        acScopeSelection = offerNumber;
+        offerNumber = '';
+        vatRate = null;
+    }
+
+    const kotlyDeviceTypes = ["LAZAR SmartFire", "LAZAR-EXCLUSIVE", "LAZAR DSPELL", "LAZAR DS", "LAZAR PelletFOCUS", "Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "Kotlospaw In-pell", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid", "Kotlospaw duoko", "Viessmann Easypell"];
+    const acDeviceTypes = ['MITSUBISHI AY', 'MITSUBISHI HR', 'VIVAX Y-Design', 'VIVAX H-Design', 'VIVAX M-Design', 'VIVAX Q-Design', 'VIVAX N-Design'];
     const isKotel = kotlyDeviceTypes.includes(deviceType);
     const isAc = acDeviceTypes.includes(deviceType);
-    const kotlospawDeviceTypes = ["Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid", "Kotlospaw duoko"];
+    const kotlospawDeviceTypes = ["Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "Kotlospaw In-pell", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid", "Kotlospaw duoko"];
 
     try {
         const selectedTemplatePaths = getTemplatePathsForDevice(deviceType, model);
@@ -755,9 +907,9 @@ export async function generateOfferPDF(
         const { width: pageWidth, height: pageHeight } = dynamicPage.getSize();
         
         const { mainTableData, extrasTableData } = prepareTableData(
-            deviceType, model, tankCapacity, bufferCapacity, systemType, offerOptions, isKotel, quantityOptions, isAc
+            deviceType, model, tankCapacity, bufferCapacity, systemType, offerOptions, isKotel, quantityOptions, isAc, acScopeSelection
         );
-        
+
         const offerDateDisplay = new Intl.DateTimeFormat('pl-PL').format(new Date());
         const offerNumberDisplay = typeof offerNumber === 'string' ? offerNumber.trim() : '';
         const subtitleText = offerNumberDisplay
@@ -806,30 +958,15 @@ export async function generateOfferPDF(
         });
         currentY = infoBlockBottom - 1;
 
-    const tableConfigOverrides = (() => {
-    const rowCount = mainTableData.length;
-    if (rowCount > 24) {
-        return {
-            contentFontSize: 6.8,
-            descriptionFontSize: 6.4,
-            lineHeight: 1.08,
-            pageMargins: { top: 12, bottom: 16 },
-        };
-    }
-    if (rowCount > 18) {
-        return {
-            contentFontSize: 7.1,
-            descriptionFontSize: 6.6,
-            lineHeight: 1.12,
-            pageMargins: { top: 14, bottom: 18 },
-        };
-    }
-    return {
-        pageMargins: { top: 16, bottom: 20 },
-    };
-})();
+        const selectedMainTableLayout = selectMainTableLayout({
+            pageWidth,
+            tableData: mainTableData,
+            fonts: { regular: regularFont, bold: boldFont },
+            startY: currentY,
+            showPrice,
+        });
 
-        const tableResult = drawTable(finalPdfDoc, dynamicPage, { regular: regularFont, bold: boldFont }, mainTableData, currentY, tableConfigOverrides);
+        const tableResult = drawTable(finalPdfDoc, dynamicPage, { regular: regularFont, bold: boldFont }, mainTableData, currentY, selectedMainTableLayout);
         let lastContentPage = tableResult.finalPage;
         let lastYPosAfterTable = tableResult.finalY;
 
@@ -845,16 +982,15 @@ export async function generateOfferPDF(
                 })
                 : null;
             const vatNote = !isNettoPrice && vatRateDisplay ? ` (VAT ${vatRateDisplay}%)` : '';
-
             const priceSuffix = isNettoPrice ? 'PLN netto' : 'PLN brutto';
             const priceString = `Cena koncowa: ${cena} ${priceSuffix}${vatNote}`;
-            const priceFontSize = 15;
+            const priceFontSize = selectedMainTableLayout.priceFontSize;
             const priceTextWidth = boldFont.widthOfTextAtSize(priceString, priceFontSize);
 
             let pricePage = lastContentPage;
-            let priceY = lastYPosAfterTable - 16;
+            let priceY = lastYPosAfterTable - selectedMainTableLayout.priceGap;
 
-            if (priceY < 80) {
+            if (priceY < selectedMainTableLayout.minPriceY) {
                 pricePage = finalPdfDoc.addPage();
                 priceY = pricePage.getHeight() - 110;
             }
@@ -911,6 +1047,9 @@ export async function generateOfferPDF(
         return null;
     }
 }
+
+
+
 
 
 

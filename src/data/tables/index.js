@@ -11,6 +11,7 @@ import { kotlospawSlimkoPlusNiskiBaseTables } from './kotlospawSlimkoPlusNiskiTa
 import { qmpellBaseTables } from "./qmpellEvoTables"; 
 import { kotlospawDrewkoPlusBaseTables } from "./kotlospawDrewkoPlusTable";
 import { kotlospawDrewkoHybridBaseTables } from "./kotlospawDrewkoHybridTable";
+import { kotlospawInPellBaseTables } from "./kotlospawInPellTable";
 import { kaisaiHydroboxBaseTables } from './kaisaiTable';
 import { opcjeDlaPompCiepla, opcjeDlaKotlow } from './opcjeDodatkowe.js';
 import { acModels, acScopeTemplate, acBaseTables } from './acData';
@@ -19,14 +20,23 @@ import { kotlospawduOKOBaseTables } from './kotlospawDuoko.js';
 import { viessmannEasypellBaseTables } from './viessmannEasypellTables.js';
 
 const allDeviceTables = {
-    ...mitsubishiBaseTables, ...atlanticBaseTables, ...lazarBaseTables,
-    ...viessmannBaseTables, ...nibeBaseTables, ...kotlospawSlimkoPlusBaseTables,...kotlospawSlimkoPlusNiskiBaseTables,
-    ...qmpellBaseTables, ...kotlospawDrewkoPlusBaseTables, ...kotlospawDrewkoHybridBaseTables,...toshiba1fBaseTables,
-    ...kaisaiHydroboxBaseTables,
-    ...acBaseTables,
-     ...panasonicBaseTables, 
-    ...kotlospawduOKOBaseTables,
-    ...viessmannEasypellBaseTables,
+  ...mitsubishiBaseTables,
+  ...atlanticBaseTables,
+  ...lazarBaseTables,
+  ...viessmannBaseTables,
+  ...nibeBaseTables,
+  ...kotlospawSlimkoPlusBaseTables,
+  ...kotlospawSlimkoPlusNiskiBaseTables,
+  ...qmpellBaseTables,
+  ...kotlospawDrewkoPlusBaseTables,
+  ...kotlospawDrewkoHybridBaseTables,
+  ...toshiba1fBaseTables,
+  ...kotlospawInPellBaseTables,
+  ...kaisaiHydroboxBaseTables,
+  ...acBaseTables,
+  ...panasonicBaseTables,
+  ...kotlospawduOKOBaseTables,
+  ...viessmannEasypellBaseTables,
 };
 
 const replaceLegacyPumpNames = (value) => {
@@ -78,7 +88,7 @@ function getBufferRowData(bufferCapacity) {
     return [' ', data.name, 'szt.', '1', data.description, 'common'];
 }
 
-export function getTableData(deviceType, model, tankCapacity, bufferCapacity, systemType, isAc = false) {
+export function getTableData(deviceType, model, tankCapacity, bufferCapacity, systemType, isAc = false, acScopeSelection = null) {
   const acDeviceTypes = Object.keys(acModels);
 
   if (acDeviceTypes.includes(deviceType)) {
@@ -87,8 +97,35 @@ export function getTableData(deviceType, model, tankCapacity, bufferCapacity, sy
 
     const indoorRow = ['1', modelInfo.indoor, 'szt.', '1', 'Ścienna jednostka klimatyzacyjna o wysokiej wydajności, z funkcją filtracji i jonizacji powietrza.',];
     const outdoorRow = ['2', modelInfo.outdoor, 'szt.', '1','Jednostka sprężarkowa inwerterowa przystosowana do pracy całorocznej.', ];
-    
-    const fullAcScope = [indoorRow, outdoorRow, ...acScopeTemplate];
+
+    const resolveAcScope = () => {
+      if (!acScopeSelection) return acScopeTemplate;
+
+      // Obsługa tablicy booleanów (true = zostaw, false = usuń)
+      if (Array.isArray(acScopeSelection) && acScopeSelection.every((entry) => typeof entry === 'boolean')) {
+        if (acScopeSelection.length !== acScopeTemplate.length) {
+          return acScopeTemplate;
+        }
+        return acScopeTemplate.filter((_, index) => acScopeSelection[index]);
+      }
+
+      // Obsługa tablicy indeksów (0-based) do pozostawienia
+      if (Array.isArray(acScopeSelection) && acScopeSelection.every((entry) => Number.isInteger(entry))) {
+        const allowed = new Set(acScopeSelection);
+        return acScopeTemplate.filter((_, index) => allowed.has(index));
+      }
+
+      // Obsługa struktury obiektu { includedIndexes: [...] }
+      if (acScopeSelection?.includedIndexes && Array.isArray(acScopeSelection.includedIndexes)) {
+        const allowed = new Set(acScopeSelection.includedIndexes);
+        return acScopeTemplate.filter((_, index) => allowed.has(index));
+      }
+
+      return acScopeTemplate;
+    };
+
+    const filteredScope = resolveAcScope();
+    const fullAcScope = [indoorRow, outdoorRow, ...filteredScope];
     
     return fullAcScope.map((row, index) => {
         const newRow = [...row];
@@ -98,9 +135,9 @@ export function getTableData(deviceType, model, tankCapacity, bufferCapacity, sy
   }
 
   // Logika dla pomp ciepła i kotłów
-  const boilerDeviceTypes = ["LAZAR", "LAZAR-EXCLUSIVE", "Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid", "Kotlospaw duoko", "Viessmann Easypell"];
+  const boilerDeviceTypes = ["LAZAR SmartFire", "LAZAR-EXCLUSIVE", "LAZAR DSPELL", "LAZAR DS", "LAZAR PelletFOCUS", "Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "Kotlospaw In-pell", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid", "Kotlospaw duoko", "Viessmann Easypell"];
   const isBoiler = boilerDeviceTypes.includes(deviceType);
-  const returnPumpBoilers = ["Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid", "Kotlospaw duoko", "Viessmann Easypell"];
+  const returnPumpBoilers = ["Kotlospaw Slimko Plus", "Kotlospaw slimko plus niski", "Kotlospaw In-pell", "QMPELL", "Kotlospaw drewko plus", "Kotlospaw drewko hybrid", "Kotlospaw duoko", "Viessmann Easypell"];
 
   if (!allDeviceTables[deviceType] || !allDeviceTables[deviceType][model]) {
     return [];

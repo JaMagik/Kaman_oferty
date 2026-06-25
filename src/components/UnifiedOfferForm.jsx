@@ -15,6 +15,7 @@ import { kotlospawSlimkoPlusNiskiBaseTables } from "../data/tables/kotlospawSlim
 import { qmpellBaseTables } from "../data/tables/qmpellEvoTables";
 import { kotlospawDrewkoPlusBaseTables } from "../data/tables/kotlospawDrewkoPlusTable";
 import { kotlospawDrewkoHybridBaseTables } from "../data/tables/kotlospawDrewkoHybridTable";
+import { kotlospawInPellBaseTables } from "../data/tables/kotlospawInPellTable";
 import { toshiba1fBaseTables } from '../data/tables/toshiba1fTable';
 import { kaisaiHydroboxBaseTables } from '../data/tables/kaisaiTable';
 
@@ -29,7 +30,7 @@ const DEVICE_CATEGORY = {
 };
 
 const HEAT_PUMP_DEFAULT_DEVICE = "Mitsubishi-cylinder-PUZ";
-const BOILER_DEFAULT_DEVICE = "LAZAR";
+const BOILER_DEFAULT_DEVICE = "LAZAR SmartFire";
 
 const allDevicesData = {
   ...mitsubishiBaseTables,
@@ -42,6 +43,7 @@ const allDevicesData = {
   ...qmpellBaseTables,
   ...kotlospawDrewkoPlusBaseTables,
   ...kotlospawDrewkoHybridBaseTables,
+  ...kotlospawInPellBaseTables,
   ...toshiba1fBaseTables,
   ...kaisaiHydroboxBaseTables,
   ...panasonicBaseTables,
@@ -50,10 +52,14 @@ const allDevicesData = {
 };
 
 const boilerDeviceTypes = [
-  "LAZAR",
+  "LAZAR SmartFire",
   "LAZAR-EXCLUSIVE",
+  "LAZAR DSPELL",
+  "LAZAR DS",
+  "LAZAR PelletFOCUS",
   "Kotlospaw Slimko Plus",
   "Kotlospaw slimko plus niski",
+  "Kotlospaw In-pell",
   "QMPELL",
   "Kotlospaw drewko plus",
   "Kotlospaw drewko hybrid",
@@ -143,6 +149,7 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
   const isBoiler = boilerDeviceTypes.includes(deviceType);
   const isAcDevice = acDeviceTypes.includes(deviceType);
   const isHybridBoiler = hybridBoilerDeviceTypes.includes(deviceType);
+  const isLazar = deviceType && deviceType.toString().startsWith("LAZAR");
 
   const isKotlospaw = deviceType.toLowerCase().includes('kotlospaw');
   const isHeatPumpCategory = deviceCategory === DEVICE_CATEGORY.HEAT_PUMP;
@@ -290,7 +297,7 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
       magneticSeparator: !isBoiler && !isAcDevice && includeMagneticSeparator,
       dotacja: includeDotacja,
       exhaustFan: isKotlospaw && includeExhaustFan,
-      returnProtection: isBoiler && includeReturnProtection,
+      returnProtection: isBoiler && !isLazar && includeReturnProtection,
     };
 
     const investmentAddress = {
@@ -503,21 +510,25 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
         )}
         {!isHeatPumpCategory && (
           <>
-            <optgroup label="Lazar">
-              <option value="LAZAR">Lazar SmartFire</option>
-              <option value="LAZAR-EXCLUSIVE">Lazar SmartFire Exclusive</option>
+            <optgroup label="Kotły LAZAR">
+              <option value="LAZAR SmartFire">Lazar SmartFire</option>
+              <option value="LAZAR-EXCLUSIVE">Lazar SmartFire z pakietem Exclusive</option>
+              <option value="LAZAR PelletFOCUS">Lazar PelletFOCUS</option>
+              <option value="LAZAR DSPELL">Lazar DSPELL</option>
+              <option value="LAZAR DS">Lazar DS</option>
             </optgroup>
-            <optgroup label="QMPell">
-              <option value="QMPELL">QMPell EVO</option>
-            </optgroup>
-            <optgroup label="Kotłospaw">
+            <optgroup label="Kotły Kotłospaw">
               <option value="Kotlospaw Slimko Plus">Kotłospaw Slimko Plus</option>
               <option value="Kotlospaw slimko plus niski">Kotłospaw Slimko Plus niski</option>
+              <option value="Kotlospaw In-pell">Kotłospaw In-pell</option>
               <option value="Kotlospaw duoko">Kotłospaw Duoko</option>
               <option value="Kotlospaw drewko plus">Kotłospaw Drewko Plus</option>
               <option value="Kotlospaw drewko hybrid">Kotłospaw Drewko Hybrid</option>
             </optgroup>
-            <optgroup label="Viessmann">
+            <optgroup label="Kotły QMPell">
+              <option value="QMPELL">QMPell EVO</option>
+            </optgroup>
+            <optgroup label="Kotły Viessmann">
               <option value="Viessmann Easypell">Viessmann Easypell</option>
             </optgroup>
           </>
@@ -654,7 +665,7 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
                 )}
               </>
             )}
-            {isBoiler && (
+            {isBoiler && !isLazar && (
               <div className="option-row">
                 <input
                   type="checkbox"

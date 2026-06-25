@@ -321,7 +321,7 @@ const mitsubishiHydrobox_standard_6kW_base = [
 
 const mitsubishiHydrobox_standard_8kW_base = [
   ['1', 'Pompa ciepła – jednostka zewnętrzna 8kW', 'szt.', '1', 'Mitsubishi PUD-SHWM80YAA – Split, moc 8,0 kW, zasilanie 3x400V, czynnik chłodniczy R32, technologia Zubadan zapewniająca stabilną pracę nawet przy niskich temperaturach.'],
-  ['2', 'Hydrobox – jednostka wewnętrzna', 'szt.', '1', 'Mitsubishi ERSD-YM9E – z grzałką elektryczną 6/9 kW oraz wbudowanym naczyniem wzbiorczym 10 litrów. Odpowiada za zarządzanie obiegiem grzewczym.'],
+  ['2', 'Hydrobox – jednostka wewnętrzna', 'szt.', '1', 'Mitsubishi ERSD-YM9E – z grzałką elektryczną 3/6 kW oraz wbudowanym naczyniem wzbiorczym 10 litrów. Odpowiada za zarządzanie obiegiem grzewczym.'],
   ['3', 'Pompa obiegowa CO KAMAN PRO', 'szt.', '1', 'Zapewnia prawidłowy obieg czynnika grzewczego w instalacji.'],
 
  ['4', 'Komplet elementów hydraulicznych', 'kpl.', '1', 'W tym: zawory kulowe, zawory zwrotne, odpowietrzniki automatyczne, filtry, trójniki, kształtki, nyple, redukcje i pozostała armatura niezbędna do wykonania instalacji wodnej.'],
