@@ -472,6 +472,7 @@ export default function UnifiedOfferForm({ deviceCategory = DEVICE_CATEGORY.HEAT
               <option value="Mitsubishi-ecoinverter">Mitsubishi Ecoinverter (Cylinder)</option>
               <option value="Mitsubishi-ecoinverter-hydrobox">Mitsubishi Ecoinverter (Hydrobox)</option>
               <option value="Mitsubishi-hp">Mitsubishi Hyper Heating</option>
+              <option value="Mitsubishi-r290-hydrobox">Mitsubishi R290 Hydrobox</option>
             </optgroup>
             <optgroup label="Pompy Ciepła Toshiba">
               <option value="Toshiba 1F">Toshiba (1-fazowe)</option>

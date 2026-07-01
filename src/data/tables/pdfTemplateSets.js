@@ -139,6 +139,22 @@ export const pdfTemplateSets = {
     groupPage2,
     commonContactPage,
   ],
+  'Mitsubishi-r290-hydrobox': [
+    '/pdf_templates/mitsubishi/r290-hydrobox/1_okladka.pdf',
+    '/pdf_templates/mitsubishi/r290/katalog.pdf',
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
+  'Mitsubishi-r290-cylinder': [
+    '/pdf_templates/mitsubishi/r290-cylinder/1_okladka.pdf',
+    '/pdf_templates/mitsubishi/r290/katalog.pdf',
+    oNas,
+    groupPage,
+    groupPage2,
+    commonContactPage,
+  ],
 
   'MITSUBISHI AY': [
         '/pdf_templates/mitsubishi/ay/1_okladka.pdf',

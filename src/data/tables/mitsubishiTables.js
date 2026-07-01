@@ -594,6 +594,45 @@ const mitsubishiHP_6kW_base = [
   ...mitsubishiHP_4kW_base.slice(2)
 ];
 
+// --- Mitsubishi R290 PUZ-WZ (monoblok) ---
+const mitsubishiR290CommonRows = [
+  ['3', 'Pompa obiegowa CO KAMAN PRO', 'szt.', '1', 'Zapewnia prawidłowy obieg czynnika grzewczego w instalacji.'],
+  ['4', 'Komplet elementów hydraulicznych', 'kpl.', '1', 'W tym: zawory kulowe, zawory zwrotne, odpowietrzniki automatyczne, filtry, trójniki, kształtki, nyple, redukcje i pozostała armatura niezbędna do wykonania instalacji wodnej.'],
+  ['5', 'Komplet elementów elektrycznych', 'kpl.', '1', 'Okablowanie, bezpieczniki, zabezpieczenia różnicowo-prądowe i nadprądowe, rozdzielnia – zgodnie z wymaganiami producenta dla bezpiecznego działania układu.'],
+  ['6', 'Grupa bezpieczeństwa C.O.', 'kpl.', '1', 'Zawiera zawór bezpieczeństwa, odpowietrznik automatyczny oraz manometr – do zabezpieczenia układu grzewczego przed nadciśnieniem.'],
+  ['7', 'Grupa bezpieczeństwa CWU (6bar)', 'szt.', '1', 'Zawiera zawór bezpieczeństwa 6 bar, zawór zwrotny oraz manometr – do zabezpieczenia zasobnika ciepłej wody.'],
+  ['8', 'Rury wodne preizolowane z izolacją', 'kpl.', '1', 'Połączenia hydrauliczne pomiędzy jednostką zewnętrzną monoblok a instalacją wewnętrzną, zabezpieczone izolacją odporną na warunki zewnętrzne.'],
+  ['9', 'Izolacja termiczna rur wodnych', 'kpl.', '1', 'Wykonana otulinami z pianki technicznej w celu ochrony przewodów wodnych przed wychładzaniem.'],
+  ['10', 'Stojak lub wieszak pod jednostkę zewnętrzną', 'szt.', '1', 'Konstrukcja wsporcza ze stali nierdzewnej, dobierana indywidualnie do miejsca montażu oraz modelu pompy ciepła, przygotowana do instalacji na gruncie lub na ścianie.'],
+  ['11', 'Sterownik bezprzewodowy (PAR-WT)', 'szt.', '1', 'Mitsubishi PAR-WT. Do zarządzania pracą pompy z funkcją auto adaptacji.'],
+  ['12', 'Podłączenie do istniejącej instalacji C.O. i CWU', 'kpl.', '1', 'Wpięcie zgodnie z wytycznymi producenta i dokumentacją DTR tak, aby system pracował bez zarzutu.'],
+  ['13', 'Dokumentacja powykonawcza i protokoły odbioru', 'kpl.', '1', 'Komplet dokumentów do zgłoszenia instalacji oraz rozliczenia dotacji.'],
+  ['14', 'Pomoc w uzyskaniu dotacji', 'kpl.', '1', 'Wsparcie w przygotowaniu wniosku i dokumentów do programu „Czyste Powietrze”.', 'common'],
+  ['15', 'Gwarancja i serwis', 'kpl.', '1', 'Pompa ciepła objęta 5-letnią gwarancją przy rejestracji – zapewniamy wsparcie techniczne i serwisowe.'],
+];
+
+const formatMitsubishiR290Power = (power) => power.toFixed(1).replace('.', ',');
+
+const createMitsubishiR290HydroboxTable = (power, outdoorUnit) => [
+  ['1', `Pompa ciepła – jednostka zewnętrzna ${power} kW (${outdoorUnit})`, 'szt.', '1', `Mitsubishi ${outdoorUnit} | Ecodan PUZ-WZ | Monoblok | moc ${formatMitsubishiR290Power(power)} kW | zasilanie 230 V | czynnik chłodniczy R290 | maksymalna temperatura zasilania do 75°C.`],
+  ['2', 'Moduł wewnętrzny Hydrobox (ERPX-YM9E)', 'szt.', '1', 'Ecodan Hydrobox | Monoblok R290 | grzanie i chłodzenie | grzałka elektryczna 3+6 kW, 3x400 V | naczynie wzbiorcze | sterowanie obiegiem C.O. i przygotowaniem CWU.'],
+  ...mitsubishiR290CommonRows,
+];
+
+const createMitsubishiR290CylinderTable = (power, outdoorUnit) => [
+  ['1', `Pompa ciepła – jednostka zewnętrzna ${power} kW (${outdoorUnit})`, 'szt.', '1', `Mitsubishi ${outdoorUnit} | Ecodan PUZ-WZ | Monoblok | moc ${formatMitsubishiR290Power(power)} kW | zasilanie 230 V | czynnik chłodniczy R290 | maksymalna temperatura zasilania do 75°C.`],
+  ['2', 'Moduł wewnętrzny Cylinder 200 L (EHPT20X-YM9E)', 'szt.', '1', 'Ecodan Cylinder | Monoblok R290 | zintegrowany zasobnik CWU 200 L | grzałka elektryczna 3+6 kW, 3x400 V | naczynie wzbiorcze | tylko grzanie.'],
+  ...mitsubishiR290CommonRows,
+];
+
+const mitsubishiR290Hydrobox_5kW_base = createMitsubishiR290HydroboxTable(5, 'PUZ-WZ50VAA');
+const mitsubishiR290Hydrobox_6kW_base = createMitsubishiR290HydroboxTable(6, 'PUZ-WZ60VAA');
+const mitsubishiR290Hydrobox_8kW_base = createMitsubishiR290HydroboxTable(8, 'PUZ-WZ80VAA');
+
+const mitsubishiR290Cylinder_5kW_base = createMitsubishiR290CylinderTable(5, 'PUZ-WZ50VAA');
+const mitsubishiR290Cylinder_6kW_base = createMitsubishiR290CylinderTable(6, 'PUZ-WZ60VAA');
+const mitsubishiR290Cylinder_8kW_base = createMitsubishiR290CylinderTable(8, 'PUZ-WZ80VAA');
+
 
 // Główny obiekt eksportowany
 export const mitsubishiBaseTables = {
@@ -648,5 +687,13 @@ export const mitsubishiBaseTables = {
   'Mitsubishi-hp': { // Hyper Heating
     '4 kW': mitsubishiHP_4kW_base,
     '6 kW': mitsubishiHP_6kW_base,
+  },
+  'Mitsubishi-r290-hydrobox': {
+    '8 kW': mitsubishiR290Hydrobox_8kW_base,
+  },
+  'Mitsubishi-r290-cylinder': {
+    '5 kW': mitsubishiR290Cylinder_5kW_base,
+    '6 kW': mitsubishiR290Cylinder_6kW_base,
+    '8 kW': mitsubishiR290Cylinder_8kW_base,
   }
 };
